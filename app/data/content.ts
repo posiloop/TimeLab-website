@@ -41,11 +41,16 @@ export type DutyBlock = {
   dashed?: boolean;
 };
 
+export type Feature = {
+  label: string;
+  icon: string;
+};
+
 export type Partnership = {
   id: string;
   title: string;
   tagline: string;
-  features: string[];
+  features: Feature[];
   highlight: string;
   desc: string;
   /** 以下為「更多」彈窗的內容 */
@@ -67,7 +72,11 @@ export const PARTNERSHIPS: Partnership[] = [
     id: "venue",
     title: "場域活化×收益合作",
     tagline: "【 讓每一坪空間，多一個賺錢的理由 】",
-    features: ["導入零成本", "共享營收", "全程代管"],
+    features: [
+      { label: "導入零成本", icon: "/images/features/zero-cost.png" },
+      { label: "共享營收", icon: "/images/features/revenue-share.png" },
+      { label: "全程代管", icon: "/images/features/full-service.png" },
+    ],
     highlight: "場域不變，收入改變",
     desc: "利用既有來客與閒置空間，打造高互動拍貼體驗區，創造額外收入與社群曝光。",
     modal: {
@@ -110,7 +119,12 @@ export const PARTNERSHIPS: Partnership[] = [
     id: "brand",
     title: "品牌活動×互動曝光",
     tagline: "【 讓每一次拍照，都成為活動曝光的延伸 】",
-    features: ["客製化相框", "品牌視覺整合", "活動現場支援", "社群擴散效益"],
+    features: [
+      { label: "客製化相框", icon: "/images/features/custom-frame.png" },
+      { label: "品牌視覺整合", icon: "/images/features/brand-visual.png" },
+      { label: "活動現場支援", icon: "/images/features/onsite-support.png" },
+      { label: "社群擴散效益", icon: "/images/features/social-reach.png" },
+    ],
     highlight: "活動帶來人潮，拍照延續熱潮",
     desc: "利用拍貼互動體驗，提升參與感、創造分享率、放大活動影響力。",
     modal: {

@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import Image from "next/image";
 import Modal from "../components/Modal";
 import PartnershipDetail from "../components/PartnershipDetail";
 import SectionTitle from "../components/SectionTitle";
@@ -33,10 +34,17 @@ export default function Partnership() {
               <ul className="flex w-full justify-center gap-4 max-md:flex-wrap">
                 {item.features.map((feature) => (
                   <li
-                    key={feature}
-                    className="flex h-[100px] min-w-0 flex-1 items-end justify-center rounded-[10px] bg-white/70 pb-3 text-title text-brand-ink max-md:h-[70px] max-md:flex-none max-md:basis-[130px] max-md:text-sm"
+                    key={feature.label}
+                    className="flex h-[100px] min-w-0 flex-1 flex-col items-center justify-center gap-1 rounded-[10px] bg-white/70 px-2 pb-2 pt-3 text-title text-brand-ink max-md:h-[86px] max-md:flex-none max-md:basis-[130px] max-md:text-sm"
                   >
-                    {feature}
+                    <Image
+                      src={feature.icon}
+                      alt=""
+                      width={48}
+                      height={48}
+                      className="h-[42px] w-auto object-contain max-md:h-8"
+                    />
+                    <span className="whitespace-nowrap">{feature.label}</span>
                   </li>
                 ))}
               </ul>
