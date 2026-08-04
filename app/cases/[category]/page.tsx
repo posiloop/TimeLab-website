@@ -2,7 +2,6 @@ import { notFound } from "next/navigation";
 import Image from "next/image";
 import Link from "next/link";
 import CasePageHeader from "../../components/CasePageHeader";
-import SiteFooter from "../../components/SiteFooter";
 import { CASE_ITEMS, READY_CATEGORIES } from "../../data/case-items";
 import { CASE_CATEGORIES } from "../../data/cases";
 
@@ -100,8 +99,6 @@ export default async function CaseCategoryPage(
           </p>
         )}
       </main>
-
-      <SiteFooter />
     </>
   );
 }
