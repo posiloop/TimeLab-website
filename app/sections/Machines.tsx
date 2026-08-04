@@ -24,7 +24,7 @@ export default function Machines() {
           type="button"
           onClick={() => move(-1)}
           aria-label="上一個機台"
-          className="flex size-[72px] shrink-0 items-center justify-center rounded-full border-2 border-brand bg-white/60 text-3xl text-brand shadow-[0_0_30px_rgba(140,140,180,1)] transition-colors hover:bg-brand hover:text-white max-md:size-12 max-md:text-xl"
+          className="flex size-[72px] shrink-0 items-center justify-center rounded-full bg-brand text-3xl text-white transition-opacity hover:opacity-80 max-md:size-12 max-md:text-xl"
         >
           ←
         </button>
@@ -94,28 +94,12 @@ export default function Machines() {
           type="button"
           onClick={() => move(1)}
           aria-label="下一個機台"
-          className="flex size-[72px] shrink-0 items-center justify-center rounded-full border-2 border-brand bg-white/60 text-3xl text-brand shadow-[0_0_30px_rgba(140,140,180,1)] transition-colors hover:bg-brand hover:text-white max-md:size-12 max-md:text-xl"
+          className="flex size-[72px] shrink-0 items-center justify-center rounded-full bg-brand text-3xl text-white transition-opacity hover:opacity-80 max-md:size-12 max-md:text-xl"
         >
           →
         </button>
       </div>
 
-      {/* 頁碼指示 */}
-      <ul className="flex gap-2">
-        {MACHINES.map((item, i) => (
-          <li key={item.id}>
-            <button
-              type="button"
-              onClick={() => setIndex(i)}
-              aria-label={`切換至${item.name}`}
-              aria-current={i === index}
-              className={`size-3 rounded-full transition-colors ${
-                i === index ? "bg-brand" : "bg-brand/30"
-              }`}
-            />
-          </li>
-        ))}
-      </ul>
     </section>
   );
 }
