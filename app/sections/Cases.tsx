@@ -31,18 +31,22 @@ export default function Cases() {
       <ul className="flex w-full max-w-[1515px] justify-between gap-5 max-lg:flex-wrap max-lg:justify-center">
         {CASE_CATEGORIES.map((item) => (
           <li key={item.id}>
+            {/* hover 時照片淡出白色遮罩，浮現提示文字 */}
             <Link
               href={`/cases/${item.id}`}
               aria-label={`查看${item.label}案例`}
-              className="block h-[580px] w-[287px] overflow-hidden rounded-[20px] bg-brand-mist transition-transform hover:scale-[1.02] max-lg:h-[400px] max-lg:w-[200px]"
+              className="group relative block h-[580px] w-[287px] overflow-hidden rounded-[20px] bg-brand-mist max-lg:h-[400px] max-lg:w-[200px]"
             >
               <Image
                 src={item.cover}
                 alt=""
                 width={287}
                 height={580}
-                className="h-full w-full object-cover"
+                className="h-full w-full object-cover transition-opacity duration-300 group-hover:opacity-25"
               />
+              <span className="pointer-events-none absolute inset-0 flex items-center justify-center text-h2 text-brand-ink opacity-0 transition-opacity duration-300 group-hover:opacity-100 max-md:text-base">
+                點擊查看更多案例
+              </span>
             </Link>
           </li>
         ))}
