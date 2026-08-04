@@ -31,19 +31,14 @@ export default function Machines() {
 
         <div className="grid flex-1 grid-cols-2 items-center gap-10 rounded-[20px] bg-brand-mist/70 px-10 py-12 max-lg:grid-cols-1 max-md:px-5 max-md:py-8">
           <div className="flex items-center justify-center">
-            {machine.image ? (
-              <Image
-                src={machine.image}
-                alt={machine.name}
-                width={560}
-                height={620}
-                className="h-auto w-full max-w-[560px] object-contain"
-              />
-            ) : (
-              <div className="flex aspect-[560/620] w-full max-w-[560px] items-center justify-center rounded-[20px] bg-white/50 text-h2 text-brand">
-                機台圖待補
-              </div>
-            )}
+            <Image
+              src={machine.image}
+              alt={machine.name}
+              width={694}
+              height={780}
+              priority
+              className="h-auto w-full max-w-[560px] object-contain"
+            />
           </div>
 
           <div className="flex flex-col gap-6">

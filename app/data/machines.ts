@@ -12,8 +12,8 @@ export type Machine = {
   camera: string;
   printer: string;
   payment: string;
-  /** 機台去背圖 —— 待 Figma 額度恢復後補上 */
-  image?: string;
+  /** 機台去背圖 */
+  image: string;
 };
 
 export const MACHINES: Machine[] = [
@@ -26,6 +26,7 @@ export const MACHINES: Machine[] = [
     camera: "Canon 佳能 數位單眼相機",
     printer: "DNP 日本高級數位式 熱昇華相片印表機",
     payment: "可設定三種方式：現金、LINE PAY、折價券",
+    image: "/images/machines/standard.png",
   },
   {
     id: "interactive",
@@ -40,6 +41,7 @@ export const MACHINES: Machine[] = [
     camera: "Canon 佳能 數位單眼相機",
     printer: "DNP 日本高級數位式 熱昇華相片印表機",
     payment: "可設定兩種方式：現金、折價券",
+    image: "/images/machines/interactive.png",
   },
   {
     id: "y2k",
@@ -53,5 +55,6 @@ export const MACHINES: Machine[] = [
     camera: "Canon 佳能 數位單眼相機",
     printer: "DNP 日本高級數位式 熱昇華相片印表機",
     payment: "可設定兩種方式：現金、折價券",
+    image: "/images/machines/y2k.png",
   },
 ];
