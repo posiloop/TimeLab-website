@@ -2,7 +2,7 @@ import { notFound } from "next/navigation";
 import Image from "next/image";
 import Link from "next/link";
 import CasePageHeader from "../../components/CasePageHeader";
-import { CASE_ITEMS, READY_CATEGORIES } from "../../data/case-items";
+import { CASE_ITEMS } from "../../data/case-items";
 import { CASE_CATEGORIES } from "../../data/cases";
 
 export function generateStaticParams() {
@@ -27,9 +27,7 @@ export default async function CaseCategoryPage(
   const current = CASE_CATEGORIES.find((item) => item.id === category);
   if (!current) notFound();
 
-  const items = READY_CATEGORIES.has(category)
-    ? (CASE_ITEMS[category] ?? [])
-    : [];
+  const items = CASE_ITEMS[category] ?? [];
 
   return (
     <>
@@ -77,27 +75,21 @@ export default async function CaseCategoryPage(
           </p>
         </div>
 
-        {items.length > 0 ? (
-          <ul className="mt-20 grid grid-cols-2 max-md:mt-10 max-md:grid-cols-1">
-            {items.map((item, index) => (
-              <li key={item.file} className="relative aspect-[960/679]">
-                <Image
-                  src={`/images/cases/${item.file}.png`}
-                  alt={`${current.label}案例 ${item.name}`}
-                  fill
-                  sizes="(max-width: 768px) 100vw, 50vw"
-                  // 首屏四張優先載入，其餘延遲
-                  priority={index < 4}
-                  className="object-cover"
-                />
-              </li>
-            ))}
-          </ul>
-        ) : (
-          <p className="py-40 text-center text-h1 text-brand max-md:py-20">
-            此分類案例圖尚待補齊。
-          </p>
-        )}
+        <ul className="mt-20 grid grid-cols-2 max-md:mt-10 max-md:grid-cols-1">
+          {items.map((item, index) => (
+            <li key={item.file} className="relative aspect-[960/679]">
+              <Image
+                src={`/images/cases/${item.file}.png`}
+                alt={`${current.label}案例 ${item.name}`}
+                fill
+                sizes="(max-width: 768px) 100vw, 50vw"
+                // 首屏四張優先載入，其餘延遲
+                priority={index < 4}
+                className="object-cover"
+              />
+            </li>
+          ))}
+        </ul>
       </main>
     </>
   );

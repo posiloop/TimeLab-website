@@ -10,12 +10,6 @@ export type CaseItem = {
   name: string;
 };
 
-/**
- * 圖片已下載到 public/images/cases/ 的分類。
- * 企業與應援仍待 Figma API 額度恢復後補齊，先排除以免顯示破圖。
- */
-export const READY_CATEGORIES = new Set(["brand", "wedding", "school"]);
-
 export const CASE_ITEMS: Record<string, CaseItem[]> = {
   brand: [
     { nodeId: "390:231", file: "brand-01", name: "標準 - 籃球隊" },
