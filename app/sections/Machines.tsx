@@ -5,6 +5,26 @@ import Image from "next/image";
 import SectionTitle from "../components/SectionTitle";
 import { MACHINES, MACHINE_TAGS } from "../data/machines";
 
+/** 細線箭頭，隨按鈕的 currentColor 變色 */
+function ArrowIcon({ direction }: { direction: "left" | "right" }) {
+  return (
+    <svg
+      viewBox="0 0 24 24"
+      fill="none"
+      aria-hidden
+      className={`size-8 max-md:size-5 ${direction === "left" ? "rotate-180" : ""}`}
+    >
+      <path
+        d="M4 12h15m0 0-6-6m6 6-6 6"
+        stroke="currentColor"
+        strokeWidth="2"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+      />
+    </svg>
+  );
+}
+
 export default function Machines() {
   const [index, setIndex] = useState(0);
   const machine = MACHINES[index];
@@ -24,9 +44,9 @@ export default function Machines() {
           type="button"
           onClick={() => move(-1)}
           aria-label="上一個機台"
-          className="flex size-[72px] shrink-0 items-center justify-center rounded-full bg-brand text-3xl text-white transition-opacity hover:opacity-80 max-md:size-12 max-md:text-xl"
+          className="flex size-[72px] shrink-0 items-center justify-center rounded-full border-2 border-brand text-brand shadow-[0_0_20px_rgba(140,140,180,0.6)] transition-colors hover:bg-brand hover:text-white max-md:size-12"
         >
-          ←
+          <ArrowIcon direction="left" />
         </button>
 
         <div className="grid flex-1 grid-cols-2 items-center gap-10 rounded-[20px] bg-brand-mist/70 px-10 py-12 max-lg:grid-cols-1 max-md:px-5 max-md:py-8">
@@ -94,9 +114,9 @@ export default function Machines() {
           type="button"
           onClick={() => move(1)}
           aria-label="下一個機台"
-          className="flex size-[72px] shrink-0 items-center justify-center rounded-full bg-brand text-3xl text-white transition-opacity hover:opacity-80 max-md:size-12 max-md:text-xl"
+          className="flex size-[72px] shrink-0 items-center justify-center rounded-full border-2 border-brand text-brand shadow-[0_0_20px_rgba(140,140,180,0.6)] transition-colors hover:bg-brand hover:text-white max-md:size-12"
         >
-          →
+          <ArrowIcon direction="right" />
         </button>
       </div>
 
