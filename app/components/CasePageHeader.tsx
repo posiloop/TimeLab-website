@@ -9,15 +9,13 @@ export default function CasePageHeader() {
     <header className="fixed inset-x-0 top-0 z-50 h-[100px] bg-brand-mist shadow-[0_1px_2px_rgba(0,0,0,0.35)]">
       <div className="mx-auto flex h-full max-w-[1920px] items-center justify-between px-12 max-md:px-5">
         <Link href="/" aria-label="回到首頁">
-          {/* 設計稿為橫式 LOGO，待素材補齊後替換 */}
           <Image
-            src="/images/brand/logo.png"
+            src="/images/brand/logo-wide.png"
             alt="時光研究室 TiMELAB"
-            width={80}
-            height={60}
+            width={244}
+            height={44}
             priority
-            style={{ height: "auto" }}
-            className="w-20 object-contain max-md:w-14"
+            className="h-11 w-auto object-contain max-md:h-8"
           />
         </Link>
 
