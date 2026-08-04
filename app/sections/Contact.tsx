@@ -1,9 +1,10 @@
 import Image from "next/image";
+import { InstagramIcon, LineIcon } from "../components/SocialIcons";
 
 const LINKS = [
-  { label: "Instagram", href: "https://www.instagram.com/", icon: "IG" },
-  { label: "官方 LINE", href: "https://line.me/", icon: "LINE" },
-  { label: "租借表單", href: "#", icon: "租借\n表單" },
+  { label: "Instagram", href: "https://www.instagram.com/" },
+  { label: "官方 LINE", href: "https://line.me/" },
+  { label: "租借表單", href: "#" },
 ];
 
 export default function Contact() {
@@ -21,19 +22,38 @@ export default function Contact() {
       />
 
       <ul className="flex items-center gap-8 max-md:gap-5">
-        {LINKS.map((link) => (
-          <li key={link.label}>
-            <a
-              href={link.href}
-              target={link.href.startsWith("http") ? "_blank" : undefined}
-              rel={link.href.startsWith("http") ? "noreferrer" : undefined}
-              aria-label={link.label}
-              className="flex size-[100px] items-center justify-center whitespace-pre-line rounded-[20px] bg-brand text-center text-h1 leading-tight text-white transition-opacity hover:opacity-80 max-md:size-[70px] max-md:text-base"
-            >
-              {link.icon}
-            </a>
-          </li>
-        ))}
+        {LINKS.map((link) => {
+          const external = link.href.startsWith("http");
+
+          return (
+            <li key={link.label}>
+              <a
+                href={link.href}
+                target={external ? "_blank" : undefined}
+                rel={external ? "noreferrer" : undefined}
+                aria-label={link.label}
+                // IG 為外框線稿無底色，其餘為品牌色底
+                className={`flex size-[100px] items-center justify-center rounded-[20px] transition-opacity hover:opacity-80 max-md:size-[70px] ${
+                  link.label === "Instagram" ? "text-brand" : "bg-brand"
+                }`}
+              >
+                {link.label === "Instagram" && (
+                  <InstagramIcon className="size-[72px] max-md:size-12" />
+                )}
+                {link.label === "官方 LINE" && (
+                  <LineIcon className="size-[72px] text-white max-md:size-12" />
+                )}
+                {link.label === "租借表單" && (
+                  <span className="text-center text-h1 leading-tight text-white max-md:text-base">
+                    租借
+                    <br />
+                    表單
+                  </span>
+                )}
+              </a>
+            </li>
+          );
+        })}
       </ul>
     </section>
   );

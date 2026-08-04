@@ -20,7 +20,7 @@ export default function SiteHeader() {
           <a
             key={item.href}
             href={item.href}
-            className="flex h-10 w-[120px] shrink-0 items-center justify-center rounded-full bg-brand-mist text-h2 text-brand-ink transition-colors hover:bg-brand hover:text-brand-mist max-lg:h-9 max-lg:w-auto max-lg:px-4 max-lg:text-base"
+            className="flex h-10 w-[120px] shrink-0 items-center justify-center rounded-full text-h2 text-brand-ink transition-colors hover:bg-brand hover:text-brand-mist max-lg:h-9 max-lg:w-auto max-lg:px-4 max-lg:text-base"
           >
             {item.label}
           </a>

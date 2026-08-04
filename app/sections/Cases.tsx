@@ -21,7 +21,7 @@ export default function Cases() {
           <li key={item.id}>
             <Link
               href={`/cases/${item.id}`}
-              className="flex h-[60px] w-[100px] items-center justify-center rounded-[25px] bg-brand-mist text-h1 text-brand-ink transition-colors hover:bg-brand hover:text-white max-md:h-11 max-md:w-20 max-md:text-xl"
+              className="flex h-[60px] w-[100px] items-center justify-center rounded-[25px] text-h1 text-brand-ink transition-colors hover:text-brand max-md:h-11 max-md:w-20 max-md:text-xl"
             >
               {item.label}
             </Link>

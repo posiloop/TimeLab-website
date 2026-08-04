@@ -1,5 +1,6 @@
 import Image from "next/image";
 import Link from "next/link";
+import { InstagramIcon, LineIcon } from "./SocialIcons";
 
 /** 分頁專屬頁首：橫式 LOGO + 右側三個連結按鈕 */
 export default function CasePageHeader() {
@@ -21,22 +22,40 @@ export default function CasePageHeader() {
 
         <ul className="flex items-center gap-[15px]">
           {[
-            { label: "Instagram", href: "https://www.instagram.com/", text: "IG" },
-            { label: "官方 LINE", href: "https://line.me/", text: "LINE" },
-            { label: "租借表單", href: "#", text: "租借\n表單" },
-          ].map((link) => (
-            <li key={link.label}>
-              <a
-                href={link.href}
-                target={link.href.startsWith("http") ? "_blank" : undefined}
-                rel={link.href.startsWith("http") ? "noreferrer" : undefined}
-                aria-label={link.label}
-                className="flex size-[50px] items-center justify-center whitespace-pre-line rounded-[10px] bg-brand text-center text-xs leading-tight text-white transition-opacity hover:opacity-80 max-md:size-10"
-              >
-                {link.text}
-              </a>
-            </li>
-          ))}
+            { label: "Instagram", href: "https://www.instagram.com/" },
+            { label: "官方 LINE", href: "https://line.me/" },
+            { label: "租借表單", href: "#" },
+          ].map((link) => {
+            const external = link.href.startsWith("http");
+
+            return (
+              <li key={link.label}>
+                <a
+                  href={link.href}
+                  target={external ? "_blank" : undefined}
+                  rel={external ? "noreferrer" : undefined}
+                  aria-label={link.label}
+                  className={`flex size-[50px] items-center justify-center rounded-[10px] transition-opacity hover:opacity-80 max-md:size-10 ${
+                    link.label === "Instagram" ? "text-brand" : "bg-brand"
+                  }`}
+                >
+                  {link.label === "Instagram" && (
+                    <InstagramIcon className="size-9 max-md:size-7" />
+                  )}
+                  {link.label === "官方 LINE" && (
+                    <LineIcon className="size-9 text-white max-md:size-7" />
+                  )}
+                  {link.label === "租借表單" && (
+                    <span className="text-center text-xs leading-tight text-white">
+                      租借
+                      <br />
+                      表單
+                    </span>
+                  )}
+                </a>
+              </li>
+            );
+          })}
         </ul>
       </div>
     </header>

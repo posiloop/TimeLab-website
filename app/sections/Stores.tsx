@@ -25,8 +25,9 @@ export default function Stores() {
               height={380}
               className="h-full w-full rounded-[20px] bg-brand-mist object-cover shadow-[5px_0_15px_rgba(0,0,0,0.25)] max-lg:h-[240px]"
             />
-            <div className="flex flex-col justify-center gap-5 px-6 py-8">
-              <div className="flex flex-col items-center gap-[6px]">
+            {/* 設計稿為兩等分列：上區靠下、下區靠上，使兩組資訊向中間聚攏 */}
+            <div className="grid grid-rows-2 gap-5 px-6 py-8">
+              <div className="flex flex-col items-center justify-end gap-[6px]">
                 <Pill>營業時間</Pill>
                 <p className="text-title font-semibold text-brand-ink">
                   {store.hours}
