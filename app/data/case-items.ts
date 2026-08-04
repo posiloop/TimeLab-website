@@ -1,0 +1,114 @@
+/**
+ * 活動案例分頁的圖片清單。
+ * name 取自 Figma 圖層名（機型 - 案例名），nodeId 用於下載原圖。
+ */
+export type CaseItem = {
+  nodeId: string;
+  /** 檔名（不含副檔名） */
+  file: string;
+  /** 顯示用案例名稱 */
+  name: string;
+};
+
+/**
+ * 圖片已下載到 public/images/cases/ 的分類。
+ * 企業與應援仍待 Figma API 額度恢復後補齊，先排除以免顯示破圖。
+ */
+export const READY_CATEGORIES = new Set(["brand", "wedding", "school"]);
+
+export const CASE_ITEMS: Record<string, CaseItem[]> = {
+  brand: [
+    { nodeId: "390:231", file: "brand-01", name: "標準 - 籃球隊" },
+    { nodeId: "390:241", file: "brand-02", name: "互動 - 飛軒里" },
+    { nodeId: "390:259", file: "brand-03", name: "標準 - DEMIN" },
+    { nodeId: "390:248", file: "brand-04", name: "互動 - 萬楓酒店" },
+    { nodeId: "390:273", file: "brand-05", name: "標準 - 熊本熊" },
+    { nodeId: "390:235", file: "brand-06", name: "互動 - UL成人運動會" },
+    { nodeId: "390:260", file: "brand-07", name: "標準 - ON LINE平台直播" },
+    { nodeId: "390:249", file: "brand-08", name: "互動 - 跨界" },
+    { nodeId: "390:267", file: "brand-09", name: "標準 - 時代寓所" },
+    { nodeId: "390:237", file: "brand-10", name: "互動 - 台中國際動畫影展" },
+    { nodeId: "390:274", file: "brand-11", name: "標準 - 福音教會" },
+    { nodeId: "390:244", file: "brand-12", name: "互動 - 基因釀造" },
+    { nodeId: "390:257", file: "brand-13", name: "標準 - APLUS" },
+    { nodeId: "390:252", file: "brand-14", name: "俯拍 - 不二糕餅" },
+    { nodeId: "390:264", file: "brand-15", name: "標準 - 台北新光A9" },
+    { nodeId: "390:255", file: "brand-16", name: "俯拍 - 熱磁學院" },
+    { nodeId: "390:278", file: "brand-17", name: "標準 - 職人蜂賞" },
+    { nodeId: "390:265", file: "brand-18", name: "標準 - 成人展" },
+  ],
+  wedding: [
+    { nodeId: "390:119", file: "wedding-01", name: "標準 - 麗京棧酒店" },
+    { nodeId: "390:120", file: "wedding-02", name: "互動 - 士林萬麗酒店" },
+    { nodeId: "390:139", file: "wedding-03", name: "標準 - 漢來大飯店" },
+    { nodeId: "390:125", file: "wedding-04", name: "互動 - 桃園來福星" },
+    { nodeId: "390:134", file: "wedding-05", name: "標準 - 台中林皇宮" },
+    { nodeId: "390:121", file: "wedding-06", name: "互動 - 卡果牧場" },
+    { nodeId: "390:135", file: "wedding-07", name: "標準 - 台北彭園婚宴館" },
+    { nodeId: "390:126", file: "wedding-08", name: "互動 - 桃園流水席" },
+    { nodeId: "390:132", file: "wedding-09", name: "標準 - 雅園新潮婚宴會館" },
+    { nodeId: "390:127", file: "wedding-10", name: "互動 - 無意製所" },
+    { nodeId: "390:130", file: "wedding-11", name: "標準 - 大直典華" },
+    { nodeId: "390:136", file: "wedding-12", name: "標準 - 台北園外園" },
+    { nodeId: "390:131", file: "wedding-13", name: "標準 - 天使仙境" },
+    { nodeId: "390:124", file: "wedding-14", name: "互動 - 香格里拉" },
+    { nodeId: "390:133", file: "wedding-15", name: "標準 - 台中沙鹿" },
+    { nodeId: "390:129", file: "wedding-16", name: "互動 - 豪鼎飯店" },
+    { nodeId: "390:138", file: "wedding-17", name: "標準 - 漢來大飯店 02" },
+    { nodeId: "390:128", file: "wedding-18", name: "互動 - 圓觀" },
+    { nodeId: "390:137", file: "wedding-19", name: "標準 - 房馨" },
+    { nodeId: "390:123", file: "wedding-20", name: "互動 - 南港雅悅" },
+  ],
+  school: [
+    { nodeId: "390:143", file: "school-01", name: "標準 - 中央大學設計展" },
+    { nodeId: "390:160", file: "school-02", name: "標準 - 興大附中" },
+    { nodeId: "390:145", file: "school-03", name: "標準 - 中教大" },
+    { nodeId: "390:147", file: "school-04", name: "標準 - 文化大學 02" },
+    { nodeId: "390:148", file: "school-05", name: "標準 - 台北聯合國學校" },
+    { nodeId: "390:146", file: "school-06", name: "標準 - 文化大學 01" },
+    { nodeId: "390:144", file: "school-07", name: "標準 - 中科大設計展" },
+    { nodeId: "390:156", file: "school-08", name: "標準 - 復興高中" },
+    { nodeId: "390:149", file: "school-09", name: "標準 - 台師大" },
+    { nodeId: "390:151", file: "school-10", name: "標準 - 東海大學 02" },
+    { nodeId: "390:153", file: "school-11", name: "標準 - 美國學校" },
+    { nodeId: "390:161", file: "school-12", name: "標準 - 中山醫學大學" },
+    { nodeId: "390:152", file: "school-13", name: "標準 - 東海大學 03" },
+    { nodeId: "390:242", file: "school-14", name: "互動 - 家委會" },
+    { nodeId: "390:158", file: "school-15", name: "標準 - 華盛頓高中" },
+    { nodeId: "390:150", file: "school-16", name: "標準 - 東海大學" },
+    { nodeId: "390:157", file: "school-17", name: "標準 - 華盛頓中學" },
+    { nodeId: "390:154", file: "school-18", name: "標準 - 師範大學" },
+    { nodeId: "390:162", file: "school-19", name: "標準 - 美國學校 02" },
+    { nodeId: "390:142", file: "school-20", name: "互動 - 新一代設計展．海洋科大" },
+    { nodeId: "390:263", file: "school-21", name: "標準 - 台中市政府" },
+    { nodeId: "390:236", file: "school-22", name: "互動 - 不來梅" },
+  ],
+  corporate: [
+    { nodeId: "390:163", file: "corporate-01", name: "互動 - 尾牙 TRACCY" },
+    { nodeId: "390:164", file: "corporate-02", name: "互動 - 尾牙 泰商" },
+    { nodeId: "390:165", file: "corporate-03", name: "標準 - 生日宴會" },
+    { nodeId: "390:166", file: "corporate-04", name: "標準 - 尾牙 大直典華" },
+    { nodeId: "390:238", file: "corporate-05", name: "互動 - 永豐銀行" },
+    { nodeId: "390:233", file: "corporate-06", name: "互動 - Brother" },
+    { nodeId: "390:245", file: "corporate-07", name: "互動 - 博非科技" },
+    { nodeId: "390:266", file: "corporate-08", name: "標準 - 序光紀元" },
+    { nodeId: "390:239", file: "corporate-09", name: "互動 - 名留集團" },
+    { nodeId: "390:240", file: "corporate-10", name: "互動 - 走走品牌" },
+    { nodeId: "390:246", file: "corporate-11", name: "互動 - 華谷電機" },
+    { nodeId: "390:234", file: "corporate-12", name: "互動 - UBS" },
+    { nodeId: "390:261", file: "corporate-13", name: "標準 - 太古汽車" },
+    { nodeId: "390:247", file: "corporate-14", name: "互動 - 群健科技" },
+    { nodeId: "390:275", file: "corporate-15", name: "標準 - 銳馳物流" },
+    { nodeId: "390:243", file: "corporate-16", name: "互動 - 唯勝實業" },
+    { nodeId: "390:262", file: "corporate-17", name: "標準 - 心誠鎂" },
+    { nodeId: "390:250", file: "corporate-18", name: "互動 - 熙特爾" },
+    { nodeId: "390:277", file: "corporate-19", name: "標準 - 諾悠翩雅" },
+    { nodeId: "390:272", file: "corporate-20", name: "標準 - 農業署水土保持" },
+    { nodeId: "390:271", file: "corporate-21", name: "標準 - 國亨開發" },
+    { nodeId: "390:251", file: "corporate-22", name: "互動 - 遠雄人壽" },
+  ],
+  fandom: [
+    { nodeId: "390:268", file: "fandom-01", name: "標準 - 泰國偶像" },
+    { nodeId: "390:270", file: "fandom-02", name: "標準 - 偶像咖啡廳" },
+  ],
+};
