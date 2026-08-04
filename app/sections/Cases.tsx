@@ -42,9 +42,10 @@ export default function Cases() {
                 alt=""
                 width={287}
                 height={580}
-                className="h-full w-full object-cover transition-opacity duration-300 group-hover:opacity-25"
+                className="h-full w-full object-cover transition-opacity duration-300 group-hover:opacity-15"
               />
-              <span className="pointer-events-none absolute inset-0 flex items-center justify-center text-h2 text-brand-ink opacity-0 transition-opacity duration-300 group-hover:opacity-100 max-md:text-base">
+              {/* 設計稿定位在卡片高度 79% 處，非垂直置中 */}
+              <span className="pointer-events-none absolute inset-x-0 top-[79.5%] -translate-y-1/2 text-center text-h2 text-brand-ink opacity-0 [text-shadow:0_0_10px_white] transition-opacity duration-300 group-hover:opacity-100 max-md:text-base">
                 點擊查看更多案例
               </span>
             </Link>
