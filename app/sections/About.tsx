@@ -41,6 +41,8 @@ export default function About() {
               width={gif.width}
               height={Math.round((gif.width * 1073) / 720)}
               unoptimized
+              // 首屏 GIF，避免延遲載入拖累 LCP
+              priority
               className="h-auto rounded-[10px] object-contain max-lg:w-[200px] max-md:w-[140px]"
               style={{ width: gif.width }}
             />
