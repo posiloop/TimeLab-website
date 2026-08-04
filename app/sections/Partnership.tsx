@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import Modal from "../components/Modal";
+import PartnershipDetail from "../components/PartnershipDetail";
 import SectionTitle from "../components/SectionTitle";
 import { PARTNERSHIPS } from "../data/content";
 
@@ -68,12 +69,7 @@ export default function Partnership() {
         onClose={() => setOpenId(null)}
         title={active?.title ?? ""}
       >
-        <h3 className="mb-6 text-center text-section tracking-[0.1em] text-brand max-md:text-2xl">
-          {active?.title}
-        </h3>
-        <p className="text-center text-h2 text-brand-ink">
-          此彈窗內容待補（等待 Figma 設計稿截圖）。
-        </p>
+        {active && <PartnershipDetail item={active} />}
       </Modal>
     </section>
   );

@@ -33,6 +33,14 @@ export const PLAN_ADDONS = [
   "品牌視覺設計：依機型搭配布簾、包廂與背板",
 ];
 
+/** 彈窗中的職責區塊：一個膠囊標籤配一至兩欄條列 */
+export type DutyBlock = {
+  label: string;
+  columns: string[][];
+  /** 虛線框（次要）或實線框（主要） */
+  dashed?: boolean;
+};
+
 export type Partnership = {
   id: string;
   title: string;
@@ -40,6 +48,18 @@ export type Partnership = {
   features: string[];
   highlight: string;
   desc: string;
+  /** 以下為「更多」彈窗的內容 */
+  modal: {
+    subtitle: string;
+    /** 場域收益卡片，僅場域活化使用 */
+    tiers?: { image: string; caption: string; revenue: string }[];
+    /** 適用活動類型勾選清單，僅品牌活動使用 */
+    eventTypes?: string[];
+    /** 活動照拼貼，僅品牌活動使用 */
+    gallery?: string[];
+    footnote: string;
+    duties: DutyBlock[];
+  };
 };
 
 export const PARTNERSHIPS: Partnership[] = [
@@ -50,6 +70,41 @@ export const PARTNERSHIPS: Partnership[] = [
     features: ["導入零成本", "共享營收", "全程代管"],
     highlight: "場域不變，收入改變",
     desc: "利用既有來客與閒置空間，打造高互動拍貼體驗區，創造額外收入與社群曝光。",
+    modal: {
+      subtitle: "合作場域常見收益區間",
+      tiers: [
+        {
+          image: "/images/partnership/venue-1.png",
+          caption: "咖啡廳｜餐廳｜親子空間｜特色店家",
+          revenue: "NT$30,000–150,000",
+        },
+        {
+          image: "/images/partnership/venue-2.png",
+          caption: "商場櫃位｜景觀餐廳｜文創園區｜連鎖品牌",
+          revenue: "NT$150,000–300,000",
+        },
+        {
+          image: "/images/partnership/venue-3.png",
+          caption: "熱門景點｜百貨商場",
+          revenue: "NT$300,000–500,000+",
+        },
+      ],
+      footnote: "※實際收益依人流、營業時間、客群屬性及合作模式而有所不同。",
+      duties: [
+        {
+          label: "我方負責",
+          columns: [
+            ["設備提供", "安裝施工", "維修保養", "耗材補充"],
+            ["社群曝光", "客服支援", "全程營運管理", "主題設計更新"],
+          ],
+        },
+        {
+          label: "場地方提供",
+          dashed: true,
+          columns: [["電力供應", "小坪數空間", "基本環境清潔", "現場簡易管理"]],
+        },
+      ],
+    },
   },
   {
     id: "brand",
@@ -58,5 +113,40 @@ export const PARTNERSHIPS: Partnership[] = [
     features: ["客製化相框", "品牌視覺整合", "活動現場支援", "社群擴散效益"],
     highlight: "活動帶來人潮，拍照延續熱潮",
     desc: "利用拍貼互動體驗，提升參與感、創造分享率、放大活動影響力。",
+    modal: {
+      subtitle: "適用活動類型",
+      gallery: [
+        "/images/partnership/brand-1.png",
+        "/images/partnership/brand-2.png",
+        "/images/partnership/brand-3.png",
+      ],
+      eventTypes: [
+        "演唱會",
+        "跨年晚會",
+        "展覽活動",
+        "市集活動",
+        "校園活動",
+        "政府大型活動",
+        "品牌快閃活動",
+        "百貨檔期活動",
+        "企業活動",
+        "開幕活動",
+      ],
+      footnote: "★  從數百人到數萬人規模活動皆有執行經驗  ★",
+      duties: [
+        {
+          label: "我們所提供的服務",
+          columns: [
+            ["客製化相框設計", "品牌視覺整合", "現場人員支援", "耗材補充管理"],
+            ["活動成果回饋", "多機同步規劃", "設備進駐與撤場"],
+          ],
+        },
+        {
+          label: "社群曝光",
+          dashed: true,
+          columns: [["拍照分享曝光", "主動停留互動", "提升品牌記憶"]],
+        },
+      ],
+    },
   },
 ];

@@ -67,11 +67,8 @@ export default function Cases() {
         onClose={() => setOpenId(null)}
         title={active ? `${active.label}案例` : ""}
       >
-        <h3 className="mb-6 text-center text-section tracking-[0.2em] text-brand">
-          {active?.label}案例
-        </h3>
         <p className="text-center text-h2 text-brand-ink">
-          此分頁內容待補（等待 Figma 設計稿截圖）。
+          此分頁內容待補。
         </p>
       </Modal>
     </section>
