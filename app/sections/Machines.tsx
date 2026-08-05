@@ -62,7 +62,7 @@ export default function Machines() {
           </div>
 
           <div className="flex flex-col gap-6">
-            <ul className="flex flex-wrap gap-3">
+            <ul className="flex flex-wrap gap-3 max-md:justify-center">
               {MACHINE_TAGS.map((tag) => {
                 const active = machine.tags.includes(tag);
                 return (

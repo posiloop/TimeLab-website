@@ -24,10 +24,9 @@ export default function RentalProcess() {
             </div>
             {/* 步驟之間的倒三角連接符，最後一步不顯示 */}
             {index < RENTAL_STEPS.length - 1 && (
-              <div
-                aria-hidden
-                className="my-2 ml-[200px] h-0 w-0 border-x-[12px] border-t-[14px] border-x-transparent border-t-brand max-lg:ml-[160px] max-md:mx-auto max-md:ml-0"
-              />
+              <div aria-hidden className="my-2 max-md:flex max-md:justify-center">
+                <div className="ml-[200px] h-0 w-0 border-x-[12px] border-t-[14px] border-x-transparent border-t-brand max-lg:ml-[160px] max-md:ml-0" />
+              </div>
             )}
           </li>
         ))}
