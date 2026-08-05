@@ -40,7 +40,7 @@ export default async function CaseCategoryPage(
               <li>
                 <Link
                   href="/#cases"
-                  className="flex h-10 w-[120px] items-center justify-center rounded-full bg-brand-mist text-h2 text-brand-ink transition-colors hover:bg-brand hover:text-white max-md:w-auto max-md:px-4 max-md:text-base"
+                  className="flex h-10 w-[120px] items-center justify-center rounded-full text-h2 text-brand-ink transition-colors hover:bg-brand-mist max-md:w-auto max-md:px-4 max-md:text-base"
                 >
                   返回
                 </Link>
@@ -52,8 +52,8 @@ export default async function CaseCategoryPage(
                     aria-current={item.id === category ? "page" : undefined}
                     className={`flex h-10 w-[120px] items-center justify-center rounded-full text-h2 transition-colors max-md:w-auto max-md:px-4 max-md:text-base ${
                       item.id === category
-                        ? "bg-brand text-white"
-                        : "bg-brand-mist text-brand-ink hover:bg-brand hover:text-white"
+                        ? "bg-brand-mist text-brand-ink"
+                        : "text-brand-ink hover:bg-brand-mist"
                     }`}
                   >
                     {item.label}
