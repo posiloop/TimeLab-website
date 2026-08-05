@@ -61,9 +61,22 @@ export default function Partnership() {
               >
                 <span
                   aria-hidden
-                  className="flex size-8 items-center justify-center rounded-full bg-brand text-white"
+                  className="flex size-8 shrink-0 items-center justify-center rounded-full bg-brand text-white"
                 >
-                  ›
+                  <svg
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    className="size-[18px]"
+                    aria-hidden
+                  >
+                    <path
+                      d="m9.5 5.5 7 6.5-7 6.5"
+                      stroke="currentColor"
+                      strokeWidth="2.5"
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                    />
+                  </svg>
                 </span>
                 更多
               </button>
