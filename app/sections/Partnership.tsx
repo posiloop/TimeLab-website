@@ -44,7 +44,9 @@ export default function Partnership() {
                       height={48}
                       className="h-[42px] w-auto object-contain max-md:h-8"
                     />
-                    <span className="whitespace-nowrap">{feature.label}</span>
+                    <span className="whitespace-nowrap max-md:whitespace-normal">
+                      {feature.label}
+                    </span>
                   </li>
                 ))}
               </ul>

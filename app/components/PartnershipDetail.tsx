@@ -106,7 +106,7 @@ export default function PartnershipDetail({ item }: { item: Partnership }) {
               <div aria-hidden className="absolute inset-0 bg-black/35" />
               <ul className="absolute inset-x-0 top-1/2 grid -translate-y-1/2 grid-cols-5 gap-x-5 gap-y-3 px-4 text-center text-h1 text-white [text-shadow:2px_2px_6px_rgba(0,0,0,0.9)] max-lg:text-xl max-md:grid-cols-3 max-md:text-sm">
                 {modal.eventTypes.map((type) => (
-                  <li key={type} className="whitespace-nowrap">
+                  <li key={type} className="whitespace-nowrap max-md:whitespace-normal">
                     ✓ {type}
                   </li>
                 ))}

@@ -15,7 +15,7 @@ export default function Cases() {
         ※ 因部分合作案件涉及保密協議，網站僅展示部分案例，更多合作經驗歡迎與我們聯繫。
       </p>
 
-      <ul className="flex w-full max-w-[1328px] justify-between gap-4 max-lg:flex-wrap max-lg:justify-center">
+      <ul className="flex w-full max-w-[1328px] flex-wrap justify-center gap-4 xl:justify-between">
         {CASE_CATEGORIES.map((item) => (
           <li key={item.id}>
             <Link
@@ -28,14 +28,14 @@ export default function Cases() {
         ))}
       </ul>
 
-      <ul className="flex w-full max-w-[1515px] justify-between gap-5 max-lg:flex-wrap max-lg:justify-center">
+      <ul className="flex w-full max-w-[1515px] flex-wrap justify-center gap-5 xl:justify-between">
         {CASE_CATEGORIES.map((item) => (
           <li key={item.id}>
             {/* hover 時照片淡出白色遮罩，浮現提示文字 */}
             <Link
               href={`/cases/${item.id}`}
               aria-label={`查看${item.label}案例`}
-              className="group relative block h-[580px] w-[287px] overflow-hidden rounded-[20px] bg-brand-mist max-lg:h-[400px] max-lg:w-[200px]"
+              className="group relative block h-[580px] w-[287px] overflow-hidden rounded-[20px] bg-brand-mist max-lg:h-[400px] max-lg:w-[200px] max-md:h-[360px] max-md:w-[260px]"
             >
               <Image
                 src={item.cover}
