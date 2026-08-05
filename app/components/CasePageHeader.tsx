@@ -31,8 +31,9 @@ export default function CasePageHeader() {
                   link.id === "instagram" ? "text-brand" : "bg-brand"
                 }`}
               >
+                {/* 線稿無底框，視覺重量低於實心色塊，放大並溢出容器以求平衡 */}
                 {link.id === "instagram" && (
-                  <InstagramIcon className="size-9 max-md:size-7" />
+                  <InstagramIcon className="size-[58px] shrink-0 max-md:size-[46px]" />
                 )}
                 {link.id === "line" && (
                   <LineIcon className="size-9 text-white max-md:size-7" />

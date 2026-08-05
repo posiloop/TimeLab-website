@@ -16,7 +16,7 @@ export default function Contact() {
         className="h-auto w-[650px] max-w-full object-contain"
       />
 
-      <ul className="flex items-center gap-8 max-md:gap-5">
+      <ul className="flex items-center gap-[76px] max-md:gap-[42px]">
         {SOCIAL_LINKS.map((link) => (
           <li key={link.id}>
             <a
@@ -29,14 +29,15 @@ export default function Contact() {
                 link.id === "instagram" ? "text-brand" : "bg-brand"
               }`}
             >
+              {/* 線稿無底框，視覺重量低於實心色塊，放大並溢出容器以求平衡 */}
               {link.id === "instagram" && (
-                <InstagramIcon className="size-[72px] max-md:size-12" />
+                <InstagramIcon className="size-[116px] shrink-0 max-md:size-[82px]" />
               )}
               {link.id === "line" && (
                 <LineIcon className="size-[72px] text-white max-md:size-12" />
               )}
               {link.id === "form" && (
-                <span className="text-center text-h1 leading-tight text-white max-md:text-base">
+                <span className="text-center text-[28px] leading-[36px] text-white max-md:text-base">
                   租借
                   <br />
                   表單

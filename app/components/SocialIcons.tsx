@@ -3,16 +3,16 @@ export function InstagramIcon({ className }: { className?: string }) {
   return (
     <svg viewBox="0 0 24 24" fill="none" aria-hidden className={className}>
       <rect
-        x="2.5"
-        y="2.5"
-        width="19"
-        height="19"
-        rx="5.5"
+        x="1.75"
+        y="1.75"
+        width="20.5"
+        height="20.5"
+        rx="6"
         stroke="currentColor"
-        strokeWidth="2"
+        strokeWidth="1.8"
       />
-      <circle cx="12" cy="12" r="4.5" stroke="currentColor" strokeWidth="2" />
-      <circle cx="17.5" cy="6.5" r="1.4" fill="currentColor" />
+      <circle cx="12" cy="12" r="5" stroke="currentColor" strokeWidth="1.8" />
+      <circle cx="17.6" cy="6.4" r="1.3" fill="currentColor" />
     </svg>
   );
 }
