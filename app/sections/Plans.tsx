@@ -15,19 +15,19 @@ export default function Plans() {
           {PLAN_ROWS.map((row) => (
             <div
               key={row.label}
-              className="flex items-start gap-8 max-md:flex-col max-md:items-center max-md:gap-3"
+              className="flex items-center gap-8 max-md:flex-col max-md:gap-3"
             >
               <span className="flex h-[50px] w-[200px] shrink-0 items-center justify-center rounded-full bg-brand-ink text-title text-white">
                 {row.label}
               </span>
               {row.ordered ? (
-                <ol className="flex flex-col gap-1 pt-3 text-title text-brand-ink max-md:pt-0 max-md:text-center">
+                <ol className="flex flex-col gap-1 text-title text-brand-ink max-md:text-center">
                   {row.items.map((item, i) => (
                     <li key={item}>{`${i + 1}. ${item}`}</li>
                   ))}
                 </ol>
               ) : (
-                <p className="pt-3 text-title text-brand-ink max-md:pt-0">
+                <p className="text-title text-brand-ink">
                   {row.items[0]}
                 </p>
               )}
@@ -45,6 +45,8 @@ export default function Plans() {
             aria-hidden
             className="relative w-10 self-stretch max-md:hidden"
           >
+            {/* 水平主幹：由膠囊連向垂直線 */}
+            <span className="absolute left-0 top-1/2 h-px w-1/2 bg-brand-ink" />
             <span className="absolute left-1/2 top-[12.5%] h-[75%] w-px bg-brand-ink" />
           </div>
           <ul className="flex flex-col gap-4">
