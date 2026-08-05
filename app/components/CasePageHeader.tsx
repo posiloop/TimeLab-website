@@ -6,7 +6,7 @@ import { InstagramIcon, LineIcon } from "./SocialIcons";
 /** 分頁專屬頁首：橫式 LOGO + 右側三個連結按鈕 */
 export default function CasePageHeader() {
   return (
-    <header className="fixed inset-x-0 top-0 z-50 h-[100px] bg-brand-mist shadow-[0_1px_2px_rgba(0,0,0,0.35)]">
+    <header className="fixed inset-x-0 top-0 z-50 h-(--header-h) bg-brand-mist shadow-[0_1px_2px_rgba(0,0,0,0.35)]">
       <div className="mx-auto flex h-full max-w-[1920px] items-center justify-between px-12 max-md:px-5">
         <Link href="/" aria-label="回到首頁">
           <Image

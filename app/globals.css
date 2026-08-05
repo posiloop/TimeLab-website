@@ -24,10 +24,20 @@
 }
 
 @layer base {
+  :root {
+    /* 固定頁首高度：main 的上內距、sticky 定位、錨點偏移皆引用此值 */
+    --header-h: 100px;
+  }
+
+  @media (width < 64rem) {
+    :root {
+      --header-h: 64px;
+    }
+  }
+
   html {
     scroll-behavior: smooth;
-    /* 固定頁首 100px，錨點捲動時預留空間 */
-    scroll-padding-top: 100px;
+    scroll-padding-top: var(--header-h);
   }
 
   body {

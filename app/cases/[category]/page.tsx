@@ -33,8 +33,8 @@ export default async function CaseCategoryPage(
     <>
       <CasePageHeader />
 
-      <main className="bg-white pt-[100px]">
-        <div className="sticky top-[100px] z-40 flex flex-col items-center gap-[30px] bg-white pt-[42px] pb-10">
+      <main className="bg-white pt-(--header-h)">
+        <div className="sticky top-(--header-h) z-40 flex flex-col items-center gap-[30px] bg-white pt-[42px] pb-10">
           <nav aria-label="案例分類" className="px-4">
             <ul className="flex flex-wrap justify-center gap-[25px] max-md:gap-2">
               <li>

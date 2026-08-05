@@ -21,7 +21,7 @@ export default function Home() {
     <>
       <SiteHeader />
 
-      <main className="bg-timeline pt-[100px]">
+      <main className="bg-timeline pt-(--header-h)">
         <About />
         <Stores />
 
