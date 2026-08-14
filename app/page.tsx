@@ -25,7 +25,7 @@ export default function Home() {
         <About />
         <Stores />
 
-        <Marquee items={FRAME_WORKS} height={358} duration={70} />
+        <Marquee items={FRAME_WORKS} height={358} duration={70} rounded={false} />
 
         <Machines />
 
@@ -36,14 +36,25 @@ export default function Home() {
         <Partnership />
 
         <div className="flex flex-col gap-5 pt-[150px] max-md:pt-20">
-          <Marquee items={EVENT_TRACK_1} height={380} duration={80} />
+          <Marquee
+            items={EVENT_TRACK_1}
+            height={380}
+            duration={80}
+            rounded={false}
+          />
           <Marquee
             items={EVENT_TRACK_3}
             height={380}
             duration={80}
             direction="right"
+            rounded={false}
           />
-          <Marquee items={EVENT_TRACK_2} height={380} duration={80} />
+          <Marquee
+            items={EVENT_TRACK_2}
+            height={380}
+            duration={80}
+            rounded={false}
+          />
         </div>
 
         <Contact />

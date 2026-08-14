@@ -14,6 +14,8 @@ type MarqueeProps = {
   duration?: number;
   /** 圖片顯示高度（px） */
   height: number;
+  /** 圖片是否保留圓角，預設保留 */
+  rounded?: boolean;
   className?: string;
 };
 
@@ -22,6 +24,7 @@ export default function Marquee({
   direction = "left",
   duration = 60,
   height,
+  rounded = true,
   className = "",
 }: MarqueeProps) {
   // 重複兩份才能無縫銜接：位移 -50% 時第二份剛好接上第一份的起點
@@ -44,7 +47,7 @@ export default function Marquee({
               height={item.height}
               // 第二份為視覺重複，對輔助技術隱藏
               aria-hidden={index >= items.length}
-              className="rounded-[10px] object-cover"
+              className={`${rounded ? "rounded-[10px] " : ""}object-cover`}
               style={{ height, width: "auto" }}
             />
           </li>

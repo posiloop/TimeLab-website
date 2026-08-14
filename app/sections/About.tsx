@@ -43,7 +43,7 @@ export default function About() {
               unoptimized
               // 首屏 GIF，避免延遲載入拖累 LCP
               priority
-              className="h-auto rounded-[10px] object-contain max-lg:w-[200px] max-md:w-[140px]"
+              className="h-auto object-contain max-lg:w-[200px] max-md:w-[140px]"
               style={{ width: gif.width }}
             />
           </li>
