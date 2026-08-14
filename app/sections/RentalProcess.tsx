@@ -12,8 +12,9 @@ export default function RentalProcess() {
       <ol className="w-full max-w-[1199px]">
         {RENTAL_STEPS.map((step, index) => (
           <li key={step.no}>
-            <div className="flex items-stretch rounded-full border border-brand bg-brand-mist max-md:flex-col max-md:rounded-[20px]">
-              <div className="flex w-[400px] shrink-0 items-center justify-center gap-3 whitespace-nowrap rounded-full bg-brand px-6 py-4 text-h1 text-white max-lg:w-[320px] max-lg:text-2xl max-md:w-full max-md:rounded-[20px] max-md:text-xl">
+            <div className="flex items-stretch rounded-full border-[3px] border-brand bg-brand-mist max-md:flex-col max-md:rounded-[20px]">
+              {/* 靠左對齊，讓各步驟的編號與標題起始位置上下對齊 */}
+              <div className="flex w-[400px] shrink-0 items-center justify-start gap-3 whitespace-nowrap rounded-full bg-brand py-4 pl-10 pr-6 text-h1 text-white max-lg:w-[320px] max-lg:pl-8 max-lg:text-2xl max-md:w-full max-md:justify-center max-md:rounded-[20px] max-md:px-6 max-md:text-xl">
                 <span>{step.no}</span>
                 <span aria-hidden>｜</span>
                 <span>{step.title}</span>

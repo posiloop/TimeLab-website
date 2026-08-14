@@ -35,7 +35,7 @@ export default function Partnership() {
                 {item.features.map((feature) => (
                   <li
                     key={feature.label}
-                    className="flex h-[100px] min-w-0 flex-1 flex-col items-center justify-center gap-1 rounded-[10px] bg-white/70 px-2 pb-2 pt-3 text-title text-brand-ink max-md:h-[86px] max-md:flex-none max-md:basis-[130px] max-md:text-sm"
+                    className="flex h-[100px] min-w-0 flex-1 flex-col items-center justify-center gap-1 rounded-[10px] bg-white/70 px-2 pb-2 pt-3 text-title text-brand max-md:h-[86px] max-md:flex-none max-md:basis-[130px] max-md:text-sm"
                   >
                     <Image
                       src={feature.icon}

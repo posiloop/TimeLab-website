@@ -78,7 +78,7 @@ export default function Machines() {
               })}
             </ul>
 
-            <h3 className="text-[48px] leading-tight text-brand-ink max-lg:text-[36px] max-md:text-[28px]">
+            <h3 className="text-[48px] leading-tight text-black max-lg:text-[36px] max-md:text-[28px]">
               {machine.name}
             </h3>
 
@@ -86,14 +86,14 @@ export default function Machines() {
               {machine.specs.map((spec) => (
                 <p
                   key={spec}
-                  className="text-[28px] leading-snug text-brand-ink max-lg:text-xl max-md:text-base"
+                  className="text-[28px] leading-snug text-black max-lg:text-xl max-md:text-base"
                 >
                   {spec}
                 </p>
               ))}
             </div>
 
-            <p className="text-title text-brand-ink">{machine.note}</p>
+            <p className="text-title text-black">{machine.note}</p>
 
             <dl className="flex flex-col gap-3 text-brand-ink">
               {[

@@ -36,9 +36,9 @@ export default function SiteHeader() {
     <header className="fixed inset-x-0 top-0 z-50 h-(--header-h) bg-brand-mist shadow-[0_1px_2px_rgba(0,0,0,0.35)]">
       <nav
         aria-label="主選單"
-        className="flex h-full items-end justify-center px-4 pb-[10px] max-lg:items-center max-lg:justify-end max-lg:pb-0"
+        className="flex h-full items-center justify-center px-4 max-lg:justify-end"
       >
-        <ul className="flex items-end gap-[25px] max-xl:gap-2 max-lg:hidden">
+        <ul className="flex items-center gap-[25px] max-xl:gap-2 max-lg:hidden">
           {NAV_ITEMS.map((item) => (
             <li key={item.href}>
               <a

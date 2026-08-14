@@ -42,7 +42,40 @@ export default function Cases() {
                 alt=""
                 width={287}
                 height={580}
-                className="h-full w-full object-cover transition-opacity duration-300 group-hover:opacity-15"
+                className="h-full w-full object-cover"
+              />
+              {/* hover 時疊上同一張圖的模糊版，用漸層遮罩讓上半保持清晰、下半霧化。
+                  遮罩寫成 inline style，避免任意值在 Tailwind 產生無效的 CSS */}
+              <span
+                aria-hidden
+                className="pointer-events-none absolute inset-0 opacity-0 transition-opacity duration-300 group-hover:opacity-100"
+                style={{
+                  // 上半部完全不套用，霧化從中線之後才開始長出來
+                  WebkitMaskImage:
+                    "linear-gradient(to bottom, transparent 50%, black 88%)",
+                  maskImage:
+                    "linear-gradient(to bottom, transparent 50%, black 88%)",
+                }}
+              >
+                <Image
+                  src={item.cover}
+                  alt=""
+                  width={287}
+                  height={580}
+                  className="h-full w-full scale-110 object-cover blur-[6px]"
+                />
+              </span>
+              {/* 參考圖的漸層：左上近白，往右下暈開成品牌淡紫，文字才浮得出來 */}
+              <span
+                className="pointer-events-none absolute inset-0 opacity-0 transition-opacity duration-300 group-hover:opacity-100"
+                style={{
+                  // 三層疊加，全部壓在下半部：右下品牌紫、左下暖棕，再鋪一層白霧
+                  backgroundImage: [
+                    "radial-gradient(120% 52% at 100% 100%, rgba(140,140,180,0.95) 0%, rgba(140,140,180,0.5) 45%, rgba(140,140,180,0) 100%)",
+                    "radial-gradient(110% 48% at 0% 100%, rgba(190,163,126,0.9) 0%, rgba(190,163,126,0.42) 45%, rgba(190,163,126,0) 100%)",
+                    "linear-gradient(to bottom, rgba(255,255,255,0) 50%, rgba(255,255,255,0.62) 74%, rgba(255,255,255,0.86) 100%)",
+                  ].join(", "),
+                }}
               />
               {/* 設計稿定位在卡片高度 79% 處，非垂直置中 */}
               <span className="pointer-events-none absolute inset-x-0 top-[79.5%] -translate-y-1/2 text-center text-h2 text-brand-ink opacity-0 [text-shadow:0_0_10px_white] transition-opacity duration-300 group-hover:opacity-100 max-md:text-base">

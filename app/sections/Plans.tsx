@@ -17,17 +17,17 @@ export default function Plans() {
               key={row.label}
               className="flex items-center gap-8 max-md:flex-col max-md:gap-3"
             >
-              <span className="flex h-[50px] w-[200px] shrink-0 items-center justify-center rounded-full bg-brand-ink text-title text-white">
+              <span className="flex h-[50px] w-[200px] shrink-0 items-center justify-center rounded-full bg-brand-ink text-lg text-white">
                 {row.label}
               </span>
               {row.ordered ? (
-                <ol className="flex flex-col gap-1 text-title text-brand-ink max-md:text-center">
+                <ol className="flex flex-col gap-1 text-[22px] leading-snug text-brand max-lg:text-xl max-md:text-center max-md:text-lg">
                   {row.items.map((item, i) => (
                     <li key={item}>{`${i + 1}. ${item}`}</li>
                   ))}
                 </ol>
               ) : (
-                <p className="text-title text-brand-ink">
+                <p className="text-[22px] leading-snug text-brand max-lg:text-xl max-md:text-lg">
                   {row.items[0]}
                 </p>
               )}
@@ -59,7 +59,7 @@ export default function Plans() {
                   aria-hidden
                   className="relative h-px w-8 bg-brand-ink max-md:hidden after:absolute after:right-0 after:top-1/2 after:-translate-y-1/2 after:border-y-[5px] after:border-l-[8px] after:border-y-transparent after:border-l-brand-ink after:content-['']"
                 />
-                <span className="flex h-full items-center rounded-[10px] bg-brand-mist px-6 text-title text-brand-ink max-md:py-3 max-md:text-center">
+                <span className="flex h-full items-center rounded-[10px] bg-brand-mist px-6 text-[22px] text-brand max-lg:text-xl max-md:py-3 max-md:text-center max-md:text-lg">
                   {addon}
                 </span>
               </li>
