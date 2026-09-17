@@ -1,54 +1,41 @@
 import Image from "next/image";
 import Link from "next/link";
-import { SOCIAL_LINKS } from "../data/links";
-import { InstagramIcon, LineIcon } from "./SocialIcons";
+import { CASE_CATEGORIES } from "../data/cases";
 
-/** 分頁專屬頁首：橫式 LOGO + 右側三個連結按鈕 */
-export default function CasePageHeader() {
+/** 案例分頁的頁首：LOGO + 五個分類連結（設計稿 Header 1 / 1:5851） */
+export default function CasePageHeader({ current }: { current: string }) {
   return (
-    <header className="fixed inset-x-0 top-0 z-50 h-(--header-h) bg-brand-mist shadow-[0_1px_2px_rgba(0,0,0,0.35)]">
-      <div className="mx-auto flex h-full max-w-[1920px] items-center justify-between px-12 max-md:px-5">
+    <header className="fixed inset-x-0 top-0 z-50 h-(--header-h) bg-brand-mist">
+      <div className="flex h-full items-center justify-between px-16 max-xl:px-8 max-md:flex-col max-md:justify-center max-md:gap-4 max-md:px-4">
         <Link href="/" aria-label="回到首頁">
           <Image
             src="/images/brand/logo-wide.png"
             alt="時光研究室 TiMELAB"
-            width={244}
-            height={44}
+            width={128}
+            height={25}
             priority
-            className="h-11 w-auto object-contain max-md:h-8"
+            className="h-[25px] w-[128px] object-contain"
           />
         </Link>
 
-        <ul className="flex items-center gap-[15px]">
-          {SOCIAL_LINKS.map((link) => (
-            <li key={link.id}>
-              <a
-                href={link.href}
-                target="_blank"
-                rel="noreferrer"
-                aria-label={link.label}
-                className={`flex size-[50px] items-center justify-center rounded-[10px] transition-opacity hover:opacity-80 max-md:size-10 ${
-                  link.id === "instagram" ? "text-brand" : "bg-brand"
-                }`}
-              >
-                {/* 線稿無底框，視覺重量低於實心色塊，放大並溢出容器以求平衡 */}
-                {link.id === "instagram" && (
-                  <InstagramIcon className="size-[58px] shrink-0 max-md:size-[46px]" />
-                )}
-                {link.id === "line" && (
-                  <LineIcon className="size-9 text-white max-md:size-7" />
-                )}
-                {link.id === "form" && (
-                  <span className="text-center text-xs leading-tight text-white">
-                    租借
-                    <br />
-                    表單
+        <nav aria-label="案例分類">
+          <ul className="flex items-center gap-6 max-md:gap-4">
+            {CASE_CATEGORIES.map((item) => (
+              <li key={item.id}>
+                {/* 設計稿五個分類皆為 Default 狀態，僅 hover 時加底線並提高不透明度 */}
+                <Link
+                  href={`/cases/${item.id}`}
+                  aria-current={item.id === current ? "page" : undefined}
+                  className="group/nav block border-b-2 border-transparent text-body text-brand-ink transition-colors hover:border-brand-ink"
+                >
+                  <span className="opacity-70 transition-opacity group-hover/nav:opacity-100">
+                    {item.label}
                   </span>
-                )}
-              </a>
-            </li>
-          ))}
-        </ul>
+                </Link>
+              </li>
+            ))}
+          </ul>
+        </nav>
       </div>
     </header>
   );

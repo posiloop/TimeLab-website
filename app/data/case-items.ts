@@ -40,7 +40,7 @@ export const CASE_ITEMS: Record<string, CaseItem[]> = {
     { nodeId: "390:121", file: "wedding-06", name: "互動 - 卡果牧場" },
     { nodeId: "390:135", file: "wedding-07", name: "標準 - 台北彭園婚宴館" },
     { nodeId: "390:126", file: "wedding-08", name: "互動 - 桃園流水席" },
-    { nodeId: "390:132", file: "wedding-09", name: "標準 - 雅園新潮婚宴會館" },
+    { nodeId: "390:132", file: "wedding-09", name: "標準 - 台中雅園新潮婚宴會館" },
     { nodeId: "390:127", file: "wedding-10", name: "互動 - 無意製所" },
     { nodeId: "390:130", file: "wedding-11", name: "標準 - 大直典華" },
     { nodeId: "390:136", file: "wedding-12", name: "標準 - 台北園外園" },
