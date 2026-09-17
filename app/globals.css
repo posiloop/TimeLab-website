@@ -6,32 +6,42 @@
   --color-brand-ink: #64646e; /* 標準色02 */
   --color-brand-mist: #ebf0fa; /* 輔助色02 */
 
-  --font-serif-tc: var(--font-noto-serif-tc), "Source Han Serif TC", serif;
+  --font-sans: var(--font-inter), var(--font-noto-sans-tc), sans-serif;
 
-  /* 設計稿字級 */
-  --text-hero: 100px;
-  --text-hero--line-height: 1.1;
-  --text-lead: 48px;
-  --text-lead--line-height: 1.15;
-  --text-section: 40px;
-  --text-section--line-height: 40px;
+  /* 設計稿字級 —— 對應 Figma text styles */
   --text-h1: 32px;
   --text-h1--line-height: 40px;
+  --text-h1--font-weight: 900;
   --text-h2: 20px;
   --text-h2--line-height: 28px;
+  --text-h2--font-weight: 900;
   --text-title: 16px;
   --text-title--line-height: 24px;
+  --text-title--font-weight: 700;
+  --text-body: 16px;
+  --text-body--line-height: 24px;
+  --text-body--font-weight: 500;
+  --text-caption: 14px;
+  --text-caption--line-height: 22px;
+  --text-caption--font-weight: 500;
 }
 
 @layer base {
   :root {
     /* 固定頁首高度：main 的上內距、sticky 定位、錨點偏移皆引用此值 */
-    --header-h: 100px;
+    --header-h: 73px;
   }
 
+  /* 設計稿各尺寸的頁首高度：Desktop/Laptop 73、Tablet 106、Mobile 73 */
   @media (width < 64rem) {
     :root {
-      --header-h: 64px;
+      --header-h: 106px;
+    }
+  }
+
+  @media (width < 48rem) {
+    :root {
+      --header-h: 73px;
     }
   }
 
@@ -43,29 +53,14 @@
   body {
     background: #ffffff;
     color: var(--color-brand-ink);
-    font-family: var(--font-serif-tc);
-    font-weight: 900;
+    font-family: var(--font-sans);
   }
 }
 
-@utility glow {
-  text-shadow: 0 0 13.2px rgb(140 140 180);
-}
-
-/* 主視覺背景漸層 —— 取自設計稿「底色背景」8640px 漸層的色停比例 */
-@utility bg-timeline {
-  background-image: linear-gradient(
-    180deg,
-    #ffffff 0%,
-    #adadca 14%,
-    #8c8cb4 19%,
-    #d8daed 25%,
-    #ebf0fa 61%,
-    #d4d7e9 77%,
-    #8c8cb4 88%,
-    #ebf0fa 94%,
-    #ffffff 100%
-  );
+/* 卡片通用外觀 —— 設計稿白底 + 淡黑框線 */
+@utility card-surface {
+  background: #ffffff;
+  border: 1px solid rgb(0 0 0 / 0.1);
 }
 
 /* 無縫橫向捲動：內容重複兩份，位移 -50% 即完成一輪 */

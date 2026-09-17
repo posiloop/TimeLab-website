@@ -1,12 +1,19 @@
 import type { Metadata } from "next";
-import { Noto_Serif_TC } from "next/font/google";
+import { Inter, Noto_Sans_TC } from "next/font/google";
+import ScrollToTop from "./components/ScrollToTop";
 import "./globals.css";
 
-// 設計稿使用 Source Han Serif TC，其 Google Fonts 對應版本為 Noto Serif TC
-const notoSerifTC = Noto_Serif_TC({
-  variable: "--font-noto-serif-tc",
+// 設計稿的文字樣式指定 Inter；中文字元不在其字集內，交由 Noto Sans TC 承接
+const inter = Inter({
+  variable: "--font-inter",
   subsets: ["latin"],
-  weight: ["400", "600", "700", "900"],
+  weight: ["500", "700", "900"],
+});
+
+const notoSansTC = Noto_Sans_TC({
+  variable: "--font-noto-sans-tc",
+  subsets: ["latin"],
+  weight: ["500", "700", "900"],
 });
 
 export const metadata: Metadata = {
@@ -19,9 +26,12 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
   return (
     <html
       lang="zh-Hant-TW"
-      className={`${notoSerifTC.variable} h-full antialiased`}
+      className={`${inter.variable} ${notoSansTC.variable} h-full antialiased`}
     >
-      <body className="min-h-full flex flex-col">{children}</body>
+      <body className="flex min-h-full flex-col">
+        <ScrollToTop />
+        {children}
+      </body>
     </html>
   );
 }
