@@ -1,11 +1,10 @@
 export default function SectionTitle({ children }: { children: string }) {
   return (
-    <h2 className="flex flex-col items-center gap-[5px]">
-      {/* 字距 0.5em 會在尾字右側撐出空白，補上等量左內距讓文字視覺置中 */}
-      <span className="pl-[0.5em] text-center text-section tracking-[0.5em] text-brand max-md:text-[28px]">
+    // 設計稿為 py-24 的獨立區塊，字距 6px；尾字右側的空白以等量左內距補回
+    <h2 className="flex items-center justify-center py-6">
+      <span className="pl-[6px] text-center text-h2 font-bold tracking-[6px] text-brand-ink">
         {children}
       </span>
-      <span className="h-[3px] w-[220px] bg-brand max-md:w-[160px]" />
     </h2>
   );
 }

@@ -1,17 +1,8 @@
 "use client";
 
 import { useEffect, useState } from "react";
-
-const NAV_ITEMS = [
-  { label: "關於我們", href: "#about" },
-  { label: "門市資訊", href: "#stores" },
-  { label: "機台介紹", href: "#machines" },
-  { label: "活動案例", href: "#cases" },
-  { label: "租借流程", href: "#process" },
-  { label: "方案內容", href: "#plans" },
-  { label: "互惠合作", href: "#partnership" },
-  { label: "聯絡我們", href: "#contact" },
-];
+import Image from "next/image";
+import { NAV_ITEMS } from "../data/nav";
 
 export default function SiteHeader() {
   const [open, setOpen] = useState(false);
@@ -33,19 +24,32 @@ export default function SiteHeader() {
   }, [open]);
 
   return (
-    <header className="fixed inset-x-0 top-0 z-50 h-(--header-h) bg-brand-mist shadow-[0_1px_2px_rgba(0,0,0,0.35)]">
+    <header className="fixed inset-x-0 top-0 z-50 h-(--header-h) bg-brand-mist">
       <nav
         aria-label="主選單"
-        className="flex h-full items-center justify-center px-4 max-lg:justify-end"
+        className="flex h-full items-center justify-between px-16 max-xl:px-8 max-lg:px-4"
       >
-        <ul className="flex items-center gap-[25px] max-xl:gap-2 max-lg:hidden">
+        <a href="#top" aria-label="時光研究室 TiMELAB">
+          <Image
+            src="/images/brand/logo-wide.png"
+            alt="時光研究室 TiMELAB"
+            width={128}
+            height={25}
+            priority
+            className="h-[25px] w-[128px] object-contain"
+          />
+        </a>
+
+        <ul className="flex items-center gap-6 max-xl:gap-4 max-lg:grid max-lg:grid-cols-4 max-lg:gap-x-6 max-lg:gap-y-[10px] max-md:hidden">
           {NAV_ITEMS.map((item) => (
             <li key={item.href}>
               <a
                 href={item.href}
-                className="flex h-10 w-[120px] shrink-0 items-center justify-center rounded-full text-h2 text-brand-ink transition-colors hover:bg-brand hover:text-brand-mist max-xl:h-9 max-xl:w-auto max-xl:px-4 max-xl:text-base"
+                className="group/nav border-b-2 border-transparent text-body text-brand-ink transition-colors hover:border-brand-ink"
               >
-                {item.label}
+                <span className="opacity-70 transition-opacity group-hover/nav:opacity-100">
+                  {item.label}
+                </span>
               </a>
             </li>
           ))}
@@ -57,7 +61,7 @@ export default function SiteHeader() {
           aria-expanded={open}
           aria-controls="mobile-menu"
           aria-label={open ? "關閉選單" : "開啟選單"}
-          className="hidden size-11 items-center justify-center rounded-[10px] text-brand-ink transition-colors hover:bg-brand/10 max-lg:flex"
+          className="hidden size-11 items-center justify-center rounded-[10px] text-brand-ink transition-colors hover:bg-brand/10 max-md:flex"
         >
           <svg viewBox="0 0 24 24" fill="none" aria-hidden className="size-7">
             {open ? (
@@ -83,7 +87,7 @@ export default function SiteHeader() {
       {open && (
         <div
           id="mobile-menu"
-          className="fixed inset-x-0 top-(--header-h) bottom-0 hidden overflow-y-auto bg-brand-mist max-lg:block"
+          className="fixed inset-x-0 bottom-0 top-(--header-h) hidden overflow-y-auto bg-brand-mist max-md:block"
         >
           <ul className="flex flex-col px-6 py-4">
             {NAV_ITEMS.map((item) => (
