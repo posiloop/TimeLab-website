@@ -33,8 +33,9 @@ export default function Modal({ open, onClose, title, children }: ModalProps) {
         if (event.target === dialogRef.current) onClose();
       }}
       aria-labelledby="modal-title"
-      className="m-auto w-[1514px] max-w-[calc(100vw-2rem)] rounded-[20px] bg-white p-0 backdrop:bg-black/50"
+      className="m-auto w-[1200px] max-w-[calc(100vw-2rem)] rounded-[20px] bg-white p-0 backdrop:bg-black/50"
     >
+      {open && (
       <div className="flex max-h-[90vh] flex-col">
         <h2
           id="modal-title"
@@ -49,12 +50,13 @@ export default function Modal({ open, onClose, title, children }: ModalProps) {
           <button
             type="button"
             onClick={onClose}
-            className="h-10 w-[120px] rounded-full bg-brand-mist text-h2 tracking-[0.3em] text-brand-ink transition-colors hover:bg-brand hover:text-white"
+            className="h-10 w-[120px] rounded-[20px] bg-brand-mist text-title tracking-[6px] text-brand-ink transition-colors hover:bg-brand hover:text-white"
           >
             關閉
           </button>
         </div>
       </div>
+      )}
     </dialog>
   );
 }
