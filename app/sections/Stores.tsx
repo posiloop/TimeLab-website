@@ -4,7 +4,7 @@ import { STORES } from "../data/stores";
 
 export default function Stores() {
   return (
-    <section id="stores" className="px-16 max-lg:px-8 max-md:px-4">
+    <section id="stores" className="px-16 max-lg:px-8 max-md:px-5">
       <SectionTitle>門市資訊</SectionTitle>
 
       <ul className="flex justify-center gap-8 pb-6 max-md:flex-col max-md:items-center">
@@ -26,13 +26,13 @@ export default function Stores() {
                   className="object-cover"
                 />
               </div>
-              <div className="flex flex-col gap-2 p-6 max-md:w-1/2 max-md:justify-center max-md:p-4">
+              <div className="flex flex-col gap-2 p-6 max-md:w-1/2 max-md:justify-center">
                 <h3 className="text-h2 text-brand">{store.name}</h3>
                 <div className="text-title text-black/55">
                   <p>{store.hours}</p>
                   <p>{store.address}</p>
                 </div>
-                <p className="text-title text-black/55 opacity-60">查看地圖</p>
+                <p className="text-title text-black/55 underline opacity-60">查看地圖</p>
               </div>
             </a>
           </li>

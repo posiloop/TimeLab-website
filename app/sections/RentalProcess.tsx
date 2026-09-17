@@ -14,7 +14,8 @@ export default function RentalProcess() {
           >
             <div className="flex w-full flex-col items-start justify-center p-6">
               <div className="flex w-full items-center max-lg:flex-col max-lg:items-start max-lg:gap-0">
-                <p className="w-[320px] shrink-0 text-h1 text-brand max-lg:w-[260px] max-lg:text-2xl max-md:w-auto">
+                {/* Mobile 設計稿的標題仍是 H1，僅 Tablet 縮到 24px */}
+                <p className="w-[320px] shrink-0 text-h1 text-brand max-lg:w-[260px] max-lg:text-2xl max-md:w-auto max-md:text-h1">
                   {step.no}.{step.title}
                 </p>
                 <p className="text-title text-brand-ink">{step.desc}</p>

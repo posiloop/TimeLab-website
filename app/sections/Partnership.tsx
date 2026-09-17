@@ -21,12 +21,13 @@ export default function Partnership() {
             key={item.id}
             className="flex w-[700px] max-w-full flex-col items-center justify-center transition-transform duration-[400ms] ease-[cubic-bezier(0.22,1,0.36,1)] hover:scale-[0.96]"
           >
-            <h3 className="flex h-20 w-full items-center justify-center rounded-t-[20px] bg-brand p-[10px] text-h1 text-brand-mist [text-shadow:0_4px_4px_rgba(0,0,0,0.25)] max-md:h-auto max-md:py-4 max-md:text-2xl">
+            <h3 className="flex h-20 w-full items-center justify-center rounded-t-[20px] bg-brand p-[10px] text-h1 text-brand-mist [text-shadow:0_4px_4px_rgba(0,0,0,0.25)] max-md:h-auto max-md:py-4">
               {item.title}
             </h3>
 
             <div className="flex w-full flex-col items-center justify-center gap-2 rounded-b-[20px] border-x-2 border-b-2 border-brand bg-white p-5">
-              <p className="w-full text-center text-h2 text-brand-ink max-md:text-base">
+              {/* 設計稿把標語斷成兩行，中間不加標點 */}
+              <p className="w-full whitespace-pre-line text-center text-h2 text-brand-ink">
                 {item.tagline}
               </p>
 

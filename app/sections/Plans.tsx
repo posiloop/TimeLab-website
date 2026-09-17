@@ -20,11 +20,18 @@ export default function Plans() {
                 }`}
               >
                 <div className="flex w-[180px] shrink-0 items-center justify-center rounded-[30px] p-[10px] max-md:w-auto max-md:justify-start">
-                  <p className="whitespace-pre-line text-center text-h2 text-brand-ink">
-                    {row.label}
+                  {/* 桌機的窄欄位靠 label 內的換行字元斷行；Mobile 設計稿是單行，
+                      拆成兩段行內元素，換行字元便不會留下多餘空白 */}
+                  <p className="text-center text-h2 text-brand-ink">
+                    {row.label.split("\n").map((line) => (
+                      <span key={line} className="block max-md:inline">
+                        {line}
+                      </span>
+                    ))}
                   </p>
                 </div>
-                <div className="text-title text-brand">
+                {/* Mobile 標題與說明上下排列，補上標題框的水平內距才會切齊左緣 */}
+                <div className="text-title text-brand max-md:px-[10px]">
                   {row.ordered ? (
                     row.items.map((item, i) => (
                       <p key={item}>{`${i + 1}. ${item}`}</p>
@@ -46,7 +53,7 @@ export default function Plans() {
               {PLAN_ADDONS.map((addon) => (
                 <li
                   key={addon}
-                  className="flex h-10 w-[350px] max-w-full items-center justify-center rounded-[20px] bg-brand-mist p-[10px] text-center text-title text-brand-ink max-md:h-auto max-md:py-2"
+                  className="flex h-10 w-[350px] max-w-full items-center justify-center rounded-[20px] bg-brand-mist p-[10px] text-center text-title text-brand-ink max-md:h-auto max-md:w-[300px] max-md:py-2 max-md:text-caption"
                 >
                   {addon}
                 </li>

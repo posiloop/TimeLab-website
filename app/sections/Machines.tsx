@@ -44,7 +44,7 @@ export default function Machines() {
 
           <div className="flex h-[480px] min-w-0 flex-col gap-5 pr-[50px] pt-[50px] max-lg:h-auto max-lg:w-full max-lg:px-6 max-lg:pr-6 max-lg:pt-0">
             <div className="flex w-[402px] max-w-full flex-col gap-4">
-              <h3 className="text-h1 text-black max-md:text-2xl">
+              <h3 className="text-h1 text-black">
                 {machine.name}
               </h3>
 
@@ -57,27 +57,30 @@ export default function Machines() {
                 <p className="text-caption">{machine.note}</p>
               </div>
 
-              <div className="flex flex-wrap items-center gap-[10px]">
+              {/* 設計稿在 Mobile 把標題移到標籤上方，標籤列以 justify-between 均分不換行 */}
+              <div className="flex items-center gap-[10px] max-md:flex-col max-md:items-stretch max-md:gap-0">
                 {/* 設計稿的框寬 60px 但文字不換行，允許自然超出 */}
                 <span className="flex h-[30px] w-[60px] shrink-0 items-center justify-center whitespace-nowrap rounded-full text-title text-brand">
                   推薦場合
                 </span>
-                {/* 設計稿五個場合皆列出；適用者實心、不適用者為外框 */}
-                {MACHINE_TAGS.map((tag) => {
-                  const active = machine.tags.includes(tag);
-                  return (
-                    <span
-                      key={tag}
-                      className={`flex h-[25px] w-[50px] items-center justify-center rounded-full text-title ${
-                        active
-                          ? "bg-brand text-white"
-                          : "border border-brand bg-white text-brand"
-                      }`}
-                    >
-                      {tag}
-                    </span>
-                  );
-                })}
+                <div className="flex items-center gap-[10px] max-md:justify-between max-md:gap-0">
+                  {/* 設計稿五個場合皆列出；適用者實心、不適用者為外框 */}
+                  {MACHINE_TAGS.map((tag) => {
+                    const active = machine.tags.includes(tag);
+                    return (
+                      <span
+                        key={tag}
+                        className={`flex h-[25px] w-[50px] shrink-0 items-center justify-center rounded-full text-title ${
+                          active
+                            ? "bg-brand text-white"
+                            : "border border-brand bg-white text-brand"
+                        }`}
+                      >
+                        {tag}
+                      </span>
+                    );
+                  })}
+                </div>
               </div>
             </div>
 

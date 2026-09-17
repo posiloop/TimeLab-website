@@ -67,7 +67,8 @@ export default async function CaseCategoryPage(
           ))}
         </ul>
 
-        <p className="py-6 text-center text-h1 text-brand max-md:text-2xl">
+        {/* 與首頁同一句標語，Mobile 用 H2 才不會折行 */}
+        <p className="py-6 text-center text-h1 text-brand max-md:text-h2">
           “讓每一次快門，都留下燦爛瞬間。”
         </p>
       </main>

@@ -71,7 +71,7 @@ export const PARTNERSHIPS: Partnership[] = [
   {
     id: "venue",
     title: "場域活化×收益合作",
-    tagline: "讓每一坪空間，多一個賺錢的理由",
+    tagline: "讓每一坪空間\n多一個賺錢的理由",
     features: [
       { label: "導入零成本", icon: "/images/features/zero-cost.png" },
       { label: "共享營收", icon: "/images/features/revenue-share.png" },
@@ -118,7 +118,7 @@ export const PARTNERSHIPS: Partnership[] = [
   {
     id: "brand",
     title: "品牌活動×互動曝光",
-    tagline: "讓每一次拍照，都成為活動曝光的延伸",
+    tagline: "讓每一次拍照\n都成為活動曝光的延伸",
     features: [
       { label: "客製化相框", icon: "/images/features/custom-frame.png" },
       { label: "品牌視覺整合", icon: "/images/features/brand-visual.png" },

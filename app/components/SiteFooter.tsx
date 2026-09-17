@@ -69,7 +69,8 @@ export default function SiteFooter() {
           </div>
         </div>
 
-        <div className="flex gap-10 max-md:flex-wrap">
+        {/* 設計稿的 Mobile 三欄撐滿整寬（node 1:4670 justify-between） */}
+        <div className="flex gap-10 max-md:w-full max-md:justify-between max-md:gap-0">
           {FOOTER_COLUMNS.map((column) => (
             <nav key={column.header} className="flex flex-col gap-2">
               <p className="pb-4 text-title text-brand-ink">{column.header}</p>

@@ -40,7 +40,8 @@ export default function Contact() {
           ))}
         </ul>
 
-        <p className="pt-12 text-center text-h1 text-brand max-md:pt-8 max-md:text-2xl">
+        {/* Mobile 設計稿是 H2 單行（node 1:4629），縮到 24px 會折行 */}
+        <p className="pt-12 text-center text-h1 text-brand max-md:pt-8 max-md:text-h2">
           “讓每一次快門，都留下燦爛瞬間。”
         </p>
       </div>
