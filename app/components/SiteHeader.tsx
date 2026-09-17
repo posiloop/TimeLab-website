@@ -24,10 +24,10 @@ export default function SiteHeader() {
   }, [open]);
 
   return (
-    <header className="fixed inset-x-0 top-0 z-50 h-(--header-h) bg-brand-mist">
+    <header className="fixed inset-x-0 top-0 z-50 bg-brand-mist">
       <nav
         aria-label="主選單"
-        className="flex h-full items-center justify-between px-16 max-xl:px-8 max-lg:px-4"
+        className="flex h-(--header-h) items-center justify-between px-16 max-xl:px-8 max-lg:px-4 max-md:px-16"
       >
         <a href="#top" aria-label="時光研究室 TiMELAB">
           <Image
@@ -55,47 +55,46 @@ export default function SiteHeader() {
           ))}
         </ul>
 
+        {/* 漢堡／關閉鈕 —— 設計稿 30×30，橫槓左右內縮 6px、高 2px */}
         <button
           type="button"
           onClick={() => setOpen((value) => !value)}
           aria-expanded={open}
           aria-controls="mobile-menu"
           aria-label={open ? "關閉選單" : "開啟選單"}
-          className="hidden size-11 items-center justify-center rounded-[10px] text-brand-ink transition-colors hover:bg-brand/10 max-md:flex"
+          className="relative hidden size-[30px] shrink-0 text-brand-ink max-md:block"
         >
-          <svg viewBox="0 0 24 24" fill="none" aria-hidden className="size-7">
-            {open ? (
-              <path
-                d="m6 6 12 12M18 6 6 18"
-                stroke="currentColor"
-                strokeWidth="2"
-                strokeLinecap="round"
-              />
-            ) : (
-              <path
-                d="M4 7h16M4 12h16M4 17h16"
-                stroke="currentColor"
-                strokeWidth="2"
-                strokeLinecap="round"
-              />
-            )}
-          </svg>
+          <span
+            className={`absolute inset-x-[6px] h-[2px] rounded-full bg-current transition-transform duration-200 ${
+              open ? "top-[14px] rotate-45" : "top-[9px]"
+            }`}
+          />
+          <span
+            className={`absolute inset-x-[6px] top-[14px] h-[2px] rounded-full bg-current transition-opacity duration-200 ${
+              open ? "opacity-0" : "opacity-100"
+            }`}
+          />
+          <span
+            className={`absolute inset-x-[6px] h-[2px] rounded-full bg-current transition-transform duration-200 ${
+              open ? "top-[14px] -rotate-45" : "top-[19px]"
+            }`}
+          />
         </button>
       </nav>
 
-      {/* 展開後的全螢幕選單，僅 lg 以下顯示 */}
+      {/* 展開後的面板 —— 貼齊頁首下方，項目右對齊，僅 md 以下顯示 */}
       {open && (
         <div
           id="mobile-menu"
-          className="fixed inset-x-0 bottom-0 top-(--header-h) hidden overflow-y-auto bg-brand-mist max-md:block"
+          className="hidden bg-brand-mist px-16 pb-6 max-md:block"
         >
-          <ul className="flex flex-col px-6 py-4">
+          <ul className="flex flex-col items-end gap-[10px]">
             {NAV_ITEMS.map((item) => (
-              <li key={item.href} className="border-b border-brand/20">
+              <li key={item.href}>
                 <a
                   href={item.href}
                   onClick={() => setOpen(false)}
-                  className="block py-4 text-center text-h2 text-brand-ink transition-colors hover:text-brand"
+                  className="block text-body text-brand-ink opacity-70 transition-opacity hover:opacity-100"
                 >
                   {item.label}
                 </a>
