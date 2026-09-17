@@ -3,68 +3,56 @@ import { PLAN_ADDONS, PLAN_ROWS } from "../data/content";
 
 export default function Plans() {
   return (
-    <section
-      id="plans"
-      className="flex flex-col items-center gap-[30px] px-4 pt-[150px] max-md:pt-20"
-    >
-      <SectionTitle>方案內容</SectionTitle>
+    <section id="plans" className="px-16 max-lg:px-8 max-md:px-4">
+      <SectionTitle>租借方案</SectionTitle>
 
-      <div className="flex w-full max-w-[1560px] items-center justify-center gap-10 max-xl:flex-col">
-        {/* 左：基本方案 */}
-        <div className="flex w-[765px] max-w-full flex-col gap-8 rounded-[20px] bg-brand-mist/70 px-10 py-9 max-md:px-6">
-          {PLAN_ROWS.map((row) => (
-            <div
-              key={row.label}
-              className="flex items-center gap-8 max-md:flex-col max-md:gap-3"
-            >
-              <span className="flex h-[50px] w-[200px] shrink-0 items-center justify-center rounded-full bg-brand-ink text-lg text-white">
-                {row.label}
-              </span>
-              {row.ordered ? (
-                <ol className="flex flex-col gap-1 text-[22px] leading-snug text-brand max-lg:text-xl max-md:text-center max-md:text-lg">
-                  {row.items.map((item, i) => (
-                    <li key={item}>{`${i + 1}. ${item}`}</li>
-                  ))}
-                </ol>
-              ) : (
-                <p className="text-[22px] leading-snug text-brand max-lg:text-xl max-md:text-lg">
-                  {row.items[0]}
-                </p>
-              )}
-            </div>
-          ))}
-        </div>
-
-        {/* 右：加值服務 —— 中間以分支線連向各項目 */}
-        <div className="flex items-center max-md:flex-col max-md:gap-4">
-          <span className="flex h-[60px] shrink-0 items-center gap-2 rounded-full border-2 border-brand-ink px-6 text-h1 text-brand-ink max-md:text-2xl">
-            <span aria-hidden>⊕</span> 加值服務
-          </span>
-          {/* 分支線：垂直主幹 + 每項一條水平箭頭，手機版隱藏 */}
-          <div
-            aria-hidden
-            className="relative w-10 self-stretch max-md:hidden"
-          >
-            {/* 水平主幹：由膠囊連向垂直線 */}
-            <span className="absolute left-0 top-1/2 h-px w-1/2 bg-brand-ink" />
-            <span className="absolute left-1/2 top-[12.5%] h-[75%] w-px bg-brand-ink" />
-          </div>
-          <ul className="flex flex-col gap-4">
-            {PLAN_ADDONS.map((addon) => (
-              <li
-                key={addon}
-                className="flex h-[60px] items-center max-md:h-auto"
+      <div className="flex flex-col items-center pb-6">
+        <div className="card-surface flex max-w-full items-center justify-center gap-5 rounded-[20px] p-5 max-lg:flex-col">
+          {/* 左：基本方案，各列以底線分隔，末列不加 */}
+          <div className="flex max-w-full flex-col justify-center rounded-[20px] bg-brand-mist px-5 py-[10px] max-md:px-3">
+            {PLAN_ROWS.map((row, index) => (
+              <div
+                key={row.label}
+                className={`flex w-[457px] max-w-full items-center py-[5px] max-md:flex-col max-md:items-start max-md:gap-1 ${
+                  index < PLAN_ROWS.length - 1
+                    ? "border-b-[0.5px] border-black/30"
+                    : ""
+                }`}
               >
-                <span
-                  aria-hidden
-                  className="relative h-px w-8 bg-brand-ink max-md:hidden after:absolute after:right-0 after:top-1/2 after:-translate-y-1/2 after:border-y-[5px] after:border-l-[8px] after:border-y-transparent after:border-l-brand-ink after:content-['']"
-                />
-                <span className="flex h-full items-center rounded-[10px] bg-brand-mist px-6 text-[22px] text-brand max-lg:text-xl max-md:py-3 max-md:text-center max-md:text-lg">
-                  {addon}
-                </span>
-              </li>
+                <div className="flex w-[180px] shrink-0 items-center justify-center rounded-[30px] p-[10px] max-md:w-auto max-md:justify-start">
+                  <p className="whitespace-pre-line text-center text-h2 text-brand-ink">
+                    {row.label}
+                  </p>
+                </div>
+                <div className="text-title text-brand">
+                  {row.ordered ? (
+                    row.items.map((item, i) => (
+                      <p key={item}>{`${i + 1}. ${item}`}</p>
+                    ))
+                  ) : (
+                    <p>{row.items[0]}</p>
+                  )}
+                </div>
+              </div>
             ))}
-          </ul>
+          </div>
+
+          {/* 右：加值服務，虛線框 */}
+          <div className="flex max-w-full flex-col items-center justify-center gap-[10px] rounded-[20px] border-2 border-dashed border-brand px-5 py-[10px] max-md:px-3">
+            <div className="flex items-center justify-center rounded-[20px] p-[10px]">
+              <p className="text-center text-h2 text-brand-ink">+ 加值服務 +</p>
+            </div>
+            <ul className="flex flex-col gap-[10px]">
+              {PLAN_ADDONS.map((addon) => (
+                <li
+                  key={addon}
+                  className="flex h-10 w-[350px] max-w-full items-center justify-center rounded-[20px] bg-brand-mist p-[10px] text-center text-title text-brand-ink max-md:h-auto max-md:py-2"
+                >
+                  {addon}
+                </li>
+              ))}
+            </ul>
+          </div>
         </div>
       </div>
     </section>

@@ -5,121 +5,99 @@ import Image from "next/image";
 import SectionTitle from "../components/SectionTitle";
 import { MACHINES, MACHINE_TAGS } from "../data/machines";
 
-/** 細線箭頭，隨按鈕的 currentColor 變色 */
-function ArrowIcon({ direction }: { direction: "left" | "right" }) {
-  return (
-    <svg
-      viewBox="0 0 24 24"
-      fill="none"
-      aria-hidden
-      className={`size-8 max-md:size-5 ${direction === "left" ? "rotate-180" : ""}`}
-    >
-      <path
-        d="M4 12h15m0 0-6-6m6 6-6 6"
-        stroke="currentColor"
-        strokeWidth="2"
-        strokeLinecap="round"
-        strokeLinejoin="round"
-      />
-    </svg>
-  );
-}
-
 export default function Machines() {
   const [index, setIndex] = useState(0);
   const machine = MACHINES[index];
 
-  const move = (step: number) =>
-    setIndex((prev) => (prev + step + MACHINES.length) % MACHINES.length);
-
   return (
-    <section
-      id="machines"
-      className="flex flex-col items-center gap-[30px] px-4 pt-[150px] max-md:pt-20"
-    >
+    <section id="machines" className="px-16 max-lg:px-8 max-md:px-4">
       <SectionTitle>機台介紹</SectionTitle>
 
-      <div className="flex w-full max-w-[1722px] items-center gap-4">
-        <button
-          type="button"
-          onClick={() => move(-1)}
-          aria-label="上一個機台"
-          className="flex size-[72px] shrink-0 items-center justify-center rounded-full border-2 border-brand text-brand shadow-[0_0_20px_rgba(140,140,180,0.6)] transition-colors hover:bg-brand hover:text-white max-md:size-12"
-        >
-          <ArrowIcon direction="left" />
-        </button>
+      <div className="mx-auto flex w-[900px] max-w-full flex-col items-center gap-6 pb-6">
+        <div className="flex flex-wrap justify-center gap-[25px] max-md:gap-3">
+          {MACHINES.map((item, i) => (
+            <button
+              key={item.id}
+              type="button"
+              onClick={() => setIndex(i)}
+              aria-pressed={i === index}
+              className={`flex h-[50px] w-[200px] items-center justify-center rounded-[20px] text-h2 shadow-[0_0_5px_rgba(140,140,180,0.5)] transition-all duration-[400ms] ease-[cubic-bezier(0.22,1,0.36,1)] hover:scale-[0.96] max-md:h-11 max-md:w-[150px] max-md:text-base ${
+                i === index
+                  ? "bg-brand text-white"
+                  : "bg-white text-brand-ink hover:bg-brand-mist"
+              }`}
+            >
+              {item.name}
+            </button>
+          ))}
+        </div>
 
-        <div className="grid flex-1 grid-cols-2 items-center gap-10 rounded-[20px] bg-brand-mist/70 px-10 py-12 max-lg:grid-cols-1 max-md:px-5 max-md:py-8">
-          <div className="flex items-center justify-center">
-            <Image
-              src={machine.image}
-              alt={machine.name}
-              width={694}
-              height={780}
-              priority
-              className="h-auto w-full max-w-[560px] object-contain"
-            />
-          </div>
+        <div className="flex h-[480px] w-full items-center justify-end gap-10 overflow-hidden rounded-[20px] bg-gradient-to-b from-brand-mist to-white shadow-[0_0_5px_rgba(140,140,180,0.5)] max-lg:h-auto max-lg:flex-col max-lg:justify-start max-lg:gap-6 max-lg:py-8">
+          <Image
+            src={machine.image}
+            alt={machine.name}
+            width={365}
+            height={456}
+            priority
+            className="h-[456px] w-[365px] shrink-0 object-contain max-lg:h-[320px] max-lg:w-auto"
+          />
 
-          <div className="flex flex-col gap-6">
-            <ul className="flex flex-wrap gap-3 max-md:justify-center">
-              {MACHINE_TAGS.map((tag) => {
-                const active = machine.tags.includes(tag);
-                return (
-                  <li
-                    key={tag}
-                    className={`flex h-9 w-[85px] items-center justify-center rounded-full border border-brand text-title max-md:w-[70px] max-md:text-sm ${
-                      active ? "bg-brand text-white" : "bg-white/40 text-brand"
-                    }`}
-                  >
-                    {tag}
-                  </li>
-                );
-              })}
-            </ul>
+          <div className="flex h-[480px] min-w-0 flex-col gap-5 pr-[50px] pt-[50px] max-lg:h-auto max-lg:w-full max-lg:px-6 max-lg:pr-6 max-lg:pt-0">
+            <div className="flex w-[402px] max-w-full flex-col gap-4">
+              <h3 className="text-h1 text-black max-md:text-2xl">
+                {machine.name}
+              </h3>
 
-            <h3 className="text-[48px] leading-tight text-black max-lg:text-[36px] max-md:text-[28px]">
-              {machine.name}
-            </h3>
+              <div className="flex flex-col gap-[10px] text-black">
+                <div className="text-title">
+                  {machine.specs.map((spec) => (
+                    <p key={spec}>{spec}</p>
+                  ))}
+                </div>
+                <p className="text-caption">{machine.note}</p>
+              </div>
 
-            <div className="flex flex-col gap-1">
-              {machine.specs.map((spec) => (
-                <p
-                  key={spec}
-                  className="text-[28px] leading-snug text-black max-lg:text-xl max-md:text-base"
-                >
-                  {spec}
-                </p>
-              ))}
+              <div className="flex flex-wrap items-center gap-[10px]">
+                {/* 設計稿的框寬 60px 但文字不換行，允許自然超出 */}
+                <span className="flex h-[30px] w-[60px] shrink-0 items-center justify-center whitespace-nowrap rounded-full text-title text-brand">
+                  推薦場合
+                </span>
+                {/* 設計稿五個場合皆列出；適用者實心、不適用者為外框 */}
+                {MACHINE_TAGS.map((tag) => {
+                  const active = machine.tags.includes(tag);
+                  return (
+                    <span
+                      key={tag}
+                      className={`flex h-[25px] w-[50px] items-center justify-center rounded-full text-title ${
+                        active
+                          ? "bg-brand text-white"
+                          : "border border-brand bg-white text-brand"
+                      }`}
+                    >
+                      {tag}
+                    </span>
+                  );
+                })}
+              </div>
             </div>
 
-            <p className="text-title text-black">{machine.note}</p>
-
-            <dl className="flex flex-col gap-3 text-brand-ink">
+            <dl className="flex flex-col gap-[10px]">
               {[
                 ["相機機型", machine.camera],
                 ["相印機型", machine.printer],
                 ["付款模式", machine.payment],
               ].map(([label, value]) => (
-                <div key={label} className="flex items-baseline gap-3">
-                  <dt className="shrink-0 text-title">・{label}</dt>
-                  <dd className="text-sm font-semibold">{value}</dd>
+                <div key={label} className="flex flex-col justify-center">
+                  <dt className="text-title text-brand-ink">{label}</dt>
+                  <dd className="w-fit bg-brand-mist text-title text-brand-ink">
+                    {value}
+                  </dd>
                 </div>
               ))}
             </dl>
           </div>
         </div>
-
-        <button
-          type="button"
-          onClick={() => move(1)}
-          aria-label="下一個機台"
-          className="flex size-[72px] shrink-0 items-center justify-center rounded-full border-2 border-brand text-brand shadow-[0_0_20px_rgba(140,140,180,0.6)] transition-colors hover:bg-brand hover:text-white max-md:size-12"
-        >
-          <ArrowIcon direction="right" />
-        </button>
       </div>
-
     </section>
   );
 }

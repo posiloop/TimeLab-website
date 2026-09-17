@@ -1,48 +1,40 @@
 import Image from "next/image";
+import SectionTitle from "../components/SectionTitle";
 import { STORES } from "../data/stores";
-
-function Pill({ children }: { children: string }) {
-  return (
-    <span className="flex h-9 w-[85px] shrink-0 items-center justify-center rounded-full bg-brand text-title text-brand-mist">
-      {children}
-    </span>
-  );
-}
 
 export default function Stores() {
   return (
-    <section id="stores" className="px-4 py-[150px] max-md:py-20">
-      <ul className="mx-auto flex max-w-[1735px] flex-wrap justify-center gap-[57px] max-lg:gap-8">
+    <section id="stores" className="px-16 max-lg:px-8 max-md:px-4">
+      <SectionTitle>門市資訊</SectionTitle>
+
+      <ul className="flex justify-center gap-8 pb-6 max-md:flex-col max-md:items-center">
         {STORES.map((store) => (
-          <li
-            key={store.name}
-            className="grid h-[380px] w-[747px] max-w-full grid-cols-[450px_minmax(0,1fr)] rounded-[20px] bg-brand-mist max-lg:h-auto max-lg:w-full max-lg:max-w-[560px] max-lg:grid-cols-1"
-          >
-            {/* 照片填滿左欄，右側保留圓角並向右投影，形成懸浮於資訊區之上的層次 */}
-            <div className="relative rounded-[20px] shadow-[5px_0_15px_rgba(0,0,0,0.25)] max-lg:h-[240px]">
-              <Image
-                src={store.image}
-                alt={`${store.name}門市`}
-                fill
-                sizes="(max-width: 1024px) 100vw, 450px"
-                className="rounded-[20px] object-cover"
-              />
-            </div>
-            {/* 設計稿為兩等分列：上區靠下、下區靠上，使兩組資訊向中間聚攏 */}
-            <div className="grid grid-rows-2 gap-5 px-6 py-8">
-              <div className="flex flex-col items-center justify-end gap-[6px]">
-                <Pill>營業時間</Pill>
-                <p className="text-title font-semibold text-brand-ink">
-                  {store.hours}
-                </p>
+          <li key={store.name} className="w-[415px] max-w-full">
+            <a
+              href={store.mapUrl}
+              target="_blank"
+              rel="noreferrer"
+              className="card-surface flex h-full flex-col overflow-hidden rounded-[16px] max-md:h-[268px] max-md:flex-row shadow-[0_4px_8px_rgba(0,0,0,0.02),0_6px_12px_rgba(0,0,0,0.03)] transition-all duration-[400ms] ease-[cubic-bezier(0.22,1,0.36,1)] hover:scale-[0.96] hover:shadow-[0_2px_6px_rgba(0,0,0,0.06)]"
+            >
+              {/* 原圖為直式，此處裁成橫幅；用 fill 讓尺寸完全由容器決定 */}
+              <div className="relative h-[240px] w-full shrink-0 max-xl:h-[280px] max-md:h-full max-md:w-1/2">
+                <Image
+                  src={store.image}
+                  alt={`${store.name}門市`}
+                  fill
+                  sizes="(max-width: 768px) 100vw, 415px"
+                  className="object-cover"
+                />
               </div>
-              <div className="flex flex-col items-center gap-[6px]">
-                <Pill>營業地點</Pill>
-                <p className="whitespace-pre-line text-center text-title font-semibold text-brand-ink">
-                  {store.address}
-                </p>
+              <div className="flex flex-col gap-2 p-6 max-md:w-1/2 max-md:justify-center max-md:p-4">
+                <h3 className="text-h2 text-brand">{store.name}</h3>
+                <div className="text-title text-black/55">
+                  <p>{store.hours}</p>
+                  <p>{store.address}</p>
+                </div>
+                <p className="text-title text-black/55 opacity-60">查看地圖</p>
               </div>
-            </div>
+            </a>
           </li>
         ))}
       </ul>

@@ -12,75 +12,96 @@ export default function Partnership() {
   const active = PARTNERSHIPS.find((item) => item.id === openId);
 
   return (
-    <section
-      id="partnership"
-      className="flex flex-col items-center gap-[30px] px-4 pt-[150px] max-md:pt-20"
-    >
+    <section id="partnership" className="px-16 max-lg:px-8 max-md:px-4">
       <SectionTitle>互惠合作</SectionTitle>
 
-      <ul className="flex w-full max-w-[1524px] justify-center gap-[30px] max-lg:flex-col max-lg:items-center">
+      <ul className="flex flex-col items-center gap-5 pb-6">
         {PARTNERSHIPS.map((item) => (
           <li
             key={item.id}
-            className="w-[747px] max-w-full overflow-hidden rounded-[20px] border border-brand bg-brand-mist/70"
+            className="flex w-[700px] max-w-full flex-col items-center justify-center transition-transform duration-[400ms] ease-[cubic-bezier(0.22,1,0.36,1)] hover:scale-[0.96]"
           >
-            <h3 className="bg-brand py-4 text-center text-section text-white max-md:text-2xl">
+            <h3 className="flex h-20 w-full items-center justify-center rounded-t-[20px] bg-brand p-[10px] text-h1 text-brand-mist [text-shadow:0_4px_4px_rgba(0,0,0,0.25)] max-md:h-auto max-md:py-4 max-md:text-2xl">
               {item.title}
             </h3>
-            <div className="flex flex-col items-center gap-4 px-8 py-6 max-md:px-5">
-              <p className="text-h1 text-brand-ink max-md:text-lg">
+
+            <div className="flex w-full flex-col items-center justify-center gap-2 rounded-b-[20px] border-x-2 border-b-2 border-brand bg-white p-5">
+              <p className="w-full text-center text-h2 text-brand-ink max-md:text-base">
                 {item.tagline}
               </p>
-              <ul className="flex w-full justify-center gap-4 max-md:flex-wrap">
+
+              {/* 設計稿依項目數調整：3 項為 169px/間距 30，4 項為 153px/間距 15 */}
+              <ul
+                className={`flex items-center justify-center max-md:flex-wrap max-md:gap-3 ${
+                  item.features.length > 3 ? "gap-[15px]" : "gap-[30px]"
+                }`}
+              >
                 {item.features.map((feature) => (
                   <li
                     key={feature.label}
-                    className="flex h-[100px] min-w-0 flex-1 flex-col items-center justify-center gap-1 rounded-[10px] bg-white/70 px-2 pb-2 pt-3 text-title text-brand max-md:h-[86px] max-md:flex-none max-md:basis-[130px] max-md:text-sm"
+                    className={`flex h-[100px] flex-col items-center justify-start bg-brand-mist pt-2 max-md:w-[130px] ${
+                      item.features.length > 3 ? "w-[153px]" : "w-[169px]"
+                    }`}
                   >
                     <Image
                       src={feature.icon}
                       alt=""
-                      width={48}
-                      height={48}
-                      className="h-[42px] w-auto object-contain max-md:h-8"
+                      width={60}
+                      height={60}
+                      className="h-[60px] w-auto object-contain"
                     />
-                    <span className="whitespace-nowrap max-md:whitespace-normal">
+                    <span className="text-title text-brand">
                       {feature.label}
                     </span>
                   </li>
                 ))}
               </ul>
-              <p className="text-h1 text-brand-ink max-md:text-lg">
-                {item.highlight}
-              </p>
-              <p className="text-center text-title text-brand-ink">
-                {item.desc}
-              </p>
+
+              <div className="w-full text-center text-brand-ink">
+                <p className="text-title">{item.highlight}</p>
+                <p className="text-body font-normal">{item.desc}</p>
+              </div>
+
+              {/* 「更多」膠囊：左側圓形色塊內含箭頭，文字靠右 */}
               <button
                 type="button"
                 onClick={() => setOpenId(item.id)}
-                className="flex items-center gap-2 text-h1 text-brand-ink transition-opacity hover:opacity-70 max-md:text-lg"
+                className="group/more relative h-[30px] w-[100px] overflow-hidden rounded-[15px]"
               >
+                {/* hover 時紫色塊由左側圓形展開成整顆膠囊 */}
                 <span
                   aria-hidden
-                  className="flex size-8 shrink-0 items-center justify-center rounded-full bg-brand text-white"
+                  className="absolute left-0 top-1/2 h-[30px] w-[30px] -translate-y-1/2 rounded-[15px] bg-brand transition-[width] duration-[400ms] ease-[cubic-bezier(0.22,1,0.36,1)] group-hover/more:w-[100px]"
+                />
+                {/* 預設只露出箭頭尖端，hover 時長出尾線 */}
+                <svg
+                  viewBox="0 0 20 16"
+                  fill="none"
+                  aria-hidden
+                  className="absolute left-[13px] top-1/2 h-4 w-5 -translate-x-[12.5px] -translate-y-1/2 text-brand-mist transition-transform duration-[400ms] ease-[cubic-bezier(0.22,1,0.36,1)] group-hover/more:translate-x-0"
                 >
-                  <svg
-                    viewBox="0 0 24 24"
-                    fill="none"
-                    className="size-[18px]"
-                    aria-hidden
-                  >
-                    <path
-                      d="m9.5 5.5 7 6.5-7 6.5"
-                      stroke="currentColor"
-                      strokeWidth="2.5"
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                    />
-                  </svg>
+                  {/* 以 dash 位移讓尾線由左往右長出（SVG path 不吃 scale-x） */}
+                  <path
+                    d="M1 8h13"
+                    stroke="currentColor"
+                    strokeWidth="2.5"
+                    strokeLinecap="round"
+                    pathLength={1}
+                    strokeDasharray={1}
+                    strokeDashoffset={1}
+                    className="transition-[stroke-dashoffset] duration-[400ms] ease-[cubic-bezier(0.22,1,0.36,1)] group-hover/more:[stroke-dashoffset:0]"
+                  />
+                  <path
+                    d="m12 3 5 5-5 5"
+                    stroke="currentColor"
+                    strokeWidth="2.5"
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                  />
+                </svg>
+                <span className="absolute inset-y-0 left-12 right-4 flex items-center justify-center text-title text-brand-ink transition-colors duration-[400ms] ease-[cubic-bezier(0.22,1,0.36,1)] group-hover/more:text-brand-mist">
+                  更 多
                 </span>
-                更多
               </button>
             </div>
           </li>
