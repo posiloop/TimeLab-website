@@ -12,6 +12,8 @@ export default function ScrollToTop() {
   const pathname = usePathname();
 
   useEffect(() => {
+    // 帶錨點的導航（如分類頁的 /#cases）要停在該區塊，不能捲回頂端
+    if (window.location.hash) return;
     window.scrollTo(0, 0);
   }, [pathname]);
 

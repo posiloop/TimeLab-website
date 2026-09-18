@@ -7,7 +7,8 @@ export default function CasePageHeader({ current }: { current: string }) {
   return (
     <header className="fixed inset-x-0 top-0 z-50 h-(--header-h) bg-brand-mist">
       <div className="flex h-full items-center justify-between px-16 max-xl:px-8 max-md:flex-col max-md:justify-center max-md:gap-4 max-md:px-4">
-        <Link href="/" aria-label="回到首頁">
+        {/* 從分類頁回到首頁時停在活動案例區塊，而非頁面頂端 */}
+        <Link href="/#cases" aria-label="回到首頁的活動案例">
           <Image
             src="/images/brand/logo-wide.png"
             alt="時光研究室 TiMELAB"
