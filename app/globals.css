@@ -5,6 +5,7 @@
   --color-brand: #8c8cb4; /* 標準色01 */
   --color-brand-ink: #64646e; /* 標準色02 */
   --color-brand-mist: #ebf0fa; /* 輔助色02 */
+  --color-brand-canvas: #f9f9ff; /* 頁面底色 —— 設計稿主頁 frame 的填色 */
 
   --font-sans: var(--font-inter), var(--font-noto-sans-tc), sans-serif;
 
@@ -51,7 +52,7 @@
   }
 
   body {
-    background: #ffffff;
+    background: var(--color-brand-canvas);
     color: var(--color-brand-ink);
     font-family: var(--font-sans);
   }

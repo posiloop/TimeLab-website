@@ -40,7 +40,7 @@ export default function SiteFooter() {
                   target="_blank"
                   rel="noreferrer"
                   aria-label={label}
-                  className="relative size-6 overflow-hidden transition-opacity hover:opacity-70"
+                  className="relative size-6 overflow-hidden"
                 >
                   {/* 設計稿於黑色圖示上疊深灰並以 lighten 混合染色 */}
                   <Image
