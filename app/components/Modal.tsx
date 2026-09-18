@@ -33,24 +33,26 @@ export default function Modal({ open, onClose, title, children }: ModalProps) {
         if (event.target === dialogRef.current) onClose();
       }}
       aria-labelledby="modal-title"
-      className="m-auto w-[1200px] max-w-[calc(100vw-2rem)] rounded-[20px] bg-white p-0 backdrop:bg-black/50"
+      className="m-auto w-[1075px] max-w-[calc(100vw-2rem)] rounded-[20px] bg-white p-0 backdrop:bg-black/50"
     >
       {open && (
       <div className="flex max-h-[90vh] flex-col">
         <h2
           id="modal-title"
-          className="flex h-[100px] shrink-0 items-center justify-center rounded-t-[20px] bg-brand px-4 text-center text-h1 text-brand-mist [text-shadow:0_4px_4px_rgba(0,0,0,0.25)] max-md:h-[70px] max-md:text-2xl"
+          className="flex h-20 shrink-0 items-center justify-center rounded-t-[20px] bg-brand px-4 text-center text-h1 text-brand-mist [text-shadow:0_4px_4px_rgba(0,0,0,0.25)] max-md:h-[70px] max-md:text-2xl"
         >
           {title}
         </h2>
 
-        <div className="overflow-y-auto px-10 py-6 max-md:px-5">{children}</div>
+        <div className="overflow-y-auto border-x-2 border-brand px-10 py-5 max-md:px-5">
+          {children}
+        </div>
 
-        <div className="shrink-0 pb-6 pt-2 text-center">
+        <div className="shrink-0 rounded-b-[20px] border-x-2 border-b-2 border-brand pb-5 pt-2 text-center">
           <button
             type="button"
             onClick={onClose}
-            className="h-10 w-[120px] rounded-[20px] bg-brand-mist text-title tracking-[6px] text-brand-ink transition-colors hover:bg-brand hover:text-white"
+            className="h-[50px] w-[140px] rounded-full bg-brand-mist text-h2 tracking-[6px] text-brand transition-colors hover:bg-brand hover:text-white"
           >
             關閉
           </button>

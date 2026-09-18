@@ -56,6 +56,8 @@ export type Partnership = {
   /** 以下為「更多」彈窗的內容 */
   modal: {
     subtitle: string;
+    /** 職責區塊的標題，兩張卡片用詞不同 */
+    dutiesTitle: string;
     /** 場域收益卡片，僅場域活化使用 */
     tiers?: { image: string; caption: string; revenue: string }[];
     /** 適用活動類型勾選清單，僅品牌活動使用 */
@@ -81,6 +83,7 @@ export const PARTNERSHIPS: Partnership[] = [
     desc: "利用既有來客與閒置空間，打造高互動拍貼體驗區，創造額外收入與社群曝光。",
     modal: {
       subtitle: "合作場域常見收益區間",
+      dutiesTitle: "合作模式",
       tiers: [
         {
           image: "/images/partnership/venue-1.png",
@@ -129,6 +132,7 @@ export const PARTNERSHIPS: Partnership[] = [
     desc: "利用拍貼互動體驗，提升參與感、創造分享率、放大活動影響力。",
     modal: {
       subtitle: "適用活動類型",
+      dutiesTitle: "服務內容與合作效益",
       gallery: [
         "/images/partnership/brand-1.png",
         "/images/partnership/brand-2.png",
@@ -149,7 +153,7 @@ export const PARTNERSHIPS: Partnership[] = [
       footnote: "★  從數百人到數萬人規模活動皆有執行經驗  ★",
       duties: [
         {
-          label: "我們所提供的服務",
+          label: "我方負責",
           columns: [
             ["客製化相框設計", "品牌視覺整合", "現場人員支援", "耗材補充管理"],
             ["活動成果回饋", "多機同步規劃", "設備進駐與撤場"],
