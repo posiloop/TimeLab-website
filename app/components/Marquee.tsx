@@ -29,10 +29,10 @@ type MarqueeProps = {
   rounded?: boolean;
   /** 圖片間距（px），預設 40 */
   gap?: number;
-  /** 首屏跑馬燈設為 true，讓最前面幾張圖片優先載入 */
+  /** 首屏跑馬燈設為 true，讓一開始就露出的那幾張優先載入 */
   priority?: boolean;
   /** priority 為 true 時實際預載的張數。整軌都預載會讓數十張圖同時搶頻寬，
-      反而拖慢 LCP；預設 3 張約可蓋滿首屏寬度 */
+      反而拖慢 LCP；預設 6 張，約可蓋滿 1440px 寬的首屏 */
   priorityCount?: number;
   /** GIF 需設為 true，否則會被最佳化成靜態圖而失去動畫 */
   unoptimized?: boolean;
@@ -47,12 +47,19 @@ export default function Marquee({
   rounded = true,
   gap = 40,
   priority = false,
-  priorityCount = 3,
+  priorityCount = 6,
   unoptimized = false,
   className = "",
 }: MarqueeProps) {
   // 重複兩份才能無縫銜接：位移 -50% 時第二份剛好接上第一份的起點
   const loop = [...items, ...items];
+
+  // 向左捲從 translateX(0) 起步，首屏看到的是第一份的開頭；
+  // 向右捲從 translateX(-50%) 起步，看到的是第二份的開頭。
+  // 判斷錯邊會讓真正在畫面上的圖被設成 lazy，拖慢 LCP
+  const firstVisible = direction === "right" ? items.length : 0;
+  const isVisible = (index: number) =>
+    index >= firstVisible && index < firstVisible + priorityCount;
 
   return (
     <div className={`overflow-hidden ${className}`}>
@@ -109,10 +116,10 @@ export default function Marquee({
                   height={item.height}
                   // 第二份為視覺重複，對輔助技術隱藏
                   aria-hidden={index >= items.length}
-                  priority={priority && index < priorityCount}
-                  // 第二份要捲過一輪後才露出，設為 eager 會與首屏圖片搶頻寬，
-                  // 實測會把 LCP 從 5.6s 拖到 10.9s
-                  loading={index < items.length ? "eager" : "lazy"}
+                  priority={priority && isVisible(index)}
+                  // 畫面外的那一份要捲過一輪後才露出，設為 eager 會與首屏圖片
+                  // 搶頻寬，實測會把 LCP 從 5.3s 拖到 10.9s
+                  loading={isVisible(index) ? "eager" : "lazy"}
                   unoptimized={unoptimized}
                   className={`${rounded ? "rounded-[10px] " : ""}object-contain`}
                   style={
