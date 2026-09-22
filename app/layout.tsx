@@ -1,4 +1,4 @@
-import type { Metadata } from "next";
+import type { Metadata, Viewport } from "next";
 import { Inter, Noto_Sans_TC } from "next/font/google";
 import ScrollToTop from "./components/ScrollToTop";
 import { SITE_URL } from "./data/site";
@@ -40,6 +40,13 @@ export const metadata: Metadata = {
     description: "千場實績，定義拍貼新標準。全台拍貼機租借服務。",
     images: ["/images/brand/logo.png"],
   },
+};
+
+export const viewport: Viewport = {
+  // iOS Safari 的上下工具列會依此著色。未指定時它自行取用淺色，
+  // 在頁尾下方形成一條與 #ebf0fa 不一致的白帶。
+  // 值與頁首、頁尾同為標準色 brand-mist
+  themeColor: "#ebf0fa",
 };
 
 export default function RootLayout({ children }: LayoutProps<"/">) {
