@@ -49,16 +49,20 @@
   html {
     scroll-behavior: smooth;
     scroll-padding-top: var(--header-h);
-    /* iOS 橡皮筋回彈會露出文件末端以外的區域。body 的背景只畫到內容邊界，
-       故那塊由 html 決定 —— 設為頁尾色，回彈時才不會露出較亮的頁面底色 */
-    background: var(--color-brand-mist);
   }
 
+  /* iOS Safari 會取頁面末端的底色來畫工具列，而它看的是 body，不是 html。
+     body 若維持較亮的頁面底色，工具列那條就與 #ebf0fa 的頁尾對不起來。
+     故 body 設為頁尾色，真正的頁面底色改由 main 自己鋪 —— 頁首頁尾本來
+     就各自有底色，body 不需要負責它們之外的區域 */
   body {
-    /* html 已有背景時 body 的背景不再上捲到畫布，兩者各自生效 */
-    background: var(--color-brand-canvas);
+    background: var(--color-brand-mist);
     color: var(--color-brand-ink);
     font-family: var(--font-sans);
+  }
+
+  main {
+    background: var(--color-brand-canvas);
   }
 }
 
