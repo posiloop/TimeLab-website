@@ -49,9 +49,13 @@
   html {
     scroll-behavior: smooth;
     scroll-padding-top: var(--header-h);
+    /* iOS 橡皮筋回彈會露出文件末端以外的區域。body 的背景只畫到內容邊界，
+       故那塊由 html 決定 —— 設為頁尾色，回彈時才不會露出較亮的頁面底色 */
+    background: var(--color-brand-mist);
   }
 
   body {
+    /* html 已有背景時 body 的背景不再上捲到畫布，兩者各自生效 */
     background: var(--color-brand-canvas);
     color: var(--color-brand-ink);
     font-family: var(--font-sans);
