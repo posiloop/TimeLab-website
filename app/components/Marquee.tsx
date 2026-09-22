@@ -54,12 +54,16 @@ export default function Marquee({
   // 重複兩份才能無縫銜接：位移 -50% 時第二份剛好接上第一份的起點
   const loop = [...items, ...items];
 
-  // 向左捲從 translateX(0) 起步，首屏看到的是第一份的開頭；
-  // 向右捲從 translateX(-50%) 起步，看到的是第二份的開頭。
-  // 判斷錯邊會讓真正在畫面上的圖被設成 lazy，拖慢 LCP
-  const firstVisible = direction === "right" ? items.length : 0;
-  const isVisible = (index: number) =>
-    index >= firstVisible && index < firstVisible + priorityCount;
+  // 向左捲從 translateX(0) 起步，首屏就是第一份的開頭，取前 priorityCount 張。
+  // 向右捲從 translateX(-50%) 起步，銜接點落在畫面左緣，兩側都看得到：
+  // 左半是第一份的「結尾」，右半是第二份的「開頭」，故兩段都要 eager。
+  // 只取第二份開頭會漏掉左半，那幾張仍會被設成 lazy
+  const isVisible = (index: number) => {
+    if (direction === "left") return index < priorityCount;
+    return (
+      index >= items.length - priorityCount && index < items.length + priorityCount
+    );
+  };
 
   return (
     <div className={`overflow-hidden ${className}`}>
