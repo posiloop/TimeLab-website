@@ -44,6 +44,8 @@ export type DutyBlock = {
 export type Feature = {
   label: string;
   icon: string;
+  /** 圖示原圖寬度（高一律 120）—— 各圖比例不同，需明確給值 */
+  iconWidth: number;
 };
 
 export type Partnership = {
@@ -75,9 +77,9 @@ export const PARTNERSHIPS: Partnership[] = [
     title: "場域活化×收益合作",
     tagline: "讓每一坪空間\n多一個賺錢的理由",
     features: [
-      { label: "導入零成本", icon: "/images/features/zero-cost.png" },
-      { label: "共享營收", icon: "/images/features/revenue-share.png" },
-      { label: "全程代管", icon: "/images/features/full-service.png" },
+      { label: "導入零成本", icon: "/images/features/zero-cost.png", iconWidth: 120 },
+      { label: "共享營收", icon: "/images/features/revenue-share.png", iconWidth: 110 },
+      { label: "全程代管", icon: "/images/features/full-service.png", iconWidth: 178 },
     ],
     highlight: "場域不變，收入改變",
     desc: "利用既有來客與閒置空間，打造高互動拍貼體驗區，創造額外收入與社群曝光。",
@@ -123,10 +125,10 @@ export const PARTNERSHIPS: Partnership[] = [
     title: "品牌活動×互動曝光",
     tagline: "讓每一次拍照\n都成為活動曝光的延伸",
     features: [
-      { label: "客製化相框", icon: "/images/features/custom-frame.png" },
-      { label: "品牌視覺整合", icon: "/images/features/brand-visual.png" },
-      { label: "活動現場支援", icon: "/images/features/onsite-support.png" },
-      { label: "社群擴散效益", icon: "/images/features/social-reach.png" },
+      { label: "客製化相框", icon: "/images/features/custom-frame.png", iconWidth: 150 },
+      { label: "品牌視覺整合", icon: "/images/features/brand-visual.png", iconWidth: 120 },
+      { label: "活動現場支援", icon: "/images/features/onsite-support.png", iconWidth: 178 },
+      { label: "社群擴散效益", icon: "/images/features/social-reach.png", iconWidth: 120 },
     ],
     highlight: "活動帶來人潮，拍照延續熱潮",
     desc: "利用拍貼互動體驗，提升參與感、創造分享率、放大活動影響力。",

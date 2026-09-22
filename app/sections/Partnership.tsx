@@ -60,8 +60,8 @@ export default function Partnership() {
                       <Image
                         src={feature.icon}
                         alt=""
-                        width={60}
-                        height={60}
+                        width={feature.iconWidth}
+                        height={120}
                         className="h-[60px] w-auto object-contain"
                       />
                       <span className="text-title text-brand">

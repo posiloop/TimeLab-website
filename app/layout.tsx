@@ -26,6 +26,8 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
   return (
     <html
       lang="zh-Hant-TW"
+      // 告知 Next.js 平滑捲動是刻意設定的，換頁時會暫時停用以免捲不到位
+      data-scroll-behavior="smooth"
       className={`${inter.variable} ${notoSansTC.variable} h-full antialiased`}
     >
       <body className="flex min-h-full flex-col">

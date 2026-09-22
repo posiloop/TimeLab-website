@@ -18,13 +18,24 @@ export const FRAME_WORKS: MarqueeItem[] = Array.from({ length: 12 }, (_, i) => (
   height: 358,
 }));
 
-/** 活動現場照 —— 三軌，設計稿高度統一 380（原圖已縮至 760px 高並轉 JPEG） */
+/** 活動現場照的原圖寬度（高一律 760）—— 直式、橫式與超寬三種比例混用，
+    需逐張給值，next/image 的寬高比才會與檔案相符 */
+const EVENT_WIDTHS: Record<string, Record<string, number>> = {
+  e1: { "01": 1013, "02": 570, "03": 1013, "04": 570, "05": 1013, "06": 570, "07": 1013 },
+  e2: { "01": 1013, "02": 570, "03": 1140, "04": 570, "05": 1013, "06": 570, "07": 1013 },
+  e3: { "01": 570, "02": 1013, "03": 570, "04": 1013, "05": 570, "06": 1013, "07": 1013 },
+};
+
+/** 活動現場照 —— 三軌，顯示高度由 Marquee 的 height 決定 */
 const eventTrack = (prefix: string): MarqueeItem[] =>
-  Array.from({ length: 7 }, (_, i) => ({
-    src: `/images/event/${prefix}-${String(i + 1).padStart(2, "0")}.jpg`,
-    width: 507,
-    height: 380,
-  }));
+  Array.from({ length: 7 }, (_, i) => {
+    const no = String(i + 1).padStart(2, "0");
+    return {
+      src: `/images/event/${prefix}-${no}.jpg`,
+      width: EVENT_WIDTHS[prefix][no],
+      height: 760,
+    };
+  });
 
 export const EVENT_TRACK_1 = eventTrack("e1");
 export const EVENT_TRACK_2 = eventTrack("e2");
