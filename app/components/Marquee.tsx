@@ -4,6 +4,9 @@ export type MarqueeItem = {
   src: string;
   width: number;
   height: number;
+  /** 指定後改以 <video> 播放；src 作為自動播放被擋時的靜態底圖。
+      原為 GIF 的項目改用此欄位，檔案小兩個數量級 */
+  video?: { webm: string; mp4: string };
   /** 有意義的圖片可給描述；省略則視為裝飾性圖片 */
   alt?: string;
   /** 個別圖片的傾斜角（度），用於設計稿中各自微傾的排版 */
@@ -26,8 +29,11 @@ type MarqueeProps = {
   rounded?: boolean;
   /** 圖片間距（px），預設 40 */
   gap?: number;
-  /** 首屏跑馬燈設為 true，讓第一份圖片立即載入 */
+  /** 首屏跑馬燈設為 true，讓最前面幾張圖片優先載入 */
   priority?: boolean;
+  /** priority 為 true 時實際預載的張數。整軌都預載會讓數十張圖同時搶頻寬，
+      反而拖慢 LCP；預設 3 張約可蓋滿首屏寬度 */
+  priorityCount?: number;
   /** GIF 需設為 true，否則會被最佳化成靜態圖而失去動畫 */
   unoptimized?: boolean;
   className?: string;
@@ -41,6 +47,7 @@ export default function Marquee({
   rounded = true,
   gap = 40,
   priority = false,
+  priorityCount = 3,
   unoptimized = false,
   className = "",
 }: MarqueeProps) {
@@ -72,25 +79,49 @@ export default function Marquee({
               className="flex-none"
               style={item.rotate ? { rotate: `${item.rotate}deg` } : undefined}
             >
-              <Image
-                src={item.src}
-                alt={index < items.length ? (item.alt ?? "") : ""}
-                width={item.width}
-                height={item.height}
-                // 第二份為視覺重複，對輔助技術隱藏
-                aria-hidden={index >= items.length}
-                // 跑馬燈的第二份是無縫銜接所需、捲動時必定露出，
-                // 故一律 eager；圖檔已壓縮，不致搶佔過多連線
-                priority={priority && index < items.length}
-                loading="eager"
-                unoptimized={unoptimized}
-                className={`${rounded ? "rounded-[10px] " : ""}object-contain`}
-                style={
-                  item.boxWidth
-                    ? { width: item.width, height: item.height }
-                    : { height, width: "auto" }
-                }
-              />
+              {item.video ? (
+                // <video> 的預設 object-fit 是 fill，須明確指定 contain 才與圖片一致
+                <video
+                  width={item.width}
+                  height={item.height}
+                  poster={item.src}
+                  autoPlay
+                  muted
+                  loop
+                  // 缺少 playsInline 會讓 iOS Safari 強制全螢幕播放
+                  playsInline
+                  aria-hidden
+                  className={`${rounded ? "rounded-[10px] " : ""}object-contain`}
+                  style={
+                    item.boxWidth
+                      ? { width: item.width, height: item.height }
+                      : { height, width: "auto" }
+                  }
+                >
+                  <source src={item.video.webm} type="video/webm" />
+                  <source src={item.video.mp4} type="video/mp4" />
+                </video>
+              ) : (
+                <Image
+                  src={item.src}
+                  alt={index < items.length ? (item.alt ?? "") : ""}
+                  width={item.width}
+                  height={item.height}
+                  // 第二份為視覺重複，對輔助技術隱藏
+                  aria-hidden={index >= items.length}
+                  priority={priority && index < priorityCount}
+                  // 第二份要捲過一輪後才露出，設為 eager 會與首屏圖片搶頻寬，
+                  // 實測會把 LCP 從 5.6s 拖到 10.9s
+                  loading={index < items.length ? "eager" : "lazy"}
+                  unoptimized={unoptimized}
+                  className={`${rounded ? "rounded-[10px] " : ""}object-contain`}
+                  style={
+                    item.boxWidth
+                      ? { width: item.width, height: item.height }
+                      : { height, width: "auto" }
+                  }
+                />
+              )}
             </div>
           </li>
         ))}
