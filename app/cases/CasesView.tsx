@@ -1,39 +1,47 @@
-import { notFound } from "next/navigation";
+"use client";
+
+import { useEffect, useState } from "react";
 import Image from "next/image";
-import CasePageHeader from "../../components/CasePageHeader";
-import SiteFooter from "../../components/SiteFooter";
-import { CASE_ITEMS } from "../../data/case-items";
-import { CASE_CATEGORIES } from "../../data/cases";
+import CasePageHeader from "../components/CasePageHeader";
+import SiteFooter from "../components/SiteFooter";
+import { CASE_ITEMS } from "../data/case-items";
+import { CASE_CATEGORIES } from "../data/cases";
 
-export function generateStaticParams() {
-  return CASE_CATEGORIES.map((category) => ({ category: category.id }));
-}
+const DEFAULT_ID = CASE_CATEGORIES[0].id;
 
-export async function generateMetadata(props: PageProps<"/cases/[category]">) {
-  const { category } = await props.params;
-  const meta = CASE_CATEGORIES.find((item) => item.id === category);
+export default function CasesView() {
+  const [currentId, setCurrentId] = useState(DEFAULT_ID);
 
-  return {
-    title: meta
-      ? `${meta.label}案例｜時光研究室 TiMELAB`
-      : "活動案例｜時光研究室 TiMELAB",
-    description: meta?.tagline,
+  // 首頁的分類卡片以 /cases#wedding 指定要開啟的分頁
+  useEffect(() => {
+    const applyHash = () => {
+      const id = window.location.hash.slice(1);
+      if (CASE_CATEGORIES.some((item) => item.id === id)) setCurrentId(id);
+    };
+
+    applyHash();
+    // 這個 hash 不是頁內錨點，瀏覽器不會捲動，ScrollToTop 也因有 hash 而略過
+    window.scrollTo(0, 0);
+
+    window.addEventListener("hashchange", applyHash);
+    return () => window.removeEventListener("hashchange", applyHash);
+  }, []);
+
+  const current =
+    CASE_CATEGORIES.find((item) => item.id === currentId) ?? CASE_CATEGORIES[0];
+  const items = CASE_ITEMS[current.id] ?? [];
+
+  const select = (id: string) => {
+    setCurrentId(id);
+    // 更新網址但不留下歷史紀錄，返回鍵仍回到首頁
+    window.history.replaceState(null, "", `#${id}`);
+    window.scrollTo(0, 0);
   };
-}
-
-export default async function CaseCategoryPage(
-  props: PageProps<"/cases/[category]">,
-) {
-  const { category } = await props.params;
-  const current = CASE_CATEGORIES.find((item) => item.id === category);
-  if (!current) notFound();
-
-  const items = CASE_ITEMS[category] ?? [];
 
   return (
-    // 分類頁的選單僅五項，Tablet 不需兩列，故覆寫頁首高度為 73
+    // 案例頁的選單僅五項，Tablet 不需兩列，故覆寫頁首高度為 73
     <div className="contents max-lg:[--header-h:73px] max-md:[--header-h:106px]">
-      <CasePageHeader current={category} />
+      <CasePageHeader current={current.id} onSelect={select} />
 
       <main className="bg-white pt-(--header-h)">
         {/* 標題與註記，對應設計稿 1:5860 與 1:5863。

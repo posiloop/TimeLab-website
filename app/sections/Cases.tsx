@@ -17,7 +17,7 @@ export default function Cases() {
         {CASE_CATEGORIES.map((item) => (
           <li key={item.id}>
             <Link
-              href={`/cases/${item.id}`}
+              href={`/cases#${item.id}`}
               aria-label={`查看${item.label}案例`}
               className="group flex h-[280px] flex-col max-xl:h-[240px] max-md:h-[203px] items-center justify-center gap-[15px] rounded-[20px] border-2 border-brand-mist bg-white p-[15px] transition-transform duration-[400ms] ease-[cubic-bezier(0.22,1,0.36,1)] hover:scale-[0.96]"
             >
