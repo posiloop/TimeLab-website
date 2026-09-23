@@ -32,20 +32,21 @@ openssl rand -base64 32   # 產生 BETTER_AUTH_SECRET
 
 ### 2. AWS S3
 
-建一個 bucket，**Block all public access 全開**，前台透過 CloudFront 讀取：
+完整步驟見 **[s3-setup.md](./s3-setup.md)**，摘要：
 
-建議名稱 `timelabtw-media`。bucket 名稱在全球所有 AWS 帳號間唯一，
-且建立後無法更改（只能砍掉重建），若被佔用則加區域後綴，
-例如 `timelabtw-media-apne1`。只能用小寫字母、數字與連字號。
+1. 建 bucket（東京 `ap-northeast-1`），取消 Block all public access
+2. Bucket policy 只開放讀取 `media/*`
+3. 建 IAM 使用者，只給 `s3:PutObject` 與 `s3:DeleteObject`
+4. 把金鑰與 `NEXT_PUBLIC_MEDIA_URL` 填進 `.env`
 
-1. S3 bucket：關閉所有公開存取
-2. CloudFront distribution：來源指向該 bucket，用 Origin Access Control 授權
-3. 綁一個自訂網域（例如 `media.timelabtw.com`），填進 `NEXT_PUBLIC_MEDIA_URL`
-4. IAM 使用者只給 `s3:PutObject` 與 `s3:DeleteObject`，
-   **不要給** `ListBucket` 或 `DeleteBucket`
+一開始直連 S3 即可，不需要 CloudFront —— 媒體總量約 22MB，
+且 `next/image` 會在伺服器端先抓原圖再最佳化，訪客不會直接連到 S3。
+日後要換成 CloudFront 只需改 `NEXT_PUBLIC_MEDIA_URL` 一個值，
+因為資料庫只存 S3 key，完整網址在 `app/server/s3.ts` 的 `mediaUrl()` 組成。
 
 檔案的 S3 key 帶內容雜湊，同一個 key 的內容永不改變，
-所以設了 `max-age=31536000, immutable`，換圖不需要做 CDN invalidation。
+所以上傳時設了 `max-age=31536000, immutable` —— 換圖是產生新 key，
+瀏覽器不會拿到過期的舊圖。
 
 ### 3. 資料庫與內容匯入
 

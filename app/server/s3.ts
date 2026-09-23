@@ -5,8 +5,8 @@ import {
   S3Client,
 } from "@aws-sdk/client-s3";
 
-// 媒體檔案的公開網址前綴（CloudFront）。bucket 全私有，只允許 CDN 的
-// Origin Access Control 讀取，故前台一律走這個網域而非 S3 直連
+// 媒體檔案的公開網址前綴，S3 直連或 CloudFront 皆可。
+// 資料庫只存 key，完整網址一律在此處組成，換來源時只需改這個環境變數
 const MEDIA_BASE = process.env.NEXT_PUBLIC_MEDIA_URL ?? "";
 
 let client: S3Client | undefined;
