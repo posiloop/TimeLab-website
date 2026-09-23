@@ -1,13 +1,15 @@
 import SectionTitle from "../components/SectionTitle";
-import { FAQ_ITEMS } from "../data/faq";
+import { getFaqItems } from "../server/content/faq";
 
-export default function Faq() {
+export default async function Faq() {
+  const items = await getFaqItems();
+
   return (
     <section id="faq" className="px-16 max-lg:px-8 max-md:px-4">
       <SectionTitle>常見問題</SectionTitle>
 
       <div className="flex flex-col items-center gap-[10px] pb-6">
-        {FAQ_ITEMS.map((item) => (
+        {items.map((item) => (
           // 收合時高度 68px（僅露出問題列），展開後撐開顯示答案
           // 設計稿 State=Collapsed / Expanded 兩個 variant：
           // 收合為淡紫底、深灰字、向右箭頭；展開為白底加淡紫框、紫字、轉折箭頭

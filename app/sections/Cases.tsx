@@ -1,9 +1,11 @@
 import Image from "next/image";
 import Link from "next/link";
 import SectionTitle from "../components/SectionTitle";
-import { CASE_CATEGORIES } from "../data/cases";
+import { getCaseCategories } from "../server/content/cases";
 
-export default function Cases() {
+export default async function Cases() {
+  const categories = await getCaseCategories();
+
   return (
     <section id="cases" className="px-16 max-lg:px-8 max-md:px-4">
       <SectionTitle>活動案例</SectionTitle>
@@ -14,10 +16,10 @@ export default function Cases() {
 
       {/* 設計稿為三欄格線，末列兩張靠左對齊 */}
       <ul className="mx-auto grid max-w-[1060px] grid-cols-3 gap-5 px-4 pb-6 max-md:grid-cols-2">
-        {CASE_CATEGORIES.map((item) => (
+        {categories.map((item) => (
           <li key={item.id}>
             <Link
-              href={`/cases#${item.id}`}
+              href={`/cases#${item.slug}`}
               aria-label={`查看${item.label}案例`}
               className="group flex h-[280px] flex-col max-xl:h-[240px] max-md:h-[203px] items-center justify-center gap-[15px] rounded-[20px] border-2 border-brand-mist bg-white p-[15px] transition-transform duration-[400ms] ease-[cubic-bezier(0.22,1,0.36,1)] hover:scale-[0.96]"
             >

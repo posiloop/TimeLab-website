@@ -1,8 +1,10 @@
 import Image from "next/image";
 import Marquee from "../components/Marquee";
-import { HERO_TRACK_1, HERO_TRACK_2, HERO_TRACK_3 } from "../data/gallery";
+import { getHeroTracks } from "../server/content/hero";
 
-export default function About() {
+export default async function About() {
+  const tracks = await getHeroTracks();
+
   return (
     <section id="about" className="flex items-end max-lg:flex-col-reverse">
       <div className="flex h-[540px] flex-1 flex-col items-center justify-center gap-8 py-[120px] pl-[122px] pr-16 max-xl:pl-16 max-lg:h-[196px] max-lg:w-full max-lg:flex-none max-lg:flex-row max-lg:justify-center max-lg:gap-10 max-lg:px-6 max-lg:py-0 max-md:h-auto max-md:flex-col max-md:justify-center max-md:gap-8 max-md:px-6 max-md:py-14">
@@ -33,7 +35,7 @@ export default function About() {
             軌之間與軌內圖片皆留 16px，對應設計稿每張相框四周的白邊 */}
         <div className="flex w-[1440px] shrink-0 -rotate-6 flex-col gap-4">
           <Marquee
-            items={HERO_TRACK_1}
+            items={tracks.TRACK_1}
             height={410}
             gap={16}
             duration={40}
@@ -42,7 +44,7 @@ export default function About() {
             priority
           />
           <Marquee
-            items={HERO_TRACK_2}
+            items={tracks.TRACK_2}
             height={410}
             gap={16}
             duration={40}
@@ -50,7 +52,7 @@ export default function About() {
             priority
           />
           <Marquee
-            items={HERO_TRACK_3}
+            items={tracks.TRACK_3}
             height={410}
             gap={16}
             duration={40}

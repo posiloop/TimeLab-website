@@ -1,7 +1,37 @@
 services:
+  db:
+    image: postgres:17-alpine
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER:-timelab}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?請在 .env 設定 POSTGRES_PASSWORD}
+      POSTGRES_DB: ${POSTGRES_DB:-timelab_website}
+    volumes:
+      - db-data:/var/lib/postgresql/data
+    healthcheck:
+      # 網站啟動時就會查資料庫，DB 未就緒會讓首屏直接 500，
+      # 故用 healthcheck 而非單純的 depends_on
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-timelab}"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
   web:
-    build: .
+    build:
+      context: .
+      args:
+        # 這兩個值在 build 時就要定案：remotePatterns 與前端 bundle 都讀它們，
+        # 只放在執行期環境變數會讀不到
+        NEXT_PUBLIC_MEDIA_URL: ${NEXT_PUBLIC_MEDIA_URL}
+        NEXT_PUBLIC_SITE_URL: ${NEXT_PUBLIC_SITE_URL}
     image: timelab-website
+    restart: unless-stopped
     ports:
       - "3000:3000"
-    restart: unless-stopped
+    env_file: .env
+    depends_on:
+      db:
+        condition: service_healthy
+
+volumes:
+  db-data:

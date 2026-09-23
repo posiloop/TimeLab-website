@@ -1,11 +1,14 @@
 import { COMPANY, SITE_URL } from "../data/site";
-import { FAQ_ITEMS } from "../data/faq";
+import { getFaqItems } from "../server/content/faq";
 import { SOCIAL_LINKS } from "../data/links";
 import { STORES } from "../data/stores";
 
 /** 搜尋引擎用的結構化資料，不影響畫面。
     內容一律取自站上既有的資料檔，避免與顯示的文字不一致 */
-export default function StructuredData() {
+export default async function StructuredData() {
+  // 與畫面的 Accordion 呼叫同一個函式，確保搜尋結果不會顯示與網頁不符的答案
+  const faqItems = await getFaqItems();
+
   const graph = [
     {
       "@type": "Organization",
@@ -52,7 +55,7 @@ export default function StructuredData() {
     {
       "@type": "FAQPage",
       "@id": `${SITE_URL}/#faq`,
-      mainEntity: FAQ_ITEMS.map((item) => ({
+      mainEntity: faqItems.map((item) => ({
         "@type": "Question",
         name: item.question,
         acceptedAnswer: { "@type": "Answer", text: item.answer },

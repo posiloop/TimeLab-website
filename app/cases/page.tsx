@@ -1,4 +1,8 @@
 import type { Metadata } from "next";
+import {
+  getCaseCategories,
+  getCaseItemsBySlug,
+} from "../server/content/cases";
 import CasesView from "./CasesView";
 
 export const metadata: Metadata = {
@@ -14,6 +18,13 @@ export const metadata: Metadata = {
   },
 };
 
-export default function CasesPage() {
-  return <CasesView />;
+export default async function CasesPage() {
+  // 在此取資料再以 props 傳入：CasesView 是 client component，
+  // 不能直接 import 伺服器模組
+  const [categories, itemsBySlug] = await Promise.all([
+    getCaseCategories(),
+    getCaseItemsBySlug(),
+  ]);
+
+  return <CasesView categories={categories} itemsBySlug={itemsBySlug} />;
 }
