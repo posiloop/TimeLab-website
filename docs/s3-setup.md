@@ -15,8 +15,8 @@
 
 | 欄位 | 值 |
 |---|---|
-| Bucket name | `timelab-media`（全球唯一，被佔用就換一個） |
-| Region | `ap-northeast-1`（東京，離台灣最近） |
+| Bucket name | `timelab-website-tw` |
+| Region | `ap-east-2`（台北） |
 | Object Ownership | ACLs disabled（預設） |
 | Block Public Access | **取消勾選** "Block all public access"，並確認下方的警告 |
 | Bucket Versioning | Disable（預設。S3 key 帶內容雜湊，同一個 key 不會被覆寫，不需要版本控制） |
@@ -40,13 +40,11 @@
       "Effect": "Allow",
       "Principal": "*",
       "Action": "s3:GetObject",
-      "Resource": "arn:aws:s3:::timelab-media/media/*"
+      "Resource": "arn:aws:s3:::timelab-website-tw/media/*"
     }
   ]
 }
 ```
-
-把 `timelab-media` 換成你的 bucket 名稱。
 
 兩個重點：
 
@@ -95,7 +93,7 @@
       "Sid": "UploadAndDeleteMedia",
       "Effect": "Allow",
       "Action": ["s3:PutObject", "s3:DeleteObject"],
-      "Resource": "arn:aws:s3:::timelab-media/media/*"
+      "Resource": "arn:aws:s3:::timelab-website-tw/media/*"
     }
   ]
 }
@@ -116,13 +114,13 @@
 ## 5. 填進 .env
 
 ```bash
-AWS_REGION="ap-northeast-1"
+AWS_REGION="ap-east-2"
 AWS_ACCESS_KEY_ID="AKIA..."
 AWS_SECRET_ACCESS_KEY="..."
-S3_BUCKET="timelab-media"
+S3_BUCKET="timelab-website-tw"
 
 # 不含結尾斜線
-NEXT_PUBLIC_MEDIA_URL="https://timelab-media.s3.ap-northeast-1.amazonaws.com"
+NEXT_PUBLIC_MEDIA_URL="https://timelab-website-tw.s3.ap-east-2.amazonaws.com"
 ```
 
 `NEXT_PUBLIC_MEDIA_URL` 的格式是

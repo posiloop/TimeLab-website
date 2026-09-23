@@ -34,7 +34,7 @@ openssl rand -base64 32   # 產生 BETTER_AUTH_SECRET
 
 完整步驟見 **[s3-setup.md](./s3-setup.md)**，摘要：
 
-1. 建 bucket（東京 `ap-northeast-1`），取消 Block all public access
+1. 建 bucket（台北 `ap-east-2`），取消 Block all public access
 2. Bucket policy 只開放讀取 `media/*`
 3. 建 IAM 使用者，只給 `s3:PutObject` 與 `s3:DeleteObject`
 4. 把金鑰與 `NEXT_PUBLIC_MEDIA_URL` 填進 `.env`
