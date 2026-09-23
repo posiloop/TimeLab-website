@@ -34,6 +34,10 @@ openssl rand -base64 32   # 產生 BETTER_AUTH_SECRET
 
 建一個 bucket，**Block all public access 全開**，前台透過 CloudFront 讀取：
 
+建議名稱 `timelabtw-media`。bucket 名稱在全球所有 AWS 帳號間唯一，
+且建立後無法更改（只能砍掉重建），若被佔用則加區域後綴，
+例如 `timelabtw-media-apne1`。只能用小寫字母、數字與連字號。
+
 1. S3 bucket：關閉所有公開存取
 2. CloudFront distribution：來源指向該 bucket，用 Origin Access Control 授權
 3. 綁一個自訂網域（例如 `media.timelabtw.com`），填進 `NEXT_PUBLIC_MEDIA_URL`
