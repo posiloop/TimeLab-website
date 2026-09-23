@@ -152,6 +152,17 @@ bun run seed:content
 `case-covers/`、`frames/` 五個資料夾，隨便點一個檔案，
 用 Object URL 在瀏覽器開得起來就沒問題。
 
+**最後要重啟網站服務一次。** 前台的查詢結果是永久快取直到明確失效，
+若服務在遷移前就已啟動，它會快取住「資料庫是空的」，
+遷移完成後畫面仍是空白且不會自己恢復：
+
+```bash
+rm -rf .next && bun run dev          # 開發
+docker compose restart web           # 正式環境
+```
+
+這只在首次遷移時需要；之後後台每次儲存都會自動讓快取失效。
+
 ---
 
 ## 費用
