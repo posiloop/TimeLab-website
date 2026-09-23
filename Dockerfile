@@ -30,9 +30,11 @@ ENV NEXT_TELEMETRY_DISABLED=1
 ENV PORT=3000
 ENV HOSTNAME=0.0.0.0
 
-# sharp 的預編譯二進位檔是對 glibc 連結的，alpine 用的是 musl。
-# 少了這個相容層，上傳圖片時會在執行期才拋出載入失敗
-RUN apk add --no-cache libc6-compat
+# libc6-compat：sharp 的預編譯二進位檔是對 glibc 連結的，alpine 用的是 musl，
+#   少了這個相容層，上傳圖片時會在執行期才拋出載入失敗。
+# ffmpeg：後台讓使用者上傳 GIF，由伺服器轉成 WebM/MP4/封面圖
+#   （五組素材 30MB 的 GIF 轉檔後只剩 1.5MB）
+RUN apk add --no-cache libc6-compat ffmpeg
 
 RUN addgroup -g 1001 -S nodejs && adduser -u 1001 -S nextjs -G nodejs
 

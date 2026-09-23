@@ -2,10 +2,18 @@
 
 import { useRouter } from "next/navigation";
 import { useState, useTransition } from "react";
+import GifUpload, {
+  type ConvertedFrame,
+} from "@/app/components/admin/GifUpload";
 import SaveBar from "@/app/components/admin/SaveBar";
 import SortableList from "@/app/components/admin/SortableList";
 import ToggleSwitch from "@/app/components/admin/ToggleSwitch";
-import { reorderFrames, toggleFrame, updateFrame } from "../actions";
+import {
+  replaceFrameMedia,
+  reorderFrames,
+  toggleFrame,
+  updateFrame,
+} from "../actions";
 
 type Frame = {
   id: string;
@@ -109,13 +117,28 @@ export default function FramesEditor({ frames }: { frames: Frame[] }) {
     });
   };
 
+  /** 換上新轉好的影片。三個檔案一起替換，不會出現只換了一半的狀態 */
+  const replaceMedia = (id: string) => (result: ConvertedFrame) => {
+    setError("");
+    startTransition(async () => {
+      const saved = await replaceFrameMedia(id, {
+        posterId: result.posterId,
+        webmId: result.webmId,
+        mp4Id: result.mp4Id,
+      });
+      if (!saved.ok) return setError(saved.error);
+      router.refresh();
+    });
+  };
+
   return (
     <div className="flex flex-col gap-5">
       <div>
         <h1 className="text-h2 text-brand-ink">拍貼框動畫</h1>
         <p className="mt-1 text-sm text-brand-ink/70">
-          網站中段會動的那排拍貼框。每一組的傾斜角度可以調整，
-          下方的預覽會即時反映實際效果。
+          網站中段會動的那排拍貼框。要更換動畫，直接上傳一個 GIF 即可，
+          系統會自動轉成網頁播放用的格式（檔案會小很多，網站載入比較快）。
+          傾斜角度可以調整，左側預覽會即時反映效果。
         </p>
       </div>
 
@@ -214,21 +237,19 @@ export default function FramesEditor({ frames }: { frames: Frame[] }) {
                 </button>
               </div>
 
-              <ToggleSwitch
-                checked={frame.isVisible}
-                onChange={(next) => toggle(frame.id, next)}
-                label="顯示在網站上"
-                disabled={pending}
-              />
+              <div className="flex flex-wrap items-center justify-between gap-3 border-t border-black/5 pt-3">
+                <ToggleSwitch
+                  checked={frame.isVisible}
+                  onChange={(next) => toggle(frame.id, next)}
+                  label="顯示在網站上"
+                  disabled={pending}
+                />
+                <GifUpload onConverted={replaceMedia(frame.id)} />
+              </div>
             </div>
           </div>
         )}
       />
-
-      <p className="text-caption text-brand-ink/60">
-        要更換影片本身，需要同時準備 WebM、MP4 與封面圖三個檔案，
-        目前請聯繫開發者處理。
-      </p>
 
       <SaveBar
         count={changeCount}

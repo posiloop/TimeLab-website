@@ -159,8 +159,12 @@ const IMAGE_MIME: Record<string, string> = {
  * 上傳單一檔案並建立（或複用）MediaAsset。
  *
  * fallbackSize 供影片使用：sharp 讀不到 webm/mp4 的尺寸，而這兩個欄位對
- * 影片並不參與任何渲染決策（版面吃的是 FrameAnimation.display*），
- * 故沿用同組 poster 的尺寸，不為此引入 ffprobe。
+ * 影片並不參與渲染決策（版面吃的是 FrameAnimation.display*），
+ * 故沿用同組 poster 的尺寸。
+ *
+ * 這裡刻意沿用 public/videos/ 既有的檔案，而非從 GIF 重新轉檔 ——
+ * 遷移的目標是外觀完全不變，重新編碼會引入不必要的變數。
+ * 後台之後上傳的 GIF 才會走 app/server/gif-to-video.ts 轉檔。
  */
 async function ingest(
   file: string,

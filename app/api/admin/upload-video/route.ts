@@ -1,21 +1,22 @@
 import { NextResponse } from "next/server";
-import sharp from "sharp";
 import { getSessionFrom } from "@/app/server/admin-guard";
 import { prisma } from "@/app/server/db";
+import { convertGif } from "@/app/server/gif-to-video";
 import { checksumOf, mediaKey, mediaUrl, putObject } from "@/app/server/s3";
 
 export const runtime = "nodejs";
 
-/** 現有五支影片最大 335KB，30MB 對重新製作的素材已相當寬裕 */
-const MAX_VIDEO_BYTES = 30 * 1024 * 1024;
-const MAX_POSTER_BYTES = 12 * 1024 * 1024;
+/** GIF 未經壓縮，原始素材約 5–10MB；40MB 已留足餘裕 */
+const MAX_BYTES = 40 * 1024 * 1024;
 
 /**
- * 拍貼框動畫上傳：WebM、MP4 與封面圖三個檔一次送。
+ * 拍貼框動畫上傳：收一個 GIF，轉成網頁用的三個檔案。
  *
- * 綁在同一個請求而非分三次，是因為三者必須同時成立 —— 只傳了 WebM 而
- * MP4 失敗的話，Safari 就播不出來，卻不會有任何錯誤訊息。分開上傳會在
- * 中途失敗時留下半殘的記錄。
+ * 後台只讓使用者準備一個 GIF，其餘由伺服器處理 —— 要他們自備 WebM、
+ * MP4 與封面圖三個檔案太容易出錯，而 GIF 直接上站又太肥
+ *（五組原檔共 30MB，轉檔後 1.5MB）。
+ *
+ * 走 route handler 而非 server action：後者 body 上限 1MB，GIF 必定超過。
  */
 export async function POST(request: Request) {
   const session = await getSessionFrom(request);
@@ -24,60 +25,50 @@ export async function POST(request: Request) {
   }
 
   const form = await request.formData();
-  const webm = form.get("webm");
-  const mp4 = form.get("mp4");
-  const poster = form.get("poster");
+  const file = form.get("file");
 
-  if (
-    !(webm instanceof File) ||
-    !(mp4 instanceof File) ||
-    !(poster instanceof File)
-  ) {
+  if (!(file instanceof File)) {
+    return NextResponse.json({ error: "沒有收到檔案" }, { status: 400 });
+  }
+  if (file.type !== "image/gif") {
     return NextResponse.json(
-      { error: "需要同時提供 WebM、MP4 與封面圖三個檔案" },
-      { status: 400 },
-    );
-  }
-  if (webm.type !== "video/webm") {
-    return NextResponse.json({ error: "第一個檔案須為 WebM" }, { status: 415 });
-  }
-  if (mp4.type !== "video/mp4") {
-    return NextResponse.json({ error: "第二個檔案須為 MP4" }, { status: 415 });
-  }
-  if (webm.size > MAX_VIDEO_BYTES || mp4.size > MAX_VIDEO_BYTES) {
-    return NextResponse.json(
-      { error: "影片檔超過 30MB 上限" },
-      { status: 413 },
-    );
-  }
-  if (poster.size > MAX_POSTER_BYTES) {
-    return NextResponse.json({ error: "封面圖超過 12MB" }, { status: 413 });
-  }
-
-  const posterBuffer = Buffer.from(await poster.arrayBuffer());
-
-  let posterMeta;
-  try {
-    posterMeta = await sharp(posterBuffer).metadata();
-  } catch {
-    return NextResponse.json(
-      { error: "封面圖不是有效的圖片檔" },
+      { error: "請上傳 GIF 動圖檔" },
       { status: 415 },
     );
   }
-  if (!posterMeta.width || !posterMeta.height) {
-    return NextResponse.json({ error: "讀不出封面圖尺寸" }, { status: 415 });
+  if (file.size > MAX_BYTES) {
+    const mb = (file.size / 1024 / 1024).toFixed(1);
+    return NextResponse.json(
+      { error: `檔案 ${mb}MB，超過 40MB 上限` },
+      { status: 413 },
+    );
   }
 
-  /** 建立或複用一個 asset。影片沿用封面圖的尺寸 —— 這兩個欄位對影片而言
-      不參與渲染決策（版面吃的是 FrameAnimation.display*），不值得為此
-      引入 ffprobe 這類原生相依 */
-  const ingest = async (
-    file: File,
+  const gif = Buffer.from(await file.arrayBuffer());
+
+  let converted;
+  try {
+    converted = await convertGif(gif);
+  } catch (error) {
+    // 轉檔失敗的原因（ffmpeg 未安裝、檔案損毀）對使用者有意義，照實回傳
+    return NextResponse.json(
+      {
+        error:
+          error instanceof Error ? error.message : "GIF 轉檔失敗，請確認檔案",
+      },
+      { status: 422 },
+    );
+  }
+
+  const { width, height } = converted;
+
+  /** 三個產出各自建立或複用 asset。以內容雜湊去重，重複上傳同一個 GIF
+      不會在 S3 留下第二份 */
+  const store = async (
     buffer: Buffer,
     ext: string,
-    width: number,
-    height: number,
+    mimeType: string,
+    originalName: string,
   ) => {
     const checksum = checksumOf(buffer);
     const existing = await prisma.mediaAsset.findUnique({
@@ -86,48 +77,44 @@ export async function POST(request: Request) {
     if (existing) return existing;
 
     const key = mediaKey("frames", checksum, ext);
-    await putObject(key, buffer, file.type);
+    await putObject(key, buffer, mimeType);
 
     return prisma.mediaAsset.create({
       data: {
-        kind: file.type.startsWith("video/") ? "VIDEO" : "IMAGE",
+        kind: mimeType.startsWith("video/") ? "VIDEO" : "IMAGE",
         key,
         intrinsicWidth: width,
         intrinsicHeight: height,
-        mimeType: file.type,
+        mimeType,
         byteSize: buffer.byteLength,
         checksum,
-        originalName: file.name,
+        originalName,
         uploadedById: session.user.id,
       },
     });
   };
 
-  const width = posterMeta.width;
-  const height = posterMeta.height;
+  // 副檔名前的原始檔名保留下來，後台才看得出這三個檔案同源
+  const base = file.name.replace(/\.gif$/i, "");
 
-  const posterAsset = await ingest(poster, posterBuffer, "jpg", width, height);
-  const webmAsset = await ingest(
-    webm,
-    Buffer.from(await webm.arrayBuffer()),
-    "webm",
-    width,
-    height,
-  );
-  const mp4Asset = await ingest(
-    mp4,
-    Buffer.from(await mp4.arrayBuffer()),
-    "mp4",
-    width,
-    height,
-  );
+  const [poster, webm, mp4] = await Promise.all([
+    store(converted.poster, "jpg", "image/jpeg", `${base}-poster.jpg`),
+    store(converted.webm, "webm", "video/webm", `${base}.webm`),
+    store(converted.mp4, "mp4", "video/mp4", `${base}.mp4`),
+  ]);
 
   return NextResponse.json({
-    posterId: posterAsset.id,
-    webmId: webmAsset.id,
-    mp4Id: mp4Asset.id,
-    posterUrl: mediaUrl(posterAsset.key),
+    posterId: poster.id,
+    webmId: webm.id,
+    mp4Id: mp4.id,
+    posterUrl: mediaUrl(poster.key),
     width,
     height,
+    // 讓後台顯示「30MB 的 GIF 轉成 1.5MB」這類回饋
+    originalBytes: file.size,
+    convertedBytes:
+      converted.webm.byteLength +
+      converted.mp4.byteLength +
+      converted.poster.byteLength,
   });
 }
