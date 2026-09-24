@@ -20,6 +20,7 @@ import {
   verticalListSortingStrategy,
 } from "@dnd-kit/sortable";
 import { CSS } from "@dnd-kit/utilities";
+import { useId } from "react";
 
 type Direction = "vertical" | "horizontal" | "grid";
 
@@ -53,6 +54,8 @@ export default function SortableList<T>({
   direction = "vertical",
   className = "",
 }: SortableListProps<T>) {
+  const dndId = useId();
+
   const sensors = useSensors(
     // 滑鼠需移動 8px 才視為拖曳，否則單純點擊按鈕會被誤判
     useSensor(PointerSensor, { activationConstraint: { distance: 8 } }),
@@ -77,6 +80,11 @@ export default function SortableList<T>({
 
   return (
     <DndContext
+      // 不指定 id 時，dnd-kit 會用模組層級的全域計數器產生內部的
+      // aria-describedby。伺服器端連續渲染多個清單會讓計數累加，
+      // 瀏覽器端卻從零重新開始，兩邊對不上就報 hydration 錯誤。
+      // useId 在 SSR 與 client 產生一致的值，正好消掉這個落差
+      id={dndId}
       sensors={sensors}
       collisionDetection={closestCenter}
       onDragEnd={handleDragEnd}
