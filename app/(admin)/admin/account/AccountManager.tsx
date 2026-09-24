@@ -64,13 +64,12 @@ export default function AccountManager({
   };
 
   const reset = (user: User) => {
-    if (
-      !confirm(
-        `重設「${user.name}」的密碼？\n\n舊密碼會立刻失效，該帳號在所有裝置上也會被登出。`,
-      )
-    ) {
-      return;
-    }
+    const self = user.id === currentUserId;
+    const message = self
+      ? "重設自己的密碼？\n\n新密碼會顯示在畫面上，請先複製再關掉。\n目前這個視窗不會被登出，但其他裝置上的登入會失效。"
+      : `重設「${user.name}」的密碼？\n\n舊密碼會立刻失效，該帳號在所有裝置上也會被登出。`;
+
+    if (!confirm(message)) return;
     setError("");
     setIssued(null);
     setCopied(false);
@@ -192,8 +191,7 @@ export default function AccountManager({
               <button
                 type="button"
                 onClick={() => reset(user)}
-                // 重設自己的密碼會當場把自己登出，要改密碼有其他途徑
-                disabled={pending || user.id === currentUserId}
+                disabled={pending}
                 className="flex items-center gap-1 rounded-full px-3 py-1 text-caption text-brand transition-colors hover:bg-brand-mist disabled:cursor-not-allowed disabled:text-brand-ink/30 disabled:hover:bg-transparent"
               >
                 <KeyRound aria-hidden className="size-3.5" />

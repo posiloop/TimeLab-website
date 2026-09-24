@@ -540,7 +540,7 @@ export type ResetPasswordResult =
 export async function resetPassword(
   id: string,
 ): Promise<ResetPasswordResult> {
-  await requireSession();
+  const session = await requireSession();
 
   const user = await prisma.user.findUnique({ where: { id } });
   if (!user) return { ok: false, error: "找不到這個帳號" };
@@ -562,8 +562,17 @@ export async function resetPassword(
   }
 
   // 舊密碼已失效，該帳號在其他裝置上的登入狀態也一併清掉，
-  // 否則被交接的帳號仍可能停在別人手上的分頁裡
-  await ctx.internalAdapter.deleteUserSessions(id);
+  // 否則被交接的帳號仍可能停在別人手上的分頁裡。
+  //
+  // 重設自己的密碼時保留目前這一個 session：一併清掉的話，使用者會在
+  // 看到新密碼之前就被登出，而明文只有這一次拿得到。
+  // 直接下 SQL 而非用 deleteUserSessions，因為它不接受排除條件
+  await prisma.session.deleteMany({
+    where: {
+      userId: id,
+      ...(session.user.id === id ? { NOT: { id: session.session.id } } : {}),
+    },
+  });
 
   return { ok: true, email: user.email, password };
 }
