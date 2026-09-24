@@ -2,7 +2,13 @@
 
 import { createContext, useCallback, useContext, useEffect, useRef, useState } from "react";
 
-type PreviewTarget = { src: string; caption?: string };
+type PreviewTarget = {
+  /** 圖片網址，或影片的封面圖 */
+  src: string;
+  caption?: string;
+  /** 給定時放大顯示會播放的影片，而非靜態圖 */
+  video?: { webm: string; mp4: string };
+};
 
 const PreviewContext = createContext<(target: PreviewTarget) => void>(() => {});
 
@@ -51,13 +57,29 @@ export default function ImagePreviewProvider({
       >
         {target && (
           <div className="flex flex-col items-center gap-3">
-            {/* 圖片來自 S3，且此處只是原尺寸預覽，用原生 img 即可 */}
-            {/* eslint-disable-next-line @next/next/no-img-element */}
-            <img
-              src={target.src}
-              alt={target.caption ?? ""}
-              className="max-h-[78dvh] max-w-[90vw] rounded-[8px] object-contain"
-            />
+            {target.video ? (
+              // 影片放大後仍要能看出動畫內容，故同樣自動播放
+              <video
+                poster={target.src}
+                autoPlay
+                muted
+                loop
+                playsInline
+                aria-label={target.caption}
+                className="max-h-[78dvh] max-w-[90vw] rounded-[8px] object-contain"
+              >
+                <source src={target.video.webm} type="video/webm" />
+                <source src={target.video.mp4} type="video/mp4" />
+              </video>
+            ) : (
+              /* 圖片來自 S3，且此處只是原尺寸預覽，用原生 img 即可 */
+              /* eslint-disable-next-line @next/next/no-img-element */
+              <img
+                src={target.src}
+                alt={target.caption ?? ""}
+                className="max-h-[78dvh] max-w-[90vw] rounded-[8px] object-contain"
+              />
+            )}
 
             <div className="flex items-center gap-3">
               {target.caption && (

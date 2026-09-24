@@ -5,6 +5,7 @@ import { useState, useTransition } from "react";
 import GifUpload, {
   type ConvertedFrame,
 } from "@/app/components/admin/GifUpload";
+import { useImagePreview } from "@/app/components/admin/ImagePreview";
 import SaveBar from "@/app/components/admin/SaveBar";
 import { useToast } from "@/app/components/admin/Toast";
 import SortableList, {
@@ -53,6 +54,7 @@ function boundingBox(width: number, height: number, degrees: number) {
 export default function FramesEditor({ frames }: { frames: Frame[] }) {
   const router = useRouter();
   const toast = useToast();
+  const preview = useImagePreview();
   const [list, setList] = useState(frames);
   const [baseline, setBaseline] = useState(frames);
   const [pending, startTransition] = useTransition();
@@ -182,21 +184,35 @@ export default function FramesEditor({ frames }: { frames: Frame[] }) {
               <div className="flex h-60 w-full items-center justify-center">
                 {/* 播放實際的影片而非封面圖 —— 這一頁的重點就是確認動畫內容，
                     靜態圖看不出動了什麼。poster 在影片載入前先頂著。
-                    muted 是自動播放的前提，playsInline 避免 iOS 搶全螢幕 */}
-                <video
-                  key={frame.webmUrl}
-                  poster={frame.posterUrl}
-                  autoPlay
-                  muted
-                  loop
-                  playsInline
-                  aria-label={frame.alt}
-                  style={{ rotate: `${frame.rotate}deg` }}
-                  className="max-h-full max-w-full object-contain transition-transform duration-200"
+                    muted 是自動播放的前提，playsInline 避免 iOS 搶全螢幕。
+                    外層 button 用 contents 不參與版面，影片才受 h-60 約束 */}
+                <button
+                  type="button"
+                  onClick={() =>
+                    preview({
+                      src: frame.posterUrl,
+                      caption: frame.alt,
+                      video: { webm: frame.webmUrl, mp4: frame.mp4Url },
+                    })
+                  }
+                  aria-label={`放大檢視 ${frame.alt}`}
+                  className="contents"
                 >
-                  <source src={frame.webmUrl} type="video/webm" />
-                  <source src={frame.mp4Url} type="video/mp4" />
-                </video>
+                  <video
+                    key={frame.webmUrl}
+                    poster={frame.posterUrl}
+                    autoPlay
+                    muted
+                    loop
+                    playsInline
+                    aria-label={frame.alt}
+                    style={{ rotate: `${frame.rotate}deg` }}
+                    className="max-h-full max-w-full cursor-zoom-in object-contain transition-transform duration-200 hover:opacity-75"
+                  >
+                    <source src={frame.webmUrl} type="video/webm" />
+                    <source src={frame.mp4Url} type="video/mp4" />
+                  </video>
+                </button>
               </div>
             </div>
 
