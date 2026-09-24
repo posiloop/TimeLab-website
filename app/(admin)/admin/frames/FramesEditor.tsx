@@ -38,8 +38,10 @@ type Frame = {
  * 算出旋轉後的外接矩形。
  *
  * CSS 的 rotate 不會改變元素佔用的版面空間，所以要另外保留位置；
- * 保留得不夠，影片的四個角就會被容器裁掉。手算這個對使用者不合理，
- * 故提供一鍵計算。
+ * 保留得不夠，影片的四個角就會被容器裁掉。
+ *
+ * 這個值不出現在介面上 —— 它由傾斜角度唯一決定，改角度時自動重算即可，
+ * 讓使用者看到兩個無法自行判斷的數字只會造成困惑。
  */
 function boundingBox(width: number, height: number, degrees: number) {
   const rad = (Math.abs(degrees) * Math.PI) / 180;
@@ -254,29 +256,6 @@ export default function FramesEditor({ frames }: { frames: Frame[] }) {
                   className="accent-brand"
                 />
               </label>
-
-              <div className="flex flex-wrap items-end gap-3">
-                <p className="text-caption text-brand-ink/60">
-                  版面尺寸 {frame.displayWidth} × {frame.displayHeight}
-                  　保留空間 {frame.boxWidth} × {frame.boxHeight}
-                </p>
-                <button
-                  type="button"
-                  onClick={() =>
-                    patch(
-                      frame.id,
-                      boundingBox(
-                        frame.displayWidth,
-                        frame.displayHeight,
-                        frame.rotate,
-                      ),
-                    )
-                  }
-                  className="rounded-full bg-brand-mist px-3 py-1 text-caption text-brand transition-colors hover:bg-brand hover:text-white"
-                >
-                  重新計算保留空間
-                </button>
-              </div>
 
               <div className="flex flex-wrap items-center justify-between gap-3 border-t border-black/5 pt-3">
                 <ToggleSwitch
