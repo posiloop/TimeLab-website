@@ -1,5 +1,3 @@
-import { ArrowLeft } from "lucide-react";
-import Link from "next/link";
 import { prisma } from "@/app/server/db";
 import { mediaUrl } from "@/app/server/s3";
 import CategoryCard from "./CategoryCard";
@@ -47,14 +45,6 @@ export default async function CasesAdminPage() {
         分類的網址代號（{categories.map((c) => c.slug).join("、")}）不開放修改
         —— 它被首頁的連結、社群貼文與名片上的網址依賴，改了之後舊連結會導向錯誤的分類。
       </p>
-
-      <Link
-        href="/admin"
-        className="flex items-center gap-1 self-start text-caption text-brand hover:underline"
-      >
-        <ArrowLeft aria-hidden className="size-3.5" />
-        回總覽
-      </Link>
     </div>
   );
 }

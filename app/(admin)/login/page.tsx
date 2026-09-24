@@ -30,7 +30,8 @@ function LoginForm() {
     }
 
     // proxy 把原本要去的頁面放在 from，登入後導回去
-    router.push(params.get("from") ?? "/admin");
+    // 直接進第一個管理頁，省去經 /admin 再轉一次
+    router.push(params.get("from") ?? "/admin/hero");
     router.refresh();
   };
 

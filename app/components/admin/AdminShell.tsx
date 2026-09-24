@@ -11,7 +11,6 @@ import ImagePreviewProvider from "./ImagePreview";
 // 順序依使用者指定，大致對應內容在網站上由上而下的位置，
 // 最後才是與內容無關的帳號管理
 const NAV = [
-  { href: "/admin", label: "總覽" },
   { href: "/admin/hero", label: "首頁主視覺" },
   { href: "/admin/frames", label: "拍貼框動畫" },
   { href: "/admin/cases", label: "活動案例" },
@@ -57,11 +56,8 @@ export default function AdminShell({
         </div>
 
         {NAV.map((item) => {
-          // 「總覽」只在完全相符時highlight，否則每一頁都會把它算成目前頁
-          const active =
-            item.href === "/admin"
-              ? pathname === "/admin"
-              : pathname.startsWith(item.href);
+          // startsWith 讓 /admin/cases/brand 也把「活動案例」標為所在頁
+          const active = pathname.startsWith(item.href);
 
           return (
             <Link
