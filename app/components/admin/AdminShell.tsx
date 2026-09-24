@@ -1,5 +1,6 @@
 "use client";
 
+import Image from "next/image";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import { useState } from "react";
@@ -36,8 +37,15 @@ export default function AdminShell({
   return (
     <div className="flex min-h-dvh bg-brand-canvas max-md:flex-col">
       <aside className="flex w-60 shrink-0 flex-col gap-1 bg-brand-mist p-4 max-md:w-full max-md:flex-row max-md:flex-wrap max-md:gap-2">
-        <div className="px-3 py-4 max-md:hidden">
-          <p className="text-h2 text-brand">TiMELAB</p>
+        <div className="flex flex-col gap-1 px-3 py-4 max-md:hidden">
+          <Image
+            src="/images/brand/logo-wide.png"
+            alt="時光研究室 TiMELAB"
+            width={488}
+            height={88}
+            priority
+            className="h-[26px] w-auto self-start object-contain"
+          />
           <p className="text-caption text-brand-ink">網站內容管理</p>
         </div>
 

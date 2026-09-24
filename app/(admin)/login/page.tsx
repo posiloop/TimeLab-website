@@ -1,5 +1,6 @@
 "use client";
 
+import Image from "next/image";
 import { useRouter, useSearchParams } from "next/navigation";
 import { Suspense, useState } from "react";
 import { authClient } from "@/app/components/admin/auth-client";
@@ -38,8 +39,16 @@ function LoginForm() {
       onSubmit={submit}
       className="card-surface flex w-[380px] max-w-full flex-col gap-5 rounded-[20px] p-10 max-md:p-6"
     >
-      <div className="flex flex-col gap-1 text-center">
-        <h1 className="text-h2 text-brand">TiMELAB</h1>
+      <div className="flex flex-col items-center gap-2 text-center">
+        {/* 與前台頁首同一個標誌，讓後台一眼看得出是同一個站 */}
+        <Image
+          src="/images/brand/logo-wide.png"
+          alt="時光研究室 TiMELAB"
+          width={488}
+          height={88}
+          priority
+          className="h-[34px] w-auto object-contain"
+        />
         <p className="text-caption text-brand-ink">網站內容管理</p>
       </div>
 
