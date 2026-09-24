@@ -260,7 +260,7 @@ export default function UploadDropzone({
           void accept(event.dataTransfer.files);
         }}
         onClick={() => inputRef.current?.click()}
-        className={`flex cursor-pointer flex-col items-center justify-center gap-1 rounded-[12px] border-2 border-dashed p-8 text-center transition-colors duration-[400ms] ease-[cubic-bezier(0.22,1,0.36,1)] ${
+        className={`flex cursor-pointer flex-col items-center justify-center gap-1 rounded-[12px] border-2 border-dashed px-8 py-14 text-center transition-colors duration-[400ms] ease-[cubic-bezier(0.22,1,0.36,1)] ${
           dragOver
             ? "border-brand bg-brand-mist"
             : "border-brand/40 bg-white hover:border-brand"

@@ -129,6 +129,9 @@ export async function POST(request: Request) {
     mp4Id: mp4.id,
     gifId: original.id,
     posterUrl: mediaUrl(poster.key),
+    // 去掉副檔名的原始檔名，給新增時當預設的描述文字 ——
+    // 一次傳多個時全叫「新的拍貼框」會分不出誰是誰
+    name: base,
     webmUrl: mediaUrl(webm.key),
     mp4Url: mediaUrl(mp4.key),
     gifUrl: mediaUrl(original.key),

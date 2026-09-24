@@ -177,12 +177,12 @@ export default function FramesEditor({ frames }: { frames: Frame[] }) {
     });
   };
 
-  /** 上傳 GIF 新增一個拍貼框。描述文字先留空白，由使用者接著填 */
+  /** 上傳 GIF 新增一個拍貼框。描述文字先以檔名帶入，由使用者接著改 */
   const create = (result: ConvertedFrame) => {
     setError("");
     startTransition(async () => {
       const saved = await createFrameAnimation({
-        alt: "新的拍貼框",
+        alt: result.name || "新的拍貼框",
         posterId: result.posterId,
         webmId: result.webmId,
         mp4Id: result.mp4Id,
@@ -197,7 +197,7 @@ export default function FramesEditor({ frames }: { frames: Frame[] }) {
 
       setList((prev) => [...prev, saved.data]);
       setBaseline((prev) => [...prev, saved.data]);
-      toast("已新增拍貼框，記得改描述文字");
+      toast("已新增拍貼框");
       router.refresh();
     });
   };
@@ -361,12 +361,22 @@ export default function FramesEditor({ frames }: { frames: Frame[] }) {
         )}
       />
 
-      <section className="card-surface flex flex-col items-center gap-2 rounded-[12px] border-2 border-dashed border-brand/40 p-6">
-        <p className="text-sm font-bold text-brand">新增一個拍貼框</p>
-        <p className="text-caption text-brand-ink/70">
-          上傳 GIF，系統會轉成網頁播放用的格式並加到最後面。
-        </p>
-        <GifUpload onConverted={create} label="上傳 GIF 新增拍貼框" />
+      {/* 外層不再自己畫虛線框 —— dropzone 模式的 GifUpload 已經有了，
+          兩層疊起來只會變成雙框 */}
+      <section className="card-surface flex flex-col gap-2 rounded-[12px] p-4">
+        <div>
+          <h2 className="text-sm font-bold text-brand">新增一個拍貼框</h2>
+          <p className="mt-1 text-caption text-brand-ink/70">
+            上傳 GIF，系統會轉成網頁播放用的格式並加到最後面。
+          </p>
+        </div>
+        <GifUpload
+          onConverted={create}
+          label="選擇 GIF"
+          submitLabel="確認新增"
+          dropzone
+          multiple
+        />
       </section>
 
       <SaveBar
