@@ -219,10 +219,14 @@ export default function HeroEditor({
               direction="horizontal"
               className="flex flex-wrap gap-2"
               renderItem={(slide, index) => (
+                // 這裡的縮圖只用來拖曳排序，不開放點擊放大 ——
+                // 要看大圖在上方圖庫，同一張圖不必兩處都能點。
+                // 游標也該維持 grab，被 zoom-in 蓋掉會讓人以為點了會放大
                 <div className="w-16 cursor-grab">
-                  <PreviewableImage
+                  {/* eslint-disable-next-line @next/next/no-img-element */}
+                  <img
                     src={slide.url}
-                    caption={slide.name}
+                    alt=""
                     className="h-24 w-full rounded-[6px] border border-black/10 object-cover"
                   />
                   <p className="text-center text-caption text-brand-ink/50">

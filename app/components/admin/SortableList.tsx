@@ -125,8 +125,11 @@ function SortableItem({
         opacity: isDragging ? 0.4 : 1,
         zIndex: isDragging ? 10 : undefined,
       }}
-      // touch-none 讓觸控裝置把手勢交給 dnd-kit，否則會被瀏覽器當成捲動
-      className="touch-none"
+      // touch-none 讓觸控裝置把手勢交給 dnd-kit，否則會被瀏覽器當成捲動。
+      // 拖曳中統一顯示 grabbing；靜止時的游標交給各頁自己決定 ——
+      // 有些項目整片可拖，有些只有把手可拖，且項目內常有輸入框與按鈕，
+      // 在那些元素上顯示抓取游標並不正確
+      className={`touch-none ${isDragging ? "cursor-grabbing" : ""}`}
       {...attributes}
       {...listeners}
     >
