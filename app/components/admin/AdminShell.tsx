@@ -36,7 +36,10 @@ export default function AdminShell({
 
   return (
     <div className="flex min-h-dvh bg-brand-canvas max-md:flex-col">
-      <aside className="flex w-60 shrink-0 flex-col gap-1 bg-brand-mist p-4 max-md:w-full max-md:flex-row max-md:flex-wrap max-md:gap-2">
+      {/* sticky + 視窗高度：側邊欄若跟著內容一起長高，mt-auto 的登出區
+          會被推到整頁最底部，得捲到最後才看得到。
+          Mobile 改回一般流排版，選單橫向排列於頁面上方 */}
+      <aside className="sticky top-0 flex h-dvh w-60 shrink-0 flex-col gap-1 overflow-y-auto bg-brand-mist p-4 max-md:static max-md:h-auto max-md:w-full max-md:flex-row max-md:flex-wrap max-md:gap-2 max-md:overflow-visible">
         <div className="flex flex-col gap-1 px-3 py-4 max-md:hidden">
           <Image
             src="/images/brand/logo-wide.png"
