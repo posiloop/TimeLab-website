@@ -9,7 +9,7 @@ import { useConfirm } from "@/app/components/admin/ConfirmDialog";
 import SaveBar from "@/app/components/admin/SaveBar";
 import { useToast } from "@/app/components/admin/Toast";
 import SortableList, {
-  DragHandle,
+  DragHandleWithIndex,
 } from "@/app/components/admin/SortableList";
 import ToggleSwitch from "@/app/components/admin/ToggleSwitch";
 import UploadDropzone, {
@@ -167,9 +167,9 @@ export default function CaseItemsEditor({
         // 卡片裡有名稱輸入框、顯示開關與移除鈕，整片可拖會讓它們無法操作
         handleOnly
         className="grid grid-cols-4 gap-3 max-lg:grid-cols-3 max-md:grid-cols-2"
-        renderItem={(item) => (
+        renderItem={(item, index) => (
           <div className="flex flex-col gap-2 rounded-[10px] border border-black/10 bg-white p-2">
-            <DragHandle className="self-start" />
+            <DragHandleWithIndex index={index} className="self-start" />
             <PreviewableImage
               src={item.url}
               caption={item.name}

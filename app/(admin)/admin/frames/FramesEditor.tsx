@@ -9,7 +9,7 @@ import { useImagePreview } from "@/app/components/admin/ImagePreview";
 import SaveBar from "@/app/components/admin/SaveBar";
 import { useToast } from "@/app/components/admin/Toast";
 import SortableList, {
-  DragHandle,
+  DragHandleWithIndex,
 } from "@/app/components/admin/SortableList";
 import ToggleSwitch from "@/app/components/admin/ToggleSwitch";
 import {
@@ -177,10 +177,10 @@ export default function FramesEditor({ frames }: { frames: Frame[] }) {
         // 卡片內有滑桿、輸入框與按鈕，整片可拖會讓那些元件無法操作
         handleOnly
         className="flex flex-col gap-3"
-        renderItem={(frame) => (
+        renderItem={(frame, index) => (
           <div className="card-surface flex gap-4 rounded-[12px] p-4 max-md:flex-col">
             <div className="flex w-48 shrink-0 flex-col items-center gap-2">
-              <DragHandle className="self-start" />
+              <DragHandleWithIndex index={index} className="self-start" />
               {/* 即時套用旋轉角度：數字對使用者沒有意義，看到圖歪掉才有。
                   容器留得比圖片大：最大傾斜 20° 時，直式圖旋轉後會往外佔到
                   約 1.45 倍寬、1.17 倍高，不留空間四角就會被裁掉 */}

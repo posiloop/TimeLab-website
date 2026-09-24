@@ -161,6 +161,30 @@ function SortableItem({
 }
 
 /**
+ * 把手加順序號。
+ *
+ * 編號緊貼著把手，因為兩者說的是同一件事：這項排第幾、可以拖動。
+ * 數字取自 renderItem 的 index 而非資料裡的 position —— 拖曳當下
+ * 清單就重排了，顯示 position 會等到存檔才更新，看起來像沒生效。
+ */
+export function DragHandleWithIndex({
+  index,
+  className = "",
+}: {
+  index: number;
+  className?: string;
+}) {
+  return (
+    <div className={`flex shrink-0 items-center gap-1 ${className}`}>
+      <DragHandle />
+      <span className="text-caption tabular-nums text-brand-ink/50">
+        {index + 1}
+      </span>
+    </div>
+  );
+}
+
+/**
  * 拖曳把手。需搭配 SortableList 的 handleOnly，放在項目內任意位置。
  */
 export function DragHandle({ className = "" }: { className?: string }) {

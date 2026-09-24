@@ -7,7 +7,7 @@ import { useConfirm } from "@/app/components/admin/ConfirmDialog";
 import SaveBar from "@/app/components/admin/SaveBar";
 import { useToast } from "@/app/components/admin/Toast";
 import SortableList, {
-  DragHandle,
+  DragHandleWithIndex,
 } from "@/app/components/admin/SortableList";
 import ToggleSwitch from "@/app/components/admin/ToggleSwitch";
 import {
@@ -159,9 +159,9 @@ export default function FaqEditor({ items }: { items: Item[] }) {
         // 項目內有問題與答案的輸入框，整片可拖會讓它們無法點選與編輯
         handleOnly
         className="flex flex-col gap-3"
-        renderItem={(item) => (
+        renderItem={(item, index) => (
           <div className="card-surface flex gap-3 rounded-[12px] p-4">
-            <DragHandle className="mt-2" />
+            <DragHandleWithIndex index={index} className="mt-2" />
 
             <div className="flex min-w-0 flex-1 flex-col gap-2">
               <input
