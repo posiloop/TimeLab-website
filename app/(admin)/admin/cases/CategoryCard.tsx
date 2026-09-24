@@ -70,7 +70,9 @@ export default function CategoryCard({ category }: { category: Category }) {
         </button>
       </div>
 
-      <div className="flex min-w-0 flex-1 flex-col gap-2">
+      {/* justify-center：左欄的封面加按鈕比右欄內容高，不置中的話
+          輸入框會擠在上緣、卡片下方留一塊空白 */}
+      <div className="flex min-w-0 flex-1 flex-col justify-center gap-2">
         <div className="flex items-center gap-2">
           <input
             value={label}

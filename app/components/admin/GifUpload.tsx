@@ -19,6 +19,8 @@ export type ConvertedFrame = {
 
 type GifUploadProps = {
   onConverted: (result: ConvertedFrame) => void;
+  /** 按鈕文字。預設是替換既有動畫的語意 */
+  label?: string;
 };
 
 const mb = (bytes: number) => (bytes / 1024 / 1024).toFixed(1);
@@ -29,7 +31,10 @@ const mb = (bytes: number) => (bytes / 1024 / 1024).toFixed(1);
  * 使用者只需準備一個 GIF，伺服器會轉成 WebM、MP4 與封面圖 ——
  * 讓使用者自備三個檔案太容易出錯，而 GIF 直接上站會讓首頁多載入數十 MB。
  */
-export default function GifUpload({ onConverted }: GifUploadProps) {
+export default function GifUpload({
+  onConverted,
+  label = "上傳 GIF 更換動畫",
+}: GifUploadProps) {
   const [preview, setPreview] = useState("");
   const [status, setStatus] = useState<"idle" | "working" | "error">("idle");
   const [message, setMessage] = useState("");
@@ -94,7 +99,7 @@ export default function GifUpload({ onConverted }: GifUploadProps) {
         disabled={status === "working"}
         className="rounded-full bg-brand-mist px-4 py-2 text-caption text-brand transition-colors hover:bg-brand hover:text-white disabled:opacity-50"
       >
-        {status === "working" ? "轉檔中…" : "上傳 GIF 更換動畫"}
+        {status === "working" ? "轉檔中…" : label}
       </button>
 
       <input

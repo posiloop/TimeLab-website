@@ -7,6 +7,7 @@ import { requireSession } from "@/app/server/admin-guard";
 import { auth } from "@/app/server/auth";
 import { prisma } from "@/app/server/db";
 import { revalidateContent } from "@/app/server/content/revalidate";
+import { deleteObject, mediaUrl } from "@/app/server/s3";
 
 // 每個 action 都是對其所在路由的公開 POST 端點，任何人知道 action ID
 // 就能送出請求。requireSession() 不可省略 —— proxy.ts 只做樂觀檢查，
@@ -14,11 +15,25 @@ import { revalidateContent } from "@/app/server/content/revalidate";
 
 export type ActionResult = { ok: true } | { ok: false; error: string };
 
+/**
+ * 帶回傳值的 action 結果。
+ *
+ * 新增類的 action 需要把建立出來的項目交回前端 —— 前端的清單是
+ * useState(props) 初始化的，router.refresh() 帶回的新 props 不會寫進
+ * 已初始化的 state，所以新項目得由前端自己併進清單才會立刻出現。
+ */
+export type ActionData<T> =
+  | { ok: true; data: T }
+  | { ok: false; error: string };
+
 /** 排序採間隔 1000 的稀疏配置，與遷移腳本一致 */
 const STEP = 1000;
 
 const ok = (): ActionResult => ({ ok: true });
-const fail = (error: string): ActionResult => ({ ok: false, error });
+const okWith = <T,>(data: T): ActionData<T> => ({ ok: true, data });
+// 回傳型別寫成失敗分支本身，而非 ActionResult —— 它同時是
+// ActionData<T> 的失敗分支，兩種 action 才能共用這個輔助函式
+const fail = (error: string) => ({ ok: false as const, error });
 
 // ---------------------------------------------------------------------------
 // 排序
@@ -184,10 +199,24 @@ export async function toggleFaq(
  * 新檔案的真實比例 —— 12 張原檔本來就有三種尺寸，跟著檔案走會讓
  * 相框寬度出現次像素差。
  */
-export async function addHeroSlide(assetId: string): Promise<ActionResult> {
+export type CreatedHeroSlide = {
+  track: "TRACK_1" | "TRACK_2" | "TRACK_3";
+  id: string;
+  assetId: string;
+  url: string;
+  name: string;
+  isVisible: boolean;
+  displayWidth: number;
+  displayHeight: number;
+};
+
+export async function addHeroSlide(
+  assetId: string,
+): Promise<ActionData<CreatedHeroSlide[]>> {
   await requireSession();
 
   const tracks = ["TRACK_1", "TRACK_2", "TRACK_3"] as const;
+  const created: CreatedHeroSlide[] = [];
 
   for (const track of tracks) {
     const last = await prisma.heroSlide.findFirst({
@@ -196,7 +225,7 @@ export async function addHeroSlide(assetId: string): Promise<ActionResult> {
       select: { position: true, displayWidth: true, displayHeight: true },
     });
 
-    await prisma.heroSlide.create({
+    const slide = await prisma.heroSlide.create({
       data: {
         track,
         assetId,
@@ -204,11 +233,30 @@ export async function addHeroSlide(assetId: string): Promise<ActionResult> {
         displayWidth: last?.displayWidth ?? 275,
         displayHeight: last?.displayHeight ?? 410,
       },
+      select: {
+        id: true,
+        assetId: true,
+        isVisible: true,
+        displayWidth: true,
+        displayHeight: true,
+        asset: { select: { key: true, originalName: true } },
+      },
+    });
+
+    created.push({
+      track,
+      id: slide.id,
+      assetId: slide.assetId,
+      url: mediaUrl(slide.asset.key),
+      name: slide.asset.originalName ?? "未命名",
+      isVisible: slide.isVisible,
+      displayWidth: slide.displayWidth,
+      displayHeight: slide.displayHeight,
     });
   }
 
   revalidateContent("hero");
-  return ok();
+  return okWith(created);
 }
 
 export async function removeHeroSlide(id: string): Promise<ActionResult> {
@@ -225,9 +273,20 @@ const addEventSchema = z.object({
   displayHeight: z.number().int().positive(),
 });
 
+export type CreatedEventPhoto = {
+  id: string;
+  url: string;
+  name: string;
+  isVisible: boolean;
+  displayWidth: number;
+  displayHeight: number;
+  intrinsicWidth: number;
+  intrinsicHeight: number;
+};
+
 export async function addEventPhoto(
   input: z.infer<typeof addEventSchema>,
-): Promise<ActionResult> {
+): Promise<ActionData<CreatedEventPhoto>> {
   await requireSession();
   const parsed = addEventSchema.safeParse(input);
   if (!parsed.success) return fail("資料不正確");
@@ -238,7 +297,7 @@ export async function addEventPhoto(
     select: { position: true },
   });
 
-  await prisma.eventPhoto.create({
+  const created = await prisma.eventPhoto.create({
     data: {
       track: parsed.data.track,
       assetId: parsed.data.assetId,
@@ -246,10 +305,33 @@ export async function addEventPhoto(
       displayWidth: parsed.data.displayWidth,
       displayHeight: parsed.data.displayHeight,
     },
+    select: {
+      id: true,
+      isVisible: true,
+      displayWidth: true,
+      displayHeight: true,
+      asset: {
+        select: {
+          key: true,
+          originalName: true,
+          intrinsicWidth: true,
+          intrinsicHeight: true,
+        },
+      },
+    },
   });
 
   revalidateContent("events");
-  return ok();
+  return okWith({
+    id: created.id,
+    url: mediaUrl(created.asset.key),
+    name: created.asset.originalName ?? "未命名",
+    isVisible: created.isVisible,
+    displayWidth: created.displayWidth,
+    displayHeight: created.displayHeight,
+    intrinsicWidth: created.asset.intrinsicWidth,
+    intrinsicHeight: created.asset.intrinsicHeight,
+  });
 }
 
 export async function removeEventPhoto(id: string): Promise<ActionResult> {
@@ -265,9 +347,16 @@ const addCaseItemSchema = z.object({
   name: z.string().trim().min(1, "請填寫案例名稱"),
 });
 
+export type CreatedCaseItem = {
+  id: string;
+  name: string;
+  isVisible: boolean;
+  url: string;
+};
+
 export async function addCaseItem(
   input: z.infer<typeof addCaseItemSchema>,
-): Promise<ActionResult> {
+): Promise<ActionData<CreatedCaseItem>> {
   await requireSession();
   const parsed = addCaseItemSchema.safeParse(input);
   if (!parsed.success) {
@@ -280,17 +369,28 @@ export async function addCaseItem(
     select: { position: true },
   });
 
-  await prisma.caseItem.create({
+  const created = await prisma.caseItem.create({
     data: {
       categoryId: parsed.data.categoryId,
       assetId: parsed.data.assetId,
       name: parsed.data.name,
       position: (last?.position ?? 0) + STEP,
     },
+    select: {
+      id: true,
+      name: true,
+      isVisible: true,
+      asset: { select: { key: true } },
+    },
   });
 
   revalidateContent("cases");
-  return ok();
+  return okWith({
+    id: created.id,
+    name: created.name,
+    isVisible: created.isVisible,
+    url: mediaUrl(created.asset.key),
+  });
 }
 
 export async function updateCaseItemName(
@@ -389,12 +489,190 @@ export async function updateFrame(
 
 export async function replaceFrameMedia(
   id: string,
-  media: { posterId: string; webmId: string; mp4Id: string },
+  media: { posterId: string; webmId: string; mp4Id: string; gifId: string },
 ): Promise<ActionResult> {
   await requireSession();
   await prisma.frameAnimation.update({ where: { id }, data: media });
   revalidateContent("frames");
   return ok();
+}
+
+/**
+ * 刪除拍貼框，連同它的四個媒體檔案。
+ *
+ * 檔案要刪得謹慎：MediaAsset 以 checksum 去重，重複上傳同一個 GIF 會
+ * 複用既有 asset，所以同一份影片可能被別的拍貼框共用。逐一確認沒有
+ * 其他人引用才刪，否則會把還在用的影片從 S3 抹掉。
+ *
+ * S3 刪除失敗不讓整個操作失敗 —— 資料列已經刪了，這時回報錯誤只會讓
+ * 使用者以為沒刪成功而重按。留下的孤兒檔案不影響網站，成本也極低。
+ */
+export async function removeFrameAnimation(id: string): Promise<ActionResult> {
+  await requireSession();
+
+  const frame = await prisma.frameAnimation.findUnique({
+    where: { id },
+    select: {
+      posterId: true,
+      webmId: true,
+      mp4Id: true,
+      gifId: true,
+    },
+  });
+  if (!frame) return fail("找不到這個拍貼框");
+
+  await prisma.frameAnimation.delete({ where: { id } });
+
+  const assetIds = [
+    frame.posterId,
+    frame.webmId,
+    frame.mp4Id,
+    frame.gifId,
+  ].filter((assetId): assetId is string => assetId !== null);
+
+  for (const assetId of assetIds) {
+    const stillUsed = await prisma.frameAnimation.count({
+      where: {
+        OR: [
+          { posterId: assetId },
+          { webmId: assetId },
+          { mp4Id: assetId },
+          { gifId: assetId },
+        ],
+      },
+    });
+    if (stillUsed > 0) continue;
+
+    const asset = await prisma.mediaAsset.findUnique({
+      where: { id: assetId },
+      select: { key: true },
+    });
+    if (!asset) continue;
+
+    // 先刪資料列再刪檔案：其他表（主視覺、現場照、案例）也可能引用
+    // 同一個 asset，那些關聯是 onDelete: Restrict，刪不掉就會在這裡拋錯。
+    // 反過來先刪 S3 的話，檔案沒了、資料列卻還在，那筆資料就永久壞掉
+    try {
+      await prisma.mediaAsset.delete({ where: { id: assetId } });
+    } catch (error) {
+      console.error(`媒體仍被其他內容引用，保留（${asset.key}）`, error);
+      continue;
+    }
+
+    try {
+      await deleteObject(asset.key);
+    } catch (error) {
+      console.error(`S3 刪除失敗，留下孤兒檔案（${asset.key}）`, error);
+    }
+  }
+
+  revalidateContent("frames");
+  return ok();
+}
+
+const createFrameSchema = z.object({
+  alt: z.string().trim().min(1, "請填寫描述文字"),
+  posterId: z.string().min(1),
+  webmId: z.string().min(1),
+  mp4Id: z.string().min(1),
+  gifId: z.string().min(1),
+  /** 轉檔後的影片尺寸，用來推算版面寬高 */
+  width: z.number().int().positive(),
+  height: z.number().int().positive(),
+});
+
+export type CreatedFrame = {
+  id: string;
+  slug: string;
+  alt: string;
+  posterUrl: string;
+  webmUrl: string;
+  mp4Url: string;
+  gifUrl?: string;
+  displayWidth: number;
+  displayHeight: number;
+  rotate: number;
+  boxWidth: number;
+  boxHeight: number;
+  isVisible: boolean;
+};
+
+/** 網站上拍貼框的版面高度，與既有五組一致 */
+const FRAME_DISPLAY_HEIGHT = 410;
+
+export async function createFrameAnimation(
+  input: z.infer<typeof createFrameSchema>,
+): Promise<ActionData<CreatedFrame>> {
+  await requireSession();
+  const parsed = createFrameSchema.safeParse(input);
+  if (!parsed.success) {
+    return fail(parsed.error.issues[0]?.message ?? "資料不正確");
+  }
+
+  const last = await prisma.frameAnimation.findFirst({
+    orderBy: { position: "desc" },
+    select: { position: true },
+  });
+
+  // slug 原本是 4grid／american 這類人工命名，供 S3 舊路徑對照追溯用。
+  // 新增的沒有對應的舊路徑，故以時間戳產生 —— 它只需唯一，不需可讀
+  const slug = `frame-${Date.now().toString(36)}`;
+
+  // 版面高度固定 410，寬度照影片比例縮放，與既有五組的作法一致。
+  // rotate 預設 0，box* 因而等於版面尺寸；要傾斜由使用者自己拉滑桿，
+  // 拉動時前端會重算 box*
+  const displayWidth = Math.round(
+    (parsed.data.width / parsed.data.height) * FRAME_DISPLAY_HEIGHT,
+  );
+
+  const created = await prisma.frameAnimation.create({
+    data: {
+      slug,
+      alt: parsed.data.alt,
+      posterId: parsed.data.posterId,
+      webmId: parsed.data.webmId,
+      mp4Id: parsed.data.mp4Id,
+      gifId: parsed.data.gifId,
+      displayWidth,
+      displayHeight: FRAME_DISPLAY_HEIGHT,
+      rotate: 0,
+      boxWidth: displayWidth,
+      boxHeight: FRAME_DISPLAY_HEIGHT,
+      position: (last?.position ?? 0) + STEP,
+    },
+    select: {
+      id: true,
+      slug: true,
+      alt: true,
+      displayWidth: true,
+      displayHeight: true,
+      rotate: true,
+      boxWidth: true,
+      boxHeight: true,
+      isVisible: true,
+      poster: { select: { key: true } },
+      webm: { select: { key: true } },
+      mp4: { select: { key: true } },
+      gif: { select: { key: true } },
+    },
+  });
+
+  revalidateContent("frames");
+  return okWith({
+    id: created.id,
+    slug: created.slug,
+    alt: created.alt,
+    posterUrl: mediaUrl(created.poster.key),
+    webmUrl: mediaUrl(created.webm.key),
+    mp4Url: mediaUrl(created.mp4.key),
+    gifUrl: created.gif ? mediaUrl(created.gif.key) : undefined,
+    displayWidth: created.displayWidth,
+    displayHeight: created.displayHeight,
+    rotate: created.rotate,
+    boxWidth: created.boxWidth,
+    boxHeight: created.boxHeight,
+    isVisible: created.isVisible,
+  });
 }
 
 // ---------------------------------------------------------------------------
@@ -406,9 +684,16 @@ const faqSchema = z.object({
   answer: z.string().trim().min(1, "請填寫答案"),
 });
 
+export type CreatedFaqItem = {
+  id: string;
+  question: string;
+  answer: string;
+  isVisible: boolean;
+};
+
 export async function createFaq(
   input: z.infer<typeof faqSchema>,
-): Promise<ActionResult> {
+): Promise<ActionData<CreatedFaqItem>> {
   await requireSession();
   const parsed = faqSchema.safeParse(input);
   if (!parsed.success) {
@@ -420,12 +705,13 @@ export async function createFaq(
     select: { position: true },
   });
 
-  await prisma.faqItem.create({
+  const created = await prisma.faqItem.create({
     data: { ...parsed.data, position: (last?.position ?? 0) + STEP },
+    select: { id: true, question: true, answer: true, isVisible: true },
   });
 
   revalidateContent("faq");
-  return ok();
+  return okWith(created);
 }
 
 export async function updateFaq(

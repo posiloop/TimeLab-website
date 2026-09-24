@@ -111,6 +111,10 @@ export default function FaqEditor({ items }: { items: Item[] }) {
         toast(result.error, "error");
         return setError(result.error);
       }
+      // 併進兩份 —— 只加 list 會讓新項目被當成未儲存的變更
+      setList((prev) => [...prev, result.data]);
+      setBaseline((prev) => [...prev, result.data]);
+
       setAdding(false);
       toast("已新增問答");
       router.refresh();
@@ -132,6 +136,11 @@ export default function FaqEditor({ items }: { items: Item[] }) {
         toast(result.error, "error");
         return setError(result.error);
       }
+
+      const drop = (prev: Item[]) => prev.filter((item) => item.id !== id);
+      setList(drop);
+      setBaseline(drop);
+
       toast("已刪除");
       router.refresh();
     });

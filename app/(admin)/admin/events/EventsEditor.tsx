@@ -8,7 +8,7 @@ import { useConfirm } from "@/app/components/admin/ConfirmDialog";
 import SaveBar from "@/app/components/admin/SaveBar";
 import { useToast } from "@/app/components/admin/Toast";
 import SortableList, {
-  DragHandle,
+  DragHandleWithIndex,
 } from "@/app/components/admin/SortableList";
 import ToggleSwitch from "@/app/components/admin/ToggleSwitch";
 import UploadDropzone, {
@@ -80,6 +80,8 @@ export default function EventsEditor({
   const uploaded = (track: TrackKey) => (assets: UploadedAsset[]) => {
     setError("");
     startTransition(async () => {
+      const created: Photo[] = [];
+
       for (const asset of assets) {
         // 這一區的版面寬度直接取檔案實際寬度 —— 三排的圖本來就寬窄不一，
         // 高度統一 760，寬度照比例縮放
@@ -94,13 +96,35 @@ export default function EventsEditor({
           toast(result.error, "error");
           return setError(result.error);
         }
+        created.push(result.data);
       }
+
+      // 併進兩份 —— 只加 current 會讓新照片被當成未儲存的排序變更
+      const append = (prev: Record<TrackKey, Photo[]>) => ({
+        ...prev,
+        [track]: [...prev[track], ...created],
+      });
+      setCurrent(append);
+      setBaseline(append);
+
       toast(`已加入 ${assets.length} 張照片`);
       router.refresh();
     });
   };
 
   const toggle = (id: string, isVisible: boolean) => {
+    const apply = (prev: Record<TrackKey, Photo[]>) =>
+      Object.fromEntries(
+        trackKeys.map((key) => [
+          key,
+          prev[key].map((photo) =>
+            photo.id === id ? { ...photo, isVisible } : photo,
+          ),
+        ]),
+      ) as Record<TrackKey, Photo[]>;
+    setCurrent(apply);
+    setBaseline(apply);
+
     startTransition(async () => {
       const result = await toggleEventPhoto(id, isVisible);
       if (!result.ok) return setError(result.error);
@@ -123,6 +147,17 @@ export default function EventsEditor({
         toast(result.error, "error");
         return setError(result.error);
       }
+
+      const drop = (prev: Record<TrackKey, Photo[]>) =>
+        Object.fromEntries(
+          trackKeys.map((key) => [
+            key,
+            prev[key].filter((photo) => photo.id !== id),
+          ]),
+        ) as Record<TrackKey, Photo[]>;
+      setCurrent(drop);
+      setBaseline(drop);
+
       toast(`已移除「${name}」`);
       router.refresh();
     });
@@ -164,8 +199,10 @@ export default function EventsEditor({
             direction="grid"
             // 卡片裡有顯示開關與移除鈕，整片可拖會蓋掉它們的點擊
             handleOnly
-            className="flex flex-wrap gap-3"
-            renderItem={(photo) => {
+            // 等寬網格而非 flex-wrap：後者的卡片寬度固定，排完一列剩下的
+            // 餘量會留成空白，右緣就與上傳區對不齊
+            className="grid grid-cols-7 gap-3 max-2xl:grid-cols-5 max-lg:grid-cols-3 max-md:grid-cols-2"
+            renderItem={(photo, index) => {
               // 版面寬與檔案比例算出來的寬不一致時要提醒 —— 這是版面歪掉
               // 最常見的原因，但不自動修正，改不改由使用者決定
               const fromFile = Math.round(
@@ -175,12 +212,14 @@ export default function EventsEditor({
               const drift = Math.abs(fromFile - photo.displayWidth) > 2;
 
               return (
-                <div className="flex w-36 flex-col gap-1 rounded-[8px] border border-black/10 bg-white p-2">
-                  <DragHandle className="self-start" />
+                <div className="flex flex-col gap-1 rounded-[8px] border border-black/10 bg-white p-2">
+                  <DragHandleWithIndex index={index} className="self-start" />
                   <PreviewableImage
                     src={photo.url}
                     caption={`${photo.name}（${photo.intrinsicWidth} × ${photo.intrinsicHeight}）`}
-                    className="h-24 w-full rounded object-cover"
+                    // 固定比例而非固定高：欄寬隨視窗變動，固定高會讓寬欄位
+                    // 裁掉更多畫面。4:3 與這區照片的常見比例接近
+                    className="aspect-[4/3] w-full rounded object-cover"
                   />
                   <p className="truncate text-caption text-brand-ink/70">
                     {photo.name}
@@ -205,7 +244,7 @@ export default function EventsEditor({
                       type="button"
                       onClick={() => remove(photo.id, photo.name)}
                       disabled={pending}
-                      className="flex items-center gap-1 rounded-full px-2 py-1 text-caption text-red-600 transition-colors hover:bg-red-50 disabled:opacity-50"
+                      className="flex shrink-0 items-center gap-1 whitespace-nowrap rounded-full px-2 py-1 text-caption text-red-600 transition-colors hover:bg-red-50 disabled:opacity-50"
                     >
                       <Trash aria-hidden className="size-3.5" />
                       移除

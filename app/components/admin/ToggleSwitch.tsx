@@ -18,7 +18,9 @@ export default function ToggleSwitch({
   disabled = false,
 }: ToggleSwitchProps) {
   return (
-    <label className="inline-flex cursor-pointer items-center gap-2">
+    // shrink-0 與 nowrap：窄卡片裡與其他按鈕並排時，沒有這兩者
+    // 文字會被壓成一字一行
+    <label className="inline-flex shrink-0 cursor-pointer items-center gap-2 whitespace-nowrap">
       <input
         type="checkbox"
         checked={checked}

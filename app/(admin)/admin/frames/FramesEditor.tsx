@@ -1,10 +1,12 @@
 "use client";
 
+import { Trash } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useState, useTransition } from "react";
 import GifUpload, {
   type ConvertedFrame,
 } from "@/app/components/admin/GifUpload";
+import { useConfirm } from "@/app/components/admin/ConfirmDialog";
 import { useImagePreview } from "@/app/components/admin/ImagePreview";
 import SaveBar from "@/app/components/admin/SaveBar";
 import { useToast } from "@/app/components/admin/Toast";
@@ -13,6 +15,8 @@ import SortableList, {
 } from "@/app/components/admin/SortableList";
 import ToggleSwitch from "@/app/components/admin/ToggleSwitch";
 import {
+  createFrameAnimation,
+  removeFrameAnimation,
   replaceFrameMedia,
   reorderFrames,
   toggleFrame,
@@ -58,6 +62,7 @@ export default function FramesEditor({ frames }: { frames: Frame[] }) {
   const router = useRouter();
   const toast = useToast();
   const preview = useImagePreview();
+  const confirmAction = useConfirm();
   const [list, setList] = useState(frames);
   const [baseline, setBaseline] = useState(frames);
   const [pending, startTransition] = useTransition();
@@ -143,12 +148,84 @@ export default function FramesEditor({ frames }: { frames: Frame[] }) {
         posterId: result.posterId,
         webmId: result.webmId,
         mp4Id: result.mp4Id,
+        gifId: result.gifId,
       });
       if (!saved.ok) {
         toast(saved.error, "error");
         return setError(saved.error);
       }
+
+      // 同步兩份，畫面才會立刻換成新影片 —— router.refresh() 帶回的新
+      // props 不會寫進已初始化的 state
+      const swap = (prev: Frame[]) =>
+        prev.map((f) =>
+          f.id === id
+            ? {
+                ...f,
+                posterUrl: result.posterUrl,
+                webmUrl: result.webmUrl,
+                mp4Url: result.mp4Url,
+                gifUrl: result.gifUrl,
+              }
+            : f,
+        );
+      setList(swap);
+      setBaseline(swap);
+
       toast("動畫已更換");
+      router.refresh();
+    });
+  };
+
+  /** 上傳 GIF 新增一個拍貼框。描述文字先留空白，由使用者接著填 */
+  const create = (result: ConvertedFrame) => {
+    setError("");
+    startTransition(async () => {
+      const saved = await createFrameAnimation({
+        alt: "新的拍貼框",
+        posterId: result.posterId,
+        webmId: result.webmId,
+        mp4Id: result.mp4Id,
+        gifId: result.gifId,
+        width: result.width,
+        height: result.height,
+      });
+      if (!saved.ok) {
+        toast(saved.error, "error");
+        return setError(saved.error);
+      }
+
+      setList((prev) => [...prev, saved.data]);
+      setBaseline((prev) => [...prev, saved.data]);
+      toast("已新增拍貼框，記得改描述文字");
+      router.refresh();
+    });
+  };
+
+  const remove = async (id: string, alt: string) => {
+    const confirmed = await confirmAction({
+      title: `刪除「${alt}」？`,
+      body: [
+        "這個拍貼框不會再出現在網站上，影片檔案也會一併刪除。",
+        "刪除後無法復原。",
+      ],
+      confirmLabel: "刪除",
+      danger: true,
+    });
+    if (!confirmed) return;
+
+    startTransition(async () => {
+      const result = await removeFrameAnimation(id);
+      if (!result.ok) {
+        toast(result.error, "error");
+        return setError(result.error);
+      }
+
+      const drop = (prev: Frame[]) => prev.filter((f) => f.id !== id);
+      setList(drop);
+      setBaseline(drop);
+
+      toast(`已刪除「${alt}」`);
       router.refresh();
     });
   };
@@ -266,12 +343,31 @@ export default function FramesEditor({ frames }: { frames: Frame[] }) {
                   label="顯示在網站上"
                   disabled={pending}
                 />
-                <GifUpload onConverted={replaceMedia(frame.id)} />
+                <div className="flex items-center gap-2">
+                  <button
+                    type="button"
+                    onClick={() => remove(frame.id, frame.alt)}
+                    disabled={pending}
+                    className="flex shrink-0 items-center gap-1 whitespace-nowrap rounded-full px-3 py-1 text-caption text-red-600 transition-colors hover:bg-red-50 disabled:opacity-50"
+                  >
+                    <Trash aria-hidden className="size-3.5" />
+                    刪除
+                  </button>
+                  <GifUpload onConverted={replaceMedia(frame.id)} />
+                </div>
               </div>
             </div>
           </div>
         )}
       />
+
+      <section className="card-surface flex flex-col items-center gap-2 rounded-[12px] border-2 border-dashed border-brand/40 p-6">
+        <p className="text-sm font-bold text-brand">新增一個拍貼框</p>
+        <p className="text-caption text-brand-ink/70">
+          上傳 GIF，系統會轉成網頁播放用的格式並加到最後面。
+        </p>
+        <GifUpload onConverted={create} label="上傳 GIF 新增拍貼框" />
+      </section>
 
       <SaveBar
         count={changeCount}

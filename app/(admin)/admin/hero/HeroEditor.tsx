@@ -11,7 +11,12 @@ import SortableList from "@/app/components/admin/SortableList";
 import UploadDropzone, {
   type UploadedAsset,
 } from "@/app/components/admin/UploadDropzone";
-import { addHeroSlide, removeHeroSlide, reorderHeroTrack } from "../actions";
+import {
+  addHeroSlide,
+  removeHeroSlide,
+  reorderHeroTrack,
+  type CreatedHeroSlide,
+} from "../actions";
 
 type Slide = {
   id: string;
@@ -103,6 +108,8 @@ export default function HeroEditor({
   const uploaded = (assets: UploadedAsset[]) => {
     setError("");
     startTransition(async () => {
+      const created: CreatedHeroSlide[] = [];
+
       for (const asset of assets) {
         // 一次加進三軌尾端：只加一軌的話另外兩排看不到變化，
         // 使用者會以為上傳失敗
@@ -111,7 +118,21 @@ export default function HeroEditor({
           toast(result.error, "error");
           return setError(result.error);
         }
+        created.push(...result.data);
       }
+
+      // 併進兩份 —— 只加 current 會讓新相框被當成未儲存的排序變更。
+      // 每張圖都建立了三筆（三軌各一），依 track 分派回各自那排
+      const append = (prev: Record<TrackKey, Slide[]>) =>
+        Object.fromEntries(
+          trackKeys.map((key) => [
+            key,
+            [...prev[key], ...created.filter((s) => s.track === key)],
+          ]),
+        ) as Record<TrackKey, Slide[]>;
+      setCurrent(append);
+      setBaseline(append);
+
       toast(`已加入 ${assets.length} 張相框`);
       router.refresh();
     });
@@ -145,6 +166,18 @@ export default function HeroEditor({
           return setError(result.error);
         }
       }
+      // 從兩份都移除 —— library 直接取自 props 會自己更新，
+      // 但三軌是 state，不同步的話刪掉的相框還留在排列順序裡
+      const drop = (prev: Record<TrackKey, Slide[]>) =>
+        Object.fromEntries(
+          trackKeys.map((key) => [
+            key,
+            prev[key].filter((s) => s.assetId !== assetId),
+          ]),
+        ) as Record<TrackKey, Slide[]>;
+      setCurrent(drop);
+      setBaseline(drop);
+
       toast(`已刪除「${name}」`);
       router.refresh();
     });
@@ -171,16 +204,19 @@ export default function HeroEditor({
           圖庫 —— 三排共用的 {library.length} 張相框
         </h2>
 
-        <ul className="flex flex-wrap gap-2">
+        {/* 等寬網格而非 flex-wrap：後者的縮圖寬度固定，排完一列剩下的
+            餘量會留成空白，右緣就與下方的上傳區對不齊 */}
+        <ul className="grid grid-cols-8 gap-2 max-2xl:grid-cols-6 max-lg:grid-cols-4 max-md:grid-cols-3">
           {library.map((item) => (
             <li
               key={item.id}
-              className="group relative w-24 overflow-hidden rounded-[8px] border border-black/10 bg-white"
+              className="group relative overflow-hidden rounded-[8px] border border-black/10 bg-white"
             >
               <PreviewableImage
                 src={item.url}
                 caption={item.name}
-                className="h-32 w-full object-cover"
+                // 相框是直式的，固定比例才不會在欄寬變動時忽高忽低
+                className="aspect-[275/410] w-full object-cover"
               />
               <p className="truncate px-1 py-1 text-caption text-brand-ink/70">
                 {item.name}

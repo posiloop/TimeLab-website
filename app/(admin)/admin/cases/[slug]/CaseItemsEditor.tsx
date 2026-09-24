@@ -81,24 +81,43 @@ export default function CaseItemsEditor({
   const uploaded = (assets: UploadedAsset[]) => {
     setError("");
     startTransition(async () => {
+      const created: Item[] = [];
+
       for (const asset of assets) {
-        // 名稱先以檔名帶入，下面的清單會把「看起來還沒改過」的標成待補
+        // 上傳前填的名稱優先；沒填就留「待補寫」，下面的清單會標成黃框提醒
         const result = await addCaseItem({
           categoryId: category.id,
           assetId: asset.id,
-          name: "待補寫",
+          name: asset.name || "待補寫",
         });
         if (!result.ok) {
           toast(result.error, "error");
           return setError(result.error);
         }
+        created.push(result.data);
       }
-      toast(`已加入 ${assets.length} 張照片，記得填寫名稱`);
+
+      // 併進 list 與 baseline 兩份 —— 只加 list 會讓新項目被當成
+      // 「未儲存的變更」，SaveBar 跳出數字要使用者再按一次儲存
+      setList((prev) => [...prev, ...created]);
+      setBaseline((prev) => [...prev, ...created]);
+
+      const unnamed = assets.filter((asset) => !asset.name).length;
+      toast(
+        unnamed > 0
+          ? `已加入 ${assets.length} 張照片，其中 ${unnamed} 張待補名稱`
+          : `已加入 ${assets.length} 張照片`,
+      );
       router.refresh();
     });
   };
 
   const toggle = (id: string, isVisible: boolean) => {
+    const apply = (prev: Item[]) =>
+      prev.map((item) => (item.id === id ? { ...item, isVisible } : item));
+    setList(apply);
+    setBaseline(apply);
+
     startTransition(async () => {
       const result = await toggleCaseItem(id, isVisible);
       if (!result.ok) return setError(result.error);
@@ -121,6 +140,11 @@ export default function CaseItemsEditor({
         toast(result.error, "error");
         return setError(result.error);
       }
+
+      const drop = (prev: Item[]) => prev.filter((item) => item.id !== id);
+      setList(drop);
+      setBaseline(drop);
+
       toast(`已移除「${name}」`);
       router.refresh();
     });
@@ -218,6 +242,7 @@ export default function CaseItemsEditor({
         folder="cases"
         onUploaded={uploaded}
         expected={{ width: 960, height: 679 }}
+        nameField={{ label: "案例名稱", placeholder: "機型 - 案例名" }}
       />
 
       <SaveBar
