@@ -2,7 +2,7 @@
 
 import { KeyRound } from "lucide-react";
 import { useEffect, useRef, useState, useTransition } from "react";
-import { resetPassword } from "@/app/(admin)/admin/actions";
+import { changeOwnPassword } from "@/app/(admin)/admin/actions";
 import { useToast } from "./Toast";
 
 /**
@@ -14,7 +14,7 @@ import { useToast } from "./Toast";
  * 與帳號頁重設別人密碼的差別在於這裡可以自訂 —— 自己的密碼要記得住
  * 才有意義，隨機字串反而每次都得去翻紀錄。
  */
-export default function ChangePassword({ userId }: { userId: string }) {
+export default function ChangePassword() {
   const toast = useToast();
   const [open, setOpen] = useState(false);
   const [error, setError] = useState("");
@@ -30,15 +30,16 @@ export default function ChangePassword({ userId }: { userId: string }) {
   }, [open]);
 
   const submit = (formData: FormData) => {
+    const current = String(formData.get("current") ?? "");
     const next = String(formData.get("password") ?? "");
     const again = String(formData.get("confirm") ?? "");
 
-    if (next.length < 12) return setError("密碼至少 12 個字元");
-    if (next !== again) return setError("兩次輸入的密碼不一致");
+    if (next.length < 12) return setError("新密碼至少 12 個字元");
+    if (next !== again) return setError("兩次輸入的新密碼不一致");
 
     setError("");
     startTransition(async () => {
-      const result = await resetPassword(userId, next);
+      const result = await changeOwnPassword(current, next);
       if (!result.ok) {
         toast(result.error, "error");
         return setError(result.error);
@@ -80,6 +81,18 @@ export default function ChangePassword({ userId }: { userId: string }) {
             </div>
 
             <label className="flex flex-col gap-1">
+              <span className="text-caption text-brand-ink">目前的密碼</span>
+              <input
+                name="current"
+                type="password"
+                required
+                autoComplete="current-password"
+                autoFocus
+                className="rounded-[8px] border border-black/15 px-3 py-2 text-sm outline-none focus:border-brand"
+              />
+            </label>
+
+            <label className="flex flex-col gap-1">
               <span className="text-caption text-brand-ink">
                 新密碼（至少 12 個字元）
               </span>
@@ -89,13 +102,12 @@ export default function ChangePassword({ userId }: { userId: string }) {
                 required
                 minLength={12}
                 autoComplete="new-password"
-                autoFocus
                 className="rounded-[8px] border border-black/15 px-3 py-2 text-sm outline-none focus:border-brand"
               />
             </label>
 
             <label className="flex flex-col gap-1">
-              <span className="text-caption text-brand-ink">再輸入一次</span>
+              <span className="text-caption text-brand-ink">再輸入一次新密碼</span>
               <input
                 name="confirm"
                 type="password"

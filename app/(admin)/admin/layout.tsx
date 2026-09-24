@@ -19,8 +19,6 @@ export default async function AdminLayout({
   if (!session) redirect("/login");
 
   return (
-    <AdminShell userId={session.user.id} userName={session.user.name}>
-      {children}
-    </AdminShell>
+<AdminShell userName={session.user.name}>{children}</AdminShell>
   );
 }

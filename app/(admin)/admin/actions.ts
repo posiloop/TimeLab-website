@@ -1,6 +1,7 @@
 "use server";
 
 import { randomInt } from "node:crypto";
+import { headers } from "next/headers";
 import { z } from "zod";
 import { requireSession } from "@/app/server/admin-guard";
 import { auth } from "@/app/server/auth";
@@ -527,40 +528,32 @@ export async function createAccount(
 }
 
 export type ResetPasswordResult =
-  | { ok: true; email: string; password: string; generated: boolean }
+  | { ok: true; email: string; password: string }
   | { ok: false; error: string };
 
 /**
- * 重設某個帳號的密碼。
+ * 重設別人的密碼。
  *
- * 改自己的密碼可以自訂（要記得住才有意義）；改別人的一律由系統產生 ——
- * 替別人指定一組自己知道的密碼，等於能無聲接管對方的帳號。
- * 這個限制在伺服器端強制，不倚賴介面是否送出 newPassword。
+ * 密碼一律由系統產生：替別人指定一組自己知道的密碼，等於能無聲接管
+ * 對方的帳號。要改自己的密碼請用 changeOwnPassword，那條路徑會驗原密碼。
  *
  * 流程與 Better Auth 自己的 reset-password 路由一致：先找 credential
  * account，有就更新、沒有就補建（例如帳號曾以其他方式建立）。
  */
 export async function resetPassword(
   id: string,
-  newPassword?: string,
 ): Promise<ResetPasswordResult> {
   const session = await requireSession();
+
+  // 自己的密碼不走這裡 —— 這條路徑不驗原密碼，只該用於管理他人帳號
+  if (session.user.id === id) {
+    return { ok: false, error: "請用側邊欄的「修改密碼」變更自己的密碼" };
+  }
 
   const user = await prisma.user.findUnique({ where: { id } });
   if (!user) return { ok: false, error: "找不到這個帳號" };
 
-  const isSelf = session.user.id === id;
-
-  if (newPassword !== undefined && !isSelf) {
-    return { ok: false, error: "只能為自己指定密碼" };
-  }
-
-  if (newPassword !== undefined && newPassword.length < 12) {
-    return { ok: false, error: "密碼至少 12 個字元" };
-  }
-
-  const generated = newPassword === undefined;
-  const password = newPassword ?? generatePassword();
+  const password = generatePassword();
   const ctx = await auth.$context;
   const hashed = await ctx.password.hash(password);
 
@@ -577,19 +570,47 @@ export async function resetPassword(
   }
 
   // 舊密碼已失效，該帳號在其他裝置上的登入狀態也一併清掉，
-  // 否則被交接的帳號仍可能停在別人手上的分頁裡。
-  //
-  // 重設自己的密碼時保留目前這一個 session：一併清掉的話，使用者會在
-  // 看到新密碼之前就被登出，而明文只有這一次拿得到。
-  // 直接下 SQL 而非用 deleteUserSessions，因為它不接受排除條件
-  await prisma.session.deleteMany({
-    where: {
-      userId: id,
-      ...(isSelf ? { NOT: { id: session.session.id } } : {}),
-    },
-  });
+  // 否則被交接的帳號仍可能停在別人手上的分頁裡
+  await prisma.session.deleteMany({ where: { userId: id } });
 
-  return { ok: true, email: user.email, password, generated };
+  return { ok: true, email: user.email, password };
+}
+
+/**
+ * 修改自己的密碼。
+ *
+ * 交給 Better Auth 的 changePassword：它會用同一套雜湊驗證原密碼，
+ * 也會正確處理 session。自己實作等於複製一份驗證邏輯，將來兩邊會走鐘。
+ *
+ * 驗原密碼是必要的 —— 少了這一關，任何人只要碰到一台已登入的電腦，
+ * 就能改掉密碼並把本人踢出其他所有裝置。
+ */
+export async function changeOwnPassword(
+  currentPassword: string,
+  newPassword: string,
+): Promise<ActionResult> {
+  await requireSession();
+
+  if (newPassword.length < 12) return fail("新密碼至少 12 個字元");
+
+  try {
+    await auth.api.changePassword({
+      body: {
+        currentPassword,
+        newPassword,
+        // 其他裝置上的登入以舊密碼建立，一併失效；
+        // 目前這個視窗由 Better Auth 自己保留
+        revokeOtherSessions: true,
+      },
+      headers: await headers(),
+    });
+  } catch {
+    // Better Auth 對密碼錯誤與其他失敗都拋 APIError，
+    // 不細分原因以免洩漏「這個帳號存在」之類的資訊
+    return fail("目前的密碼不正確");
+  }
+
+  return ok();
 }
 
 export async function removeAccount(id: string): Promise<ActionResult> {

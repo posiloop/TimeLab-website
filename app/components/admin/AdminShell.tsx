@@ -1,6 +1,14 @@
 "use client";
 
-import { LogOut } from "lucide-react";
+import {
+  Camera,
+  CircleQuestionMark,
+  Film,
+  Images,
+  LayoutTemplate,
+  LogOut,
+  Users,
+} from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
@@ -14,20 +22,18 @@ import ToastProvider from "./Toast";
 // 順序依使用者指定，大致對應內容在網站上由上而下的位置，
 // 最後才是與內容無關的帳號管理
 const NAV = [
-  { href: "/admin/hero", label: "首頁主視覺" },
-  { href: "/admin/frames", label: "拍貼框動畫" },
-  { href: "/admin/cases", label: "活動案例" },
-  { href: "/admin/faq", label: "常見問題" },
-  { href: "/admin/events", label: "活動現場照" },
-  { href: "/admin/account", label: "帳號管理" },
+  { href: "/admin/hero", label: "首頁主視覺", icon: LayoutTemplate },
+  { href: "/admin/frames", label: "拍貼框動畫", icon: Film },
+  { href: "/admin/cases", label: "活動案例", icon: Images },
+  { href: "/admin/faq", label: "常見問題", icon: CircleQuestionMark },
+  { href: "/admin/events", label: "活動現場照", icon: Camera },
+  { href: "/admin/account", label: "帳號管理", icon: Users },
 ];
 
 export default function AdminShell({
-  userId,
   userName,
   children,
 }: {
-  userId: string;
   userName: string;
   children: React.ReactNode;
 }) {
@@ -65,17 +71,19 @@ export default function AdminShell({
         {NAV.map((item) => {
           // startsWith 讓 /admin/cases/brand 也把「活動案例」標為所在頁
           const active = pathname.startsWith(item.href);
+          const Icon = item.icon;
 
           return (
             <Link
               key={item.href}
               href={item.href}
-              className={`rounded-[10px] px-3 py-2 text-sm transition-colors duration-[400ms] ease-[cubic-bezier(0.22,1,0.36,1)] ${
+              className={`flex items-center gap-2 rounded-[10px] px-3 py-2 text-sm transition-colors duration-[400ms] ease-[cubic-bezier(0.22,1,0.36,1)] ${
                 active
                   ? "bg-brand font-bold text-white"
                   : "text-brand-ink hover:bg-white"
               }`}
             >
+              <Icon aria-hidden className="size-4 shrink-0" />
               {item.label}
             </Link>
           );
@@ -85,7 +93,7 @@ export default function AdminShell({
           <span className="truncate px-3 text-caption text-brand-ink max-md:px-0">
             {userName}
           </span>
-          <ChangePassword userId={userId} />
+          <ChangePassword />
           <button
             type="button"
             onClick={signOut}
