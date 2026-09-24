@@ -8,13 +8,15 @@ import { useState } from "react";
 import { authClient } from "./auth-client";
 import ImagePreviewProvider from "./ImagePreview";
 
+// 順序依使用者指定，大致對應內容在網站上由上而下的位置，
+// 最後才是與內容無關的帳號管理
 const NAV = [
   { href: "/admin", label: "總覽" },
   { href: "/admin/hero", label: "首頁主視覺" },
-  { href: "/admin/events", label: "活動現場照" },
   { href: "/admin/frames", label: "拍貼框動畫" },
   { href: "/admin/cases", label: "活動案例" },
   { href: "/admin/faq", label: "常見問題" },
+  { href: "/admin/events", label: "活動現場照" },
   { href: "/admin/account", label: "帳號管理" },
 ];
 

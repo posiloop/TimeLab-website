@@ -1,16 +1,12 @@
 import Link from "next/link";
 import { prisma } from "@/app/server/db";
 
+// 順序與側邊欄一致，兩處對不上會讓人以為點錯地方
 const CARDS = [
   {
     href: "/admin/hero",
     title: "首頁主視覺",
     desc: "最上方傾斜的三排相框輪播",
-  },
-  {
-    href: "/admin/events",
-    title: "活動現場照",
-    desc: "頁面最下方的三排現場照片",
   },
   {
     href: "/admin/frames",
@@ -23,6 +19,11 @@ const CARDS = [
     desc: "五個分類與各自的案例照片",
   },
   { href: "/admin/faq", title: "常見問題", desc: "問答清單" },
+  {
+    href: "/admin/events",
+    title: "活動現場照",
+    desc: "頁面最下方的三排現場照片",
+  },
 ];
 
 export default async function AdminHome() {
