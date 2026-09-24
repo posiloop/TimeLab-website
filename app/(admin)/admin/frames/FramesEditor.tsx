@@ -162,8 +162,10 @@ export default function FramesEditor({ frames }: { frames: Frame[] }) {
                 aria-hidden
                 className="size-5 shrink-0 cursor-grab self-start text-brand"
               />
-              {/* 即時套用旋轉角度：數字對使用者沒有意義，看到圖歪掉才有 */}
-              <div className="flex h-40 w-full items-center justify-center overflow-hidden">
+              {/* 即時套用旋轉角度：數字對使用者沒有意義，看到圖歪掉才有。
+                  拍貼框是直式（610×910），高度給 240 才填得滿這欄的寬度；
+                  給 160 的話 contain 後只剩 107px 寬，圖會小到看不清內容 */}
+              <div className="flex h-60 w-full items-center justify-center">
                 <PreviewableImage
                   src={frame.posterUrl}
                   caption={frame.alt}

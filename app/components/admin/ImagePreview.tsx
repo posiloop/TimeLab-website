@@ -104,17 +104,23 @@ export function PreviewableImage({
   const open = useImagePreview();
 
   return (
+    // 用 contents 讓這層按鈕不參與版面計算，圖片才是直接受容器約束的元素
+    // —— 否則 className 裡的 max-h-full 會相對於按鈕而非外層容器，
+    // 在限高的預覽框裡就會被裁掉上下緣
     <button
       type="button"
       onClick={() => open({ src, caption })}
       aria-label={caption ? `放大檢視 ${caption}` : "放大檢視"}
-      className="group/preview relative block w-full cursor-zoom-in overflow-hidden rounded"
+      className="group/preview contents cursor-zoom-in"
     >
+      {/* 呼叫端的 className 放在後面，讓它能覆寫這裡的預設值 ——
+          例如拍貼框的旋轉預覽需要自己的 transition-transform */}
       {/* eslint-disable-next-line @next/next/no-img-element */}
-      <img src={src} alt={alt} className={className} style={style} />
-      <span
-        aria-hidden
-        className="absolute inset-0 bg-black/0 transition-colors duration-[400ms] ease-[cubic-bezier(0.22,1,0.36,1)] group-hover/preview:bg-black/20"
+      <img
+        src={src}
+        alt={alt}
+        className={`cursor-zoom-in transition-opacity group-hover/preview:opacity-75 ${className}`}
+        style={style}
       />
     </button>
   );
