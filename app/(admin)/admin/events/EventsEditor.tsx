@@ -72,7 +72,7 @@ export default function EventsEditor({
         if (!result.ok) return setError(result.error);
       }
       setBaseline(current);
-      toast("已更新，網站上已經看得到了");
+      toast("已更新");
       router.refresh();
     });
   };

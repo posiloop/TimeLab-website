@@ -76,7 +76,7 @@ export default function FaqEditor({ items }: { items: Item[] }) {
       }
 
       setBaseline(list);
-      toast("已更新，網站上已經看得到了");
+      toast("已更新");
       router.refresh();
     });
   };
