@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import { useState, useTransition } from "react";
 import { PreviewableImage } from "@/app/components/admin/ImagePreview";
 import SaveBar from "@/app/components/admin/SaveBar";
+import { useToast } from "@/app/components/admin/Toast";
 import SortableList from "@/app/components/admin/SortableList";
 import ToggleSwitch from "@/app/components/admin/ToggleSwitch";
 import UploadDropzone, {
@@ -45,6 +46,7 @@ export default function EventsEditor({
   tracks: Record<TrackKey, Photo[]>;
 }) {
   const router = useRouter();
+  const toast = useToast();
   const [current, setCurrent] = useState(tracks);
   const [baseline, setBaseline] = useState(tracks);
   const [pending, startTransition] = useTransition();
@@ -66,6 +68,7 @@ export default function EventsEditor({
         if (!result.ok) return setError(result.error);
       }
       setBaseline(current);
+      toast("已更新，網站上已經看得到了");
       router.refresh();
     });
   };
@@ -83,8 +86,12 @@ export default function EventsEditor({
           displayWidth: width,
           displayHeight: DISPLAY_HEIGHT,
         });
-        if (!result.ok) return setError(result.error);
+        if (!result.ok) {
+          toast(result.error, "error");
+          return setError(result.error);
+        }
       }
+      toast(`已加入 ${assets.length} 張照片`);
       router.refresh();
     });
   };
@@ -101,7 +108,11 @@ export default function EventsEditor({
     if (!confirm(`確定移除「${name}」？`)) return;
     startTransition(async () => {
       const result = await removeEventPhoto(id);
-      if (!result.ok) return setError(result.error);
+      if (!result.ok) {
+        toast(result.error, "error");
+        return setError(result.error);
+      }
+      toast(`已移除「${name}」`);
       router.refresh();
     });
   };

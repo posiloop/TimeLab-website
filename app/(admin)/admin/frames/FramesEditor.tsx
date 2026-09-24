@@ -8,6 +8,7 @@ import GifUpload, {
 } from "@/app/components/admin/GifUpload";
 import { PreviewableImage } from "@/app/components/admin/ImagePreview";
 import SaveBar from "@/app/components/admin/SaveBar";
+import { useToast } from "@/app/components/admin/Toast";
 import SortableList from "@/app/components/admin/SortableList";
 import ToggleSwitch from "@/app/components/admin/ToggleSwitch";
 import {
@@ -49,6 +50,7 @@ function boundingBox(width: number, height: number, degrees: number) {
 
 export default function FramesEditor({ frames }: { frames: Frame[] }) {
   const router = useRouter();
+  const toast = useToast();
   const [list, setList] = useState(frames);
   const [baseline, setBaseline] = useState(frames);
   const [pending, startTransition] = useTransition();
@@ -94,15 +96,22 @@ export default function FramesEditor({ frames }: { frames: Frame[] }) {
           boxWidth: frame.boxWidth,
           boxHeight: frame.boxHeight,
         });
-        if (!result.ok) return setError(result.error);
+        if (!result.ok) {
+          toast(result.error, "error");
+          return setError(result.error);
+        }
       }
 
       if (orderChanged) {
         const result = await reorderFrames(list.map((f) => f.id));
-        if (!result.ok) return setError(result.error);
+        if (!result.ok) {
+          toast(result.error, "error");
+          return setError(result.error);
+        }
       }
 
       setBaseline(list);
+      toast("已更新，網站上已經看得到了");
       router.refresh();
     });
   };
@@ -128,7 +137,11 @@ export default function FramesEditor({ frames }: { frames: Frame[] }) {
         webmId: result.webmId,
         mp4Id: result.mp4Id,
       });
-      if (!saved.ok) return setError(saved.error);
+      if (!saved.ok) {
+        toast(saved.error, "error");
+        return setError(saved.error);
+      }
+      toast("動畫已更換");
       router.refresh();
     });
   };

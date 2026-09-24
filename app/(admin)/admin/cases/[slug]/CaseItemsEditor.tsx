@@ -6,6 +6,7 @@ import { useRouter } from "next/navigation";
 import { useState, useTransition } from "react";
 import { PreviewableImage } from "@/app/components/admin/ImagePreview";
 import SaveBar from "@/app/components/admin/SaveBar";
+import { useToast } from "@/app/components/admin/Toast";
 import SortableList from "@/app/components/admin/SortableList";
 import ToggleSwitch from "@/app/components/admin/ToggleSwitch";
 import UploadDropzone, {
@@ -34,6 +35,7 @@ export default function CaseItemsEditor({
   items: Item[];
 }) {
   const router = useRouter();
+  const toast = useToast();
   const [list, setList] = useState(items);
   const [baseline, setBaseline] = useState(items);
   const [pending, startTransition] = useTransition();
@@ -67,6 +69,7 @@ export default function CaseItemsEditor({
       }
 
       setBaseline(list);
+      toast("已更新，網站上已經看得到了");
       router.refresh();
     });
   };
@@ -81,8 +84,12 @@ export default function CaseItemsEditor({
           assetId: asset.id,
           name: "待補寫",
         });
-        if (!result.ok) return setError(result.error);
+        if (!result.ok) {
+          toast(result.error, "error");
+          return setError(result.error);
+        }
       }
+      toast(`已加入 ${assets.length} 張照片，記得填寫名稱`);
       router.refresh();
     });
   };
@@ -99,7 +106,11 @@ export default function CaseItemsEditor({
     if (!confirm(`確定移除「${name}」？`)) return;
     startTransition(async () => {
       const result = await removeCaseItem(id);
-      if (!result.ok) return setError(result.error);
+      if (!result.ok) {
+        toast(result.error, "error");
+        return setError(result.error);
+      }
+      toast(`已移除「${name}」`);
       router.refresh();
     });
   };

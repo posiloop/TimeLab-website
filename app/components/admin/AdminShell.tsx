@@ -7,6 +7,7 @@ import { usePathname, useRouter } from "next/navigation";
 import { useState } from "react";
 import { authClient } from "./auth-client";
 import ImagePreviewProvider from "./ImagePreview";
+import ToastProvider from "./Toast";
 
 // 順序依使用者指定，大致對應內容在網站上由上而下的位置，
 // 最後才是與內容無關的帳號管理
@@ -90,10 +91,14 @@ export default function AdminShell({
         </div>
       </aside>
 
-      <main className="min-w-0 flex-1 p-8 pb-32 max-md:p-4 max-md:pb-32">
-        {/* 單一預覽實例供所有管理頁共用，各頁縮圖以 useImagePreview() 觸發 */}
-        <ImagePreviewProvider>{children}</ImagePreviewProvider>
-      </main>
+      {/* 兩者各自只有一個實例供所有管理頁共用：
+          放大預覽由縮圖以 useImagePreview() 觸發，提示訊息以 useToast()。
+          Toast 固定在視窗角落，故包在 main 外層不受其內距影響 */}
+      <ToastProvider>
+        <main className="min-w-0 flex-1 p-8 pb-32 max-md:p-4 max-md:pb-32">
+          <ImagePreviewProvider>{children}</ImagePreviewProvider>
+        </main>
+      </ToastProvider>
     </div>
   );
 }

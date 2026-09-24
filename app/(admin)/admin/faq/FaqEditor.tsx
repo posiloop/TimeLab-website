@@ -4,6 +4,7 @@ import { GripVertical, Plus, Trash } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useState, useTransition } from "react";
 import SaveBar from "@/app/components/admin/SaveBar";
+import { useToast } from "@/app/components/admin/Toast";
 import SortableList from "@/app/components/admin/SortableList";
 import ToggleSwitch from "@/app/components/admin/ToggleSwitch";
 import {
@@ -23,6 +24,7 @@ type Item = {
 
 export default function FaqEditor({ items }: { items: Item[] }) {
   const router = useRouter();
+  const toast = useToast();
   const [list, setList] = useState(items);
   const [pending, startTransition] = useTransition();
   const [error, setError] = useState("");
@@ -70,6 +72,7 @@ export default function FaqEditor({ items }: { items: Item[] }) {
       }
 
       setBaseline(list);
+      toast("已更新，網站上已經看得到了");
       router.refresh();
     });
   };
@@ -100,8 +103,12 @@ export default function FaqEditor({ items }: { items: Item[] }) {
         question: String(formData.get("question") ?? ""),
         answer: String(formData.get("answer") ?? ""),
       });
-      if (!result.ok) return setError(result.error);
+      if (!result.ok) {
+        toast(result.error, "error");
+        return setError(result.error);
+      }
       setAdding(false);
+      toast("已新增問答");
       router.refresh();
     });
   };
@@ -110,7 +117,11 @@ export default function FaqEditor({ items }: { items: Item[] }) {
     if (!confirm(`確定刪除「${question}」？此動作無法復原。`)) return;
     startTransition(async () => {
       const result = await removeFaq(id);
-      if (!result.ok) return setError(result.error);
+      if (!result.ok) {
+        toast(result.error, "error");
+        return setError(result.error);
+      }
+      toast("已刪除");
       router.refresh();
     });
   };

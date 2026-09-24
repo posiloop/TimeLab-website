@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import { useCallback, useState, useTransition } from "react";
 import { PreviewableImage } from "@/app/components/admin/ImagePreview";
 import SaveBar from "@/app/components/admin/SaveBar";
+import { useToast } from "@/app/components/admin/Toast";
 import SortableList from "@/app/components/admin/SortableList";
 import UploadDropzone, {
   type UploadedAsset,
@@ -52,6 +53,7 @@ export default function HeroEditor({
   tracks: Record<TrackKey, Slide[]>;
 }) {
   const router = useRouter();
+  const toast = useToast();
   const [current, setCurrent] = useState(tracks);
   const [baseline, setBaseline] = useState(tracks);
   const [pending, startTransition] = useTransition();
@@ -70,9 +72,13 @@ export default function HeroEditor({
     startTransition(async () => {
       for (const key of changedTracks) {
         const result = await reorderHeroTrack(current[key].map((s) => s.id));
-        if (!result.ok) return setError(result.error);
+        if (!result.ok) {
+          toast(result.error, "error");
+          return setError(result.error);
+        }
       }
       setBaseline(current);
+      toast("已更新，網站上已經看得到了");
       router.refresh();
     });
   };
@@ -99,8 +105,12 @@ export default function HeroEditor({
         // 一次加進三軌尾端：只加一軌的話另外兩排看不到變化，
         // 使用者會以為上傳失敗
         const result = await addHeroSlide(asset.id);
-        if (!result.ok) return setError(result.error);
+        if (!result.ok) {
+          toast(result.error, "error");
+          return setError(result.error);
+        }
       }
+      toast(`已加入 ${assets.length} 張相框`);
       router.refresh();
     });
   };
@@ -124,8 +134,12 @@ export default function HeroEditor({
       );
       for (const id of ids) {
         const result = await removeHeroSlide(id);
-        if (!result.ok) return setError(result.error);
+        if (!result.ok) {
+          toast(result.error, "error");
+          return setError(result.error);
+        }
       }
+      toast(`已刪除「${name}」`);
       router.refresh();
     });
   };
