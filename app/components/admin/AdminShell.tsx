@@ -6,6 +6,7 @@ import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import { useState } from "react";
 import { authClient } from "./auth-client";
+import ConfirmProvider from "./ConfirmDialog";
 import ImagePreviewProvider from "./ImagePreview";
 import ToastProvider from "./Toast";
 
@@ -96,7 +97,9 @@ export default function AdminShell({
           Toast 固定在視窗角落，故包在 main 外層不受其內距影響 */}
       <ToastProvider>
         <main className="min-w-0 flex-1 p-8 pb-32 max-md:p-4 max-md:pb-32">
-          <ImagePreviewProvider>{children}</ImagePreviewProvider>
+          <ConfirmProvider>
+            <ImagePreviewProvider>{children}</ImagePreviewProvider>
+          </ConfirmProvider>
         </main>
       </ToastProvider>
     </div>

@@ -4,6 +4,7 @@ import { Shuffle, X } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useCallback, useState, useTransition } from "react";
 import { PreviewableImage } from "@/app/components/admin/ImagePreview";
+import { useConfirm } from "@/app/components/admin/ConfirmDialog";
 import SaveBar from "@/app/components/admin/SaveBar";
 import { useToast } from "@/app/components/admin/Toast";
 import SortableList from "@/app/components/admin/SortableList";
@@ -54,6 +55,7 @@ export default function HeroEditor({
 }) {
   const router = useRouter();
   const toast = useToast();
+  const confirmAction = useConfirm();
   const [current, setCurrent] = useState(tracks);
   const [baseline, setBaseline] = useState(tracks);
   const [pending, startTransition] = useTransition();
@@ -115,18 +117,22 @@ export default function HeroEditor({
     });
   };
 
-  const removeFromLibrary = (assetId: string, name: string) => {
+  const removeFromLibrary = async (assetId: string, name: string) => {
     const usedIn = trackKeys.filter((key) =>
       current[key].some((s) => s.assetId === assetId),
     );
     const where = usedIn.map((k) => TRACK_LABEL[k]).join("、");
-    if (
-      !confirm(
-        `「${name}」目前用在${where}。刪除後這三排都會少一張，確定嗎？`,
-      )
-    ) {
-      return;
-    }
+
+    const ok = await confirmAction({
+      title: `刪除「${name}」？`,
+      body: [
+        `這張相框目前用在${where}，刪除後這幾排都會少一張。`,
+        "刪除後無法復原。",
+      ],
+      confirmLabel: "刪除",
+      danger: true,
+    });
+    if (!ok) return;
 
     startTransition(async () => {
       const ids = trackKeys.flatMap((key) =>

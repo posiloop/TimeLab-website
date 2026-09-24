@@ -3,6 +3,7 @@
 import { Check, Copy, KeyRound, Plus, Trash } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useState, useTransition } from "react";
+import { useConfirm } from "@/app/components/admin/ConfirmDialog";
 import { useToast } from "@/app/components/admin/Toast";
 import { createAccount, removeAccount, resetPassword } from "../actions";
 
@@ -22,6 +23,7 @@ export default function AccountManager({
 }) {
   const router = useRouter();
   const toast = useToast();
+  const confirmAction = useConfirm();
   const [adding, setAdding] = useState(false);
   const [pending, startTransition] = useTransition();
   const [error, setError] = useState("");
@@ -63,13 +65,23 @@ export default function AccountManager({
     setCopied(true);
   };
 
-  const reset = (user: User) => {
+  const reset = async (user: User) => {
     const self = user.id === currentUserId;
-    const message = self
-      ? "重設自己的密碼？\n\n新密碼會顯示在畫面上，請先複製再關掉。\n目前這個視窗不會被登出，但其他裝置上的登入會失效。"
-      : `重設「${user.name}」的密碼？\n\n舊密碼會立刻失效，該帳號在所有裝置上也會被登出。`;
 
-    if (!confirm(message)) return;
+    const ok = await confirmAction({
+      title: self ? "重設自己的密碼？" : `重設「${user.name}」的密碼？`,
+      body: self
+        ? [
+            "新密碼會顯示在畫面上，請先複製再關掉。",
+            "目前這個視窗不會被登出，但其他裝置上的登入會失效。",
+          ]
+        : [
+            "舊密碼會立刻失效，該帳號在所有裝置上也會被登出。",
+            "新密碼會顯示在畫面上，請複製後交給對方。",
+          ],
+      confirmLabel: "重設密碼",
+    });
+    if (!ok) return;
     setError("");
     setIssued(null);
     setCopied(false);
@@ -89,8 +101,15 @@ export default function AccountManager({
     });
   };
 
-  const remove = (user: User) => {
-    if (!confirm(`確定刪除「${user.name}」（${user.email}）的帳號？`)) return;
+  const remove = async (user: User) => {
+    const ok = await confirmAction({
+      title: `刪除「${user.name}」的帳號？`,
+      body: [user.email, "這個人將無法再登入後台。刪除後無法復原。"],
+      confirmLabel: "刪除帳號",
+      danger: true,
+    });
+    if (!ok) return;
+
     setError("");
     startTransition(async () => {
       const result = await removeAccount(user.id);

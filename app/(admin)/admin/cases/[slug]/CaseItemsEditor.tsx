@@ -5,6 +5,7 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useState, useTransition } from "react";
 import { PreviewableImage } from "@/app/components/admin/ImagePreview";
+import { useConfirm } from "@/app/components/admin/ConfirmDialog";
 import SaveBar from "@/app/components/admin/SaveBar";
 import { useToast } from "@/app/components/admin/Toast";
 import SortableList, {
@@ -38,6 +39,7 @@ export default function CaseItemsEditor({
 }) {
   const router = useRouter();
   const toast = useToast();
+  const confirmAction = useConfirm();
   const [list, setList] = useState(items);
   const [baseline, setBaseline] = useState(items);
   const [pending, startTransition] = useTransition();
@@ -104,8 +106,15 @@ export default function CaseItemsEditor({
     });
   };
 
-  const remove = (id: string, name: string) => {
-    if (!confirm(`確定移除「${name}」？`)) return;
+  const remove = async (id: string, name: string) => {
+    const ok = await confirmAction({
+      title: `移除「${name}」？`,
+      body: ["這張照片不會再出現在網站上。"],
+      confirmLabel: "移除",
+      danger: true,
+    });
+    if (!ok) return;
+
     startTransition(async () => {
       const result = await removeCaseItem(id);
       if (!result.ok) {

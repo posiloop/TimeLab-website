@@ -3,6 +3,7 @@
 import { Plus, Trash } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useState, useTransition } from "react";
+import { useConfirm } from "@/app/components/admin/ConfirmDialog";
 import SaveBar from "@/app/components/admin/SaveBar";
 import { useToast } from "@/app/components/admin/Toast";
 import SortableList, {
@@ -27,6 +28,7 @@ type Item = {
 export default function FaqEditor({ items }: { items: Item[] }) {
   const router = useRouter();
   const toast = useToast();
+  const confirmAction = useConfirm();
   const [list, setList] = useState(items);
   const [pending, startTransition] = useTransition();
   const [error, setError] = useState("");
@@ -115,8 +117,15 @@ export default function FaqEditor({ items }: { items: Item[] }) {
     });
   };
 
-  const remove = (id: string, question: string) => {
-    if (!confirm(`確定刪除「${question}」？此動作無法復原。`)) return;
+  const remove = async (id: string, question: string) => {
+    const ok = await confirmAction({
+      title: "刪除這則問答？",
+      body: [question, "刪除後無法復原。"],
+      confirmLabel: "刪除",
+      danger: true,
+    });
+    if (!ok) return;
+
     startTransition(async () => {
       const result = await removeFaq(id);
       if (!result.ok) {

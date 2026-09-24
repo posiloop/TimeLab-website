@@ -4,6 +4,7 @@ import { Trash } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useState, useTransition } from "react";
 import { PreviewableImage } from "@/app/components/admin/ImagePreview";
+import { useConfirm } from "@/app/components/admin/ConfirmDialog";
 import SaveBar from "@/app/components/admin/SaveBar";
 import { useToast } from "@/app/components/admin/Toast";
 import SortableList, {
@@ -49,6 +50,7 @@ export default function EventsEditor({
 }) {
   const router = useRouter();
   const toast = useToast();
+  const confirmAction = useConfirm();
   const [current, setCurrent] = useState(tracks);
   const [baseline, setBaseline] = useState(tracks);
   const [pending, startTransition] = useTransition();
@@ -106,8 +108,15 @@ export default function EventsEditor({
     });
   };
 
-  const remove = (id: string, name: string) => {
-    if (!confirm(`確定移除「${name}」？`)) return;
+  const remove = async (id: string, name: string) => {
+    const ok = await confirmAction({
+      title: `移除「${name}」？`,
+      body: ["這張照片不會再出現在網站上。"],
+      confirmLabel: "移除",
+      danger: true,
+    });
+    if (!ok) return;
+
     startTransition(async () => {
       const result = await removeEventPhoto(id);
       if (!result.ok) {
