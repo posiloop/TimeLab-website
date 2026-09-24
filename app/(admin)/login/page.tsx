@@ -4,6 +4,7 @@ import Image from "next/image";
 import { useRouter, useSearchParams } from "next/navigation";
 import { Suspense, useState } from "react";
 import { authClient } from "@/app/components/admin/auth-client";
+import PasswordField from "@/app/components/admin/PasswordField";
 
 function LoginForm() {
   const router = useRouter();
@@ -64,16 +65,12 @@ function LoginForm() {
         />
       </label>
 
-      <label className="flex flex-col gap-1">
-        <span className="text-caption text-brand-ink">密碼</span>
-        <input
-          name="password"
-          type="password"
-          required
-          autoComplete="current-password"
-          className="rounded-[8px] border border-black/15 px-3 py-2 text-sm outline-none focus:border-brand"
-        />
-      </label>
+      <PasswordField
+        label="密碼"
+        name="password"
+        autoComplete="current-password"
+        required
+      />
 
       {error && (
         <p role="alert" className="text-caption text-red-600">

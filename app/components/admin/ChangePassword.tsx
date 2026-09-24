@@ -3,6 +3,7 @@
 import { KeyRound } from "lucide-react";
 import { useEffect, useRef, useState, useTransition } from "react";
 import { changeOwnPassword } from "@/app/(admin)/admin/actions";
+import PasswordField from "./PasswordField";
 import { useToast } from "./Toast";
 
 /**
@@ -80,43 +81,29 @@ export default function ChangePassword() {
               </p>
             </div>
 
-            <label className="flex flex-col gap-1">
-              <span className="text-caption text-brand-ink">目前的密碼</span>
-              <input
-                name="current"
-                type="password"
-                required
-                autoComplete="current-password"
-                autoFocus
-                className="rounded-[8px] border border-black/15 px-3 py-2 text-sm outline-none focus:border-brand"
-              />
-            </label>
+            <PasswordField
+              label="目前的密碼"
+              name="current"
+              autoComplete="current-password"
+              required
+              autoFocus
+            />
 
-            <label className="flex flex-col gap-1">
-              <span className="text-caption text-brand-ink">
-                新密碼（至少 12 個字元）
-              </span>
-              <input
-                name="password"
-                type="password"
-                required
-                minLength={12}
-                autoComplete="new-password"
-                className="rounded-[8px] border border-black/15 px-3 py-2 text-sm outline-none focus:border-brand"
-              />
-            </label>
+            <PasswordField
+              label="新密碼（至少 12 個字元）"
+              name="password"
+              autoComplete="new-password"
+              required
+              minLength={12}
+            />
 
-            <label className="flex flex-col gap-1">
-              <span className="text-caption text-brand-ink">再輸入一次新密碼</span>
-              <input
-                name="confirm"
-                type="password"
-                required
-                minLength={12}
-                autoComplete="new-password"
-                className="rounded-[8px] border border-black/15 px-3 py-2 text-sm outline-none focus:border-brand"
-              />
-            </label>
+            <PasswordField
+              label="再輸入一次新密碼"
+              name="confirm"
+              autoComplete="new-password"
+              required
+              minLength={12}
+            />
 
             {error && (
               <p role="alert" className="text-caption text-red-600">
