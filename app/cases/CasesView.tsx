@@ -4,19 +4,29 @@ import { useEffect, useState } from "react";
 import Image from "next/image";
 import CasePageHeader from "../components/CasePageHeader";
 import SiteFooter from "../components/SiteFooter";
-import { CASE_ITEMS } from "../data/case-items";
-import { CASE_CATEGORIES } from "../data/cases";
+import type {
+  CaseCategoryView,
+  CaseItemView,
+} from "../server/content/cases";
 
-const DEFAULT_ID = CASE_CATEGORIES[0].id;
+type CasesViewProps = {
+  categories: CaseCategoryView[];
+  itemsBySlug: Record<string, CaseItemView[]>;
+};
 
-export default function CasesView() {
-  const [currentId, setCurrentId] = useState(DEFAULT_ID);
+export default function CasesView({
+  categories,
+  itemsBySlug,
+}: CasesViewProps) {
+  // 預設分類改由 props 決定，不能再是模組層級的常數 ——
+  // 資料現在來自資料庫，模組載入時還取不到
+  const [currentSlug, setCurrentSlug] = useState(categories[0]?.slug ?? "");
 
   // 首頁的分類卡片以 /cases#wedding 指定要開啟的分頁
   useEffect(() => {
     const applyHash = () => {
-      const id = window.location.hash.slice(1);
-      if (CASE_CATEGORIES.some((item) => item.id === id)) setCurrentId(id);
+      const slug = window.location.hash.slice(1);
+      if (categories.some((item) => item.slug === slug)) setCurrentSlug(slug);
     };
 
     applyHash();
@@ -25,23 +35,31 @@ export default function CasesView() {
 
     window.addEventListener("hashchange", applyHash);
     return () => window.removeEventListener("hashchange", applyHash);
-  }, []);
+  }, [categories]);
 
   const current =
-    CASE_CATEGORIES.find((item) => item.id === currentId) ?? CASE_CATEGORIES[0];
-  const items = CASE_ITEMS[current.id] ?? [];
+    categories.find((item) => item.slug === currentSlug) ?? categories[0];
 
-  const select = (id: string) => {
-    setCurrentId(id);
+  // 分類全部被隱藏時不該整頁崩潰
+  if (!current) return null;
+
+  const items = itemsBySlug[current.slug] ?? [];
+
+  const select = (slug: string) => {
+    setCurrentSlug(slug);
     // 更新網址但不留下歷史紀錄，返回鍵仍回到首頁
-    window.history.replaceState(null, "", `#${id}`);
+    window.history.replaceState(null, "", `#${slug}`);
     window.scrollTo(0, 0);
   };
 
   return (
     // 案例頁的選單僅五項，Tablet 不需兩列，故覆寫頁首高度為 73
     <div className="contents max-lg:[--header-h:73px] max-md:[--header-h:106px]">
-      <CasePageHeader current={current.id} onSelect={select} />
+      <CasePageHeader
+        categories={categories}
+        current={current.slug}
+        onSelect={select}
+      />
 
       <main className="bg-white pt-(--header-h)">
         {/* 標題與註記，對應設計稿 1:5860 與 1:5863。
@@ -61,9 +79,9 @@ export default function CasesView() {
         {/* 兩欄格線：Desktop 1200 寬（600x424）、Laptop 900 寬（450x318） */}
         <ul className="mx-auto grid max-w-[1200px] grid-cols-2 px-0 max-xl:max-w-[900px] max-lg:max-w-[700px] max-lg:grid-cols-1 max-md:max-w-[350px]">
           {items.map((item, index) => (
-            <li key={item.file} className="relative aspect-[600/424]">
+            <li key={item.id} className="relative aspect-[600/424]">
               <Image
-                src={`/images/cases/${item.file}.jpg`}
+                src={item.src}
                 alt={`${current.label}案例 ${item.name}`}
                 fill
                 sizes="(max-width: 768px) 100vw, 600px"

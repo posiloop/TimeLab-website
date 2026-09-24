@@ -31,6 +31,10 @@ export default function ScrollToTop() {
     // 換頁當下目標元素尚未掛載，故只看有沒有 hash，不查 DOM。
     if (window.location.hash) return;
 
+    // 後台不適用：編輯長清單時 router.refresh() 會觸發這裡，
+    // 每存一次就被捲回頂端，使用者得重新找回原本的位置
+    if (pathname.startsWith("/admin")) return;
+
     window.scrollTo(0, 0);
   }, [pathname]);
 

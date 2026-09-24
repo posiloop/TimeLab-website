@@ -1,0 +1,380 @@
+// TiMELAB 內容管理後台的資料模型。
+//
+// 核心切分：MediaAsset 只記錄「檔案客觀上是什麼」（S3 位置與真實像素），
+// 各展示表記錄「這個檔案在版面上要怎麼擺」。兩者刻意分離且互不推導，
+// 因為本站的宣告尺寸與檔案尺寸在多數軌道上並不相等 —— 主視覺 12 張相框
+// 的原檔其實有 1920x2860、1048x1561、1048x1563 三種尺寸，但版面一律以
+// 275x410 呈現。若讓展示尺寸跟著真實像素走，換算後的寬會出現 274.87 與
+// 275.25 的差距，疊加 gap:16 與 -rotate-6 後相框間距會參差，跑馬燈
+// translateX(-50%) 的無縫接點也會對不齊。
+
+generator client {
+  provider = "prisma-client"
+  output   = "../app/generated/prisma"
+}
+
+// Prisma 7 起連線字串不再寫在這裡：Migrate 讀 prisma.config.ts，
+// 執行期則由 PrismaClient 建構時傳入的 driver adapter 提供
+
+datasource db {
+  provider = "postgresql"
+}
+
+// ---------------------------------------------------------------------------
+// Better Auth
+// ---------------------------------------------------------------------------
+// 欄位名與型別須與 Better Auth 的 Prisma adapter 預設對應，勿自行改名。
+// 後台不開放註冊（auth.ts 設 disableSignUp），帳號由 seed 腳本或
+// 已登入者透過後台建立。
+
+model User {
+  id            String   @id
+  name          String
+  email         String   @unique
+  emailVerified Boolean  @default(false)
+  image         String?
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  sessions Session[]
+  accounts Account[]
+
+  // 稽核用：內容被改壞時要能查出是誰在何時上傳的
+  uploadedAssets MediaAsset[] @relation("AssetUploader")
+
+  @@map("user")
+}
+
+model Session {
+  id        String   @id
+  expiresAt DateTime
+  token     String   @unique
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  ipAddress String?
+  userAgent String?
+
+  userId String
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@map("session")
+}
+
+model Account {
+  id                    String    @id
+  accountId             String
+  providerId            String
+  accessToken           String?
+  refreshToken          String?
+  idToken               String?
+  accessTokenExpiresAt  DateTime?
+  refreshTokenExpiresAt DateTime?
+  scope                 String?
+  password              String?
+  createdAt             DateTime  @default(now())
+  updatedAt             DateTime  @updatedAt
+
+  userId String
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([providerId, accountId])
+  @@index([userId])
+  @@map("account")
+}
+
+model Verification {
+  id         String   @id
+  identifier String
+  value      String
+  expiresAt  DateTime
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+
+  @@index([identifier])
+  @@map("verification")
+}
+
+// ---------------------------------------------------------------------------
+// 媒體檔案
+// ---------------------------------------------------------------------------
+
+enum MediaKind {
+  IMAGE
+  VIDEO
+}
+
+model MediaAsset {
+  id String @id @default(cuid())
+
+  kind MediaKind @default(IMAGE)
+
+  /// S3 物件金鑰，不含 bucket 與網域。組網址的職責在讀取層，
+  /// 這樣換 CDN 網域時不必改動既有資料
+  key String @unique
+
+  /// 檔案的真實像素。刻意命名 intrinsic 而非 width/height，避免與展示表的
+  /// displayWidth 混淆 —— 兩者在主視覺與拍貼框動畫上並不相等
+  intrinsicWidth  Int
+  intrinsicHeight Int
+
+  mimeType String
+  byteSize Int
+
+  /// 內容雜湊（sha256）。重複上傳同一張圖時直接複用既有 asset，
+  /// 也讓遷移腳本具備冪等性：重跑不會把 137 個檔案再傳一次
+  checksum String @unique
+
+  /// 原始檔名，僅供後台辨識，不參與任何網址組合
+  originalName String?
+
+  /// 軟刪除。使用者刪錯圖時 S3 物件仍在，可救回；
+  /// 儲存成本可忽略，但救回一張圖的價值很高
+  deletedAt DateTime?
+
+  uploadedById String?
+  uploadedBy   User?   @relation("AssetUploader", fields: [uploadedById], references: [id], onDelete: SetNull)
+
+  createdAt DateTime @default(now())
+
+  heroSlides     HeroSlide[]
+  eventPhotos    EventPhoto[]
+  caseItems      CaseItem[]
+  caseCategories CaseCategory[]
+  framePosters   FrameAnimation[] @relation("FramePoster")
+  frameWebms     FrameAnimation[] @relation("FrameWebm")
+  frameMp4s      FrameAnimation[] @relation("FrameMp4")
+
+  @@index([kind, createdAt])
+  @@index([deletedAt])
+  @@map("media_asset")
+}
+
+// ---------------------------------------------------------------------------
+// 1. 首頁主視覺三軌
+// ---------------------------------------------------------------------------
+// 同一組相框在三軌各自有不同排序（設計稿刻意錯開，避免三排同步捲動）。
+// 因此「一張圖」與「某軌的某個位置」是兩件事：HeroSlide 是後者，
+// 同一個 MediaAsset 會在三軌各出現一次，track 與 position 不同。
+// 12 張圖 × 3 軌 = 36 列 HeroSlide，指向 12 個 MediaAsset。
+
+enum TrackKey {
+  TRACK_1
+  TRACK_2
+  TRACK_3
+}
+
+model HeroSlide {
+  id String @id @default(cuid())
+
+  track TrackKey
+
+  assetId String
+  asset   MediaAsset @relation(fields: [assetId], references: [id], onDelete: Restrict)
+
+  /// 軌內排序。間隔 1000 的稀疏配置，拖拉時取前後鄰居中間值，
+  /// 單次移動只 UPDATE 一列
+  position Int
+
+  /// 版面顯示尺寸。**不可從 asset.intrinsic* 推導** —— 見檔首說明。
+  /// 後台上傳新圖時一律沿用該軌既有值，不跟著新檔案的真實比例變動
+  displayWidth  Int @default(275)
+  displayHeight Int @default(410)
+
+  /// 裝飾性輪播，預設無替代文字；有敘事意義時才填
+  alt String?
+
+  isVisible Boolean @default(true)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  // 讓「兩張圖排到同一位置」在 DB 層就擋下，而不是變成畫面上的隨機順序
+  @@unique([track, position])
+  @@index([track, isVisible, position])
+  @@map("hero_slide")
+}
+
+// ---------------------------------------------------------------------------
+// 2. 底部活動現場照三軌
+// ---------------------------------------------------------------------------
+// 與主視覺不同：三軌各有自己的 7 張圖（不共用），且每張寬度不同。
+// 這裡的 displayWidth 恰好等於檔案真實寬度（21 張已逐一驗證相符），
+// 但仍存成獨立欄位 —— 換圖時若新圖寬度不同，要由後台明確決定沿用版面寬
+// 或改用新圖寬，不該隱式跟著檔案變動。
+
+model EventPhoto {
+  id String @id @default(cuid())
+
+  track TrackKey
+
+  assetId String
+  asset   MediaAsset @relation(fields: [assetId], references: [id], onDelete: Restrict)
+
+  position Int
+
+  /// 逐張不同（570 / 1013 / 1140），高一律 760。
+  /// next/image 靠這組值算寬高比，填錯整排會歪
+  displayWidth  Int
+  displayHeight Int @default(760)
+
+  alt String?
+
+  isVisible Boolean @default(true)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@unique([track, position])
+  @@index([track, isVisible, position])
+  @@map("event_photo")
+}
+
+// ---------------------------------------------------------------------------
+// 3. 拍貼框動畫
+// ---------------------------------------------------------------------------
+// 一筆資料三個檔案：WebM（主）、MP4（Safari 後備）、JPG（自動播放被擋時
+// 的靜態底圖）。用三個 FK 而非一個陣列，因為三者角色不可互換 —— 少了 webm
+// 只是檔案變大，少了 poster 在自動播放被擋時會整塊空白。用 FK 讓「缺 poster」
+// 在型別上就是不合法，而不是陣列裡湊巧少一項。
+
+model FrameAnimation {
+  id String @id @default(cuid())
+
+  /// 對應現行檔名中段（4grid / american / 6grid / pink / 8grid）。
+  /// 遷移後保留，讓 S3 key 與舊路徑可對照追溯
+  slug String @unique
+
+  /// 這組動畫會被輔助技術朗讀，必填
+  alt String
+
+  posterId String
+  poster   MediaAsset @relation("FramePoster", fields: [posterId], references: [id], onDelete: Restrict)
+
+  webmId String
+  webm   MediaAsset @relation("FrameWebm", fields: [webmId], references: [id], onDelete: Restrict)
+
+  mp4Id String
+  mp4   MediaAsset @relation("FrameMp4", fields: [mp4Id], references: [id], onDelete: Restrict)
+
+  /// 圖框尺寸，非檔案尺寸：影片以 contain 置中，poster 原檔為 610x910，
+  /// 版面用 305x410 呈現
+  displayWidth  Int
+  displayHeight Int
+
+  /// 傾斜角（度）。CSS rotate 不影響版面配置，故另需 box* 保留空間
+  rotate Float @default(0)
+
+  /// 旋轉後實際佔用的寬高。小於實際佔用會讓影片四角被容器裁掉。
+  /// 後台改 rotate 時應同步重算，不要讓兩者各改各的
+  boxWidth  Int
+  boxHeight Int
+
+  position Int
+
+  isVisible Boolean @default(true)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@unique([position])
+  @@index([isVisible, position])
+  @@map("frame_animation")
+}
+
+// ---------------------------------------------------------------------------
+// 4. 活動案例
+// ---------------------------------------------------------------------------
+
+model CaseCategory {
+  id String @id @default(cuid())
+
+  /// 網址片段（brand / wedding / school / corporate / fandom）。
+  /// 對外可見且被三處依賴：首頁卡片的 /cases#<slug>、CasesView 的 hash
+  /// 白名單、next.config.ts 的 /cases/:category redirect。
+  /// 改動會讓既有社群貼文與名片上的連結靜默導到錯誤分類（不會 404，
+  /// 所以不會有人回報）—— 後台設為唯讀
+  slug String @unique
+
+  label   String
+  tagline String
+
+  coverId String
+  cover   MediaAsset @relation(fields: [coverId], references: [id], onDelete: Restrict)
+
+  position Int
+
+  isVisible Boolean @default(true)
+
+  items CaseItem[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@unique([position])
+  @@index([isVisible, position])
+  @@map("case_category")
+}
+
+model CaseItem {
+  id String @id @default(cuid())
+
+  categoryId String
+  category   CaseCategory @relation(fields: [categoryId], references: [id], onDelete: Cascade)
+
+  assetId String
+  asset   MediaAsset @relation(fields: [assetId], references: [id], onDelete: Restrict)
+
+  /// 顯示名稱，格式為「機型 - 案例名」（如「標準 - 籃球隊」），
+  /// 組成 alt 文字：`${category.label}案例 ${name}`
+  name String
+
+  /// Figma 圖層 ID，僅供追溯原始設計稿，不參與顯示邏輯。
+  /// 保留是因為將來要重新匯出原圖時得靠它定位
+  figmaNodeId String?
+
+  position Int
+
+  isVisible Boolean @default(true)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@unique([categoryId, position])
+  @@index([categoryId, isVisible, position])
+  @@map("case_item")
+}
+
+// ---------------------------------------------------------------------------
+// 5. 常見問題
+// ---------------------------------------------------------------------------
+// 同時供畫面的 Accordion 與 StructuredData 的 FAQPage JSON-LD 使用，
+// 兩處必須同源，否則搜尋結果會顯示與網頁不符的答案
+
+model FaqItem {
+  id String @id @default(cuid())
+
+  question String
+  answer   String @db.Text
+
+  position Int
+
+  isVisible Boolean @default(true)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@unique([position])
+  @@index([isVisible, position])
+  @@map("faq_item")
+}
+
+model RateLimit {
+  id          String @id
+  key         String
+  count       Int
+  lastRequest BigInt
+
+  @@unique([key])
+  @@map("rateLimit")
+}

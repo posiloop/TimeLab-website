@@ -32,6 +32,8 @@ yarn-error.log*
 
 # env files (can opt-in for committing if needed)
 .env*
+# 範本不含任何密鑰，需入版控供部署時參照
+!.env.example
 
 # vercel
 .vercel
@@ -40,3 +42,6 @@ yarn-error.log*
 *.tsbuildinfo
 next-env.d.ts
 .gstack/
+
+# prisma client 由 `bun run db:generate` 產生，不入版控
+/app/generated/
