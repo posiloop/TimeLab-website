@@ -181,9 +181,9 @@ export default function FramesEditor({ frames }: { frames: Frame[] }) {
             <div className="flex w-48 shrink-0 flex-col items-center gap-2">
               <DragHandle className="self-start" />
               {/* 即時套用旋轉角度：數字對使用者沒有意義，看到圖歪掉才有。
-                  拍貼框是直式（610×910），高度給 240 才填得滿這欄的寬度；
-                  給 160 的話 contain 後只剩 107px 寬，圖會小到看不清內容 */}
-              <div className="flex h-60 w-full items-center justify-center">
+                  容器留得比圖片大：最大傾斜 20° 時，直式圖旋轉後會往外佔到
+                  約 1.45 倍寬、1.17 倍高，不留空間四角就會被裁掉 */}
+              <div className="flex h-72 w-full items-center justify-center overflow-visible">
                 {/* 播放實際的影片而非封面圖 —— 這一頁的重點就是確認動畫內容，
                     靜態圖看不出動了什麼。poster 在影片載入前先頂著。
                     muted 是自動播放的前提，playsInline 避免 iOS 搶全螢幕。
@@ -209,7 +209,7 @@ export default function FramesEditor({ frames }: { frames: Frame[] }) {
                     playsInline
                     aria-label={frame.alt}
                     style={{ rotate: `${frame.rotate}deg` }}
-                    className="max-h-full max-w-full cursor-zoom-in object-contain transition-transform duration-200 hover:opacity-75"
+                    className="max-h-[197px] max-w-[132px] cursor-zoom-in object-contain transition-transform duration-200 hover:opacity-75"
                   >
                     <source src={frame.webmUrl} type="video/webm" />
                     <source src={frame.mp4Url} type="video/mp4" />
@@ -239,8 +239,8 @@ export default function FramesEditor({ frames }: { frames: Frame[] }) {
                 </span>
                 <input
                   type="range"
-                  min={-10}
-                  max={10}
+                  min={-20}
+                  max={20}
                   step={0.5}
                   value={frame.rotate}
                   onChange={(event) => {
