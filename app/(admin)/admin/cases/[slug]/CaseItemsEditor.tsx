@@ -7,7 +7,9 @@ import { useState, useTransition } from "react";
 import { PreviewableImage } from "@/app/components/admin/ImagePreview";
 import SaveBar from "@/app/components/admin/SaveBar";
 import { useToast } from "@/app/components/admin/Toast";
-import SortableList from "@/app/components/admin/SortableList";
+import SortableList, {
+  DragHandle,
+} from "@/app/components/admin/SortableList";
 import ToggleSwitch from "@/app/components/admin/ToggleSwitch";
 import UploadDropzone, {
   type UploadedAsset,
@@ -153,9 +155,12 @@ export default function CaseItemsEditor({
         getId={(item) => item.id}
         onReorder={setList}
         direction="grid"
+        // 卡片裡有名稱輸入框、顯示開關與移除鈕，整片可拖會讓它們無法操作
+        handleOnly
         className="grid grid-cols-4 gap-3 max-lg:grid-cols-3 max-md:grid-cols-2"
         renderItem={(item) => (
-          <div className="flex cursor-grab flex-col gap-2 rounded-[10px] border border-black/10 bg-white p-2">
+          <div className="flex flex-col gap-2 rounded-[10px] border border-black/10 bg-white p-2">
+            <DragHandle className="self-start" />
             <PreviewableImage
               src={item.url}
               caption={item.name}

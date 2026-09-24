@@ -6,7 +6,9 @@ import { useState, useTransition } from "react";
 import { PreviewableImage } from "@/app/components/admin/ImagePreview";
 import SaveBar from "@/app/components/admin/SaveBar";
 import { useToast } from "@/app/components/admin/Toast";
-import SortableList from "@/app/components/admin/SortableList";
+import SortableList, {
+  DragHandle,
+} from "@/app/components/admin/SortableList";
 import ToggleSwitch from "@/app/components/admin/ToggleSwitch";
 import UploadDropzone, {
   type UploadedAsset,
@@ -151,6 +153,8 @@ export default function EventsEditor({
             getId={(photo) => photo.id}
             onReorder={(next) => setCurrent({ ...current, [key]: next })}
             direction="grid"
+            // 卡片裡有顯示開關與移除鈕，整片可拖會蓋掉它們的點擊
+            handleOnly
             className="flex flex-wrap gap-3"
             renderItem={(photo) => {
               // 版面寬與檔案比例算出來的寬不一致時要提醒 —— 這是版面歪掉
@@ -162,7 +166,8 @@ export default function EventsEditor({
               const drift = Math.abs(fromFile - photo.displayWidth) > 2;
 
               return (
-                <div className="flex w-36 cursor-grab flex-col gap-1 rounded-[8px] border border-black/10 bg-white p-2">
+                <div className="flex w-36 flex-col gap-1 rounded-[8px] border border-black/10 bg-white p-2">
+                  <DragHandle className="self-start" />
                   <PreviewableImage
                     src={photo.url}
                     caption={`${photo.name}（${photo.intrinsicWidth} × ${photo.intrinsicHeight}）`}

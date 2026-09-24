@@ -20,7 +20,8 @@ import {
   verticalListSortingStrategy,
 } from "@dnd-kit/sortable";
 import { CSS } from "@dnd-kit/utilities";
-import { useId } from "react";
+import { GripVertical } from "lucide-react";
+import { createContext, useContext, useId } from "react";
 
 type Direction = "vertical" | "horizontal" | "grid";
 
@@ -30,6 +31,11 @@ const STRATEGY = {
   grid: rectSortingStrategy,
 };
 
+/** useSortable 回傳的拖曳監聽器，由 SortableItem 傳給內層的把手使用 */
+type HandleProps = Record<string, unknown>;
+
+const HandleContext = createContext<HandleProps>({});
+
 type SortableListProps<T> = {
   items: T[];
   getId: (item: T) => string;
@@ -37,10 +43,15 @@ type SortableListProps<T> = {
   renderItem: (item: T, index: number) => React.ReactNode;
   direction?: Direction;
   className?: string;
+  /**
+   * true 時只有 <DragHandle /> 能發起拖曳，其餘區域維持正常互動。
+   * 項目內含輸入框、滑桿或按鈕時必須開啟，否則操作它們會被當成拖曳。
+   */
+  handleOnly?: boolean;
 };
 
 /**
- * 拖拉排序清單。
+ * 拖曳排序清單。
  *
  * 用 dnd-kit 而非原生 HTML5 drag events：後者在觸控裝置完全無作用，
  * 而後台需要能在 iPad 上操作。TouchSensor 的 250ms 延遲是為了與捲動
@@ -53,6 +64,7 @@ export default function SortableList<T>({
   renderItem,
   direction = "vertical",
   className = "",
+  handleOnly = false,
 }: SortableListProps<T>) {
   const dndId = useId();
 
@@ -89,13 +101,14 @@ export default function SortableList<T>({
       collisionDetection={closestCenter}
       onDragEnd={handleDragEnd}
     >
-      <SortableContext
-        items={items.map(getId)}
-        strategy={STRATEGY[direction]}
-      >
+      <SortableContext items={items.map(getId)} strategy={STRATEGY[direction]}>
         <ul className={className}>
           {items.map((item, index) => (
-            <SortableItem key={getId(item)} id={getId(item)}>
+            <SortableItem
+              key={getId(item)}
+              id={getId(item)}
+              handleOnly={handleOnly}
+            >
               {renderItem(item, index)}
             </SortableItem>
           ))}
@@ -107,13 +120,17 @@ export default function SortableList<T>({
 
 function SortableItem({
   id,
+  handleOnly,
   children,
 }: {
   id: string;
+  handleOnly: boolean;
   children: React.ReactNode;
 }) {
   const { attributes, listeners, setNodeRef, transform, transition, isDragging } =
     useSortable({ id });
+
+  const dragProps = { ...attributes, ...listeners };
 
   return (
     <li
@@ -126,14 +143,38 @@ function SortableItem({
         zIndex: isDragging ? 10 : undefined,
       }}
       // touch-none 讓觸控裝置把手勢交給 dnd-kit，否則會被瀏覽器當成捲動。
-      // 拖曳中統一顯示 grabbing；靜止時的游標交給各頁自己決定 ——
-      // 有些項目整片可拖，有些只有把手可拖，且項目內常有輸入框與按鈕，
-      // 在那些元素上顯示抓取游標並不正確
+      // 拖曳中統一顯示 grabbing；靜止時的游標交給各頁自己決定
       className={`touch-none ${isDragging ? "cursor-grabbing" : ""}`}
-      {...attributes}
-      {...listeners}
+      // handleOnly 時監聽器改掛在 DragHandle 上，整片卡片就不再吃掉
+      // 滑桿與輸入框的操作
+      {...(handleOnly ? {} : dragProps)}
     >
-      {children}
+      {handleOnly ? (
+        <HandleContext.Provider value={dragProps}>
+          {children}
+        </HandleContext.Provider>
+      ) : (
+        children
+      )}
     </li>
+  );
+}
+
+/**
+ * 拖曳把手。需搭配 SortableList 的 handleOnly，放在項目內任意位置。
+ */
+export function DragHandle({ className = "" }: { className?: string }) {
+  const dragProps = useContext(HandleContext);
+
+  return (
+    <button
+      type="button"
+      aria-label="拖曳以調整順序"
+      // touch-none 讓觸控裝置把這個範圍的手勢交給 dnd-kit 而非捲動頁面
+      className={`inline-flex shrink-0 cursor-grab touch-none items-center justify-center text-brand active:cursor-grabbing ${className}`}
+      {...dragProps}
+    >
+      <GripVertical aria-hidden className="size-5" />
+    </button>
   );
 }

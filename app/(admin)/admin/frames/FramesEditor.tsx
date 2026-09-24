@@ -1,6 +1,5 @@
 "use client";
 
-import { GripVertical } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useState, useTransition } from "react";
 import GifUpload, {
@@ -9,7 +8,9 @@ import GifUpload, {
 import { PreviewableImage } from "@/app/components/admin/ImagePreview";
 import SaveBar from "@/app/components/admin/SaveBar";
 import { useToast } from "@/app/components/admin/Toast";
-import SortableList from "@/app/components/admin/SortableList";
+import SortableList, {
+  DragHandle,
+} from "@/app/components/admin/SortableList";
 import ToggleSwitch from "@/app/components/admin/ToggleSwitch";
 import {
   replaceFrameMedia,
@@ -167,14 +168,13 @@ export default function FramesEditor({ frames }: { frames: Frame[] }) {
         items={list}
         getId={(frame) => frame.id}
         onReorder={setList}
+        // 卡片內有滑桿、輸入框與按鈕，整片可拖會讓那些元件無法操作
+        handleOnly
         className="flex flex-col gap-3"
         renderItem={(frame) => (
           <div className="card-surface flex gap-4 rounded-[12px] p-4 max-md:flex-col">
             <div className="flex w-48 shrink-0 flex-col items-center gap-2">
-              <GripVertical
-                aria-hidden
-                className="size-5 shrink-0 cursor-grab self-start text-brand"
-              />
+              <DragHandle className="self-start" />
               {/* 即時套用旋轉角度：數字對使用者沒有意義，看到圖歪掉才有。
                   拍貼框是直式（610×910），高度給 240 才填得滿這欄的寬度；
                   給 160 的話 contain 後只剩 107px 寬，圖會小到看不清內容 */}

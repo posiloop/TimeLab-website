@@ -1,11 +1,13 @@
 "use client";
 
-import { GripVertical, Plus, Trash } from "lucide-react";
+import { Plus, Trash } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useState, useTransition } from "react";
 import SaveBar from "@/app/components/admin/SaveBar";
 import { useToast } from "@/app/components/admin/Toast";
-import SortableList from "@/app/components/admin/SortableList";
+import SortableList, {
+  DragHandle,
+} from "@/app/components/admin/SortableList";
 import ToggleSwitch from "@/app/components/admin/ToggleSwitch";
 import {
   createFaq,
@@ -145,13 +147,12 @@ export default function FaqEditor({ items }: { items: Item[] }) {
         items={list}
         getId={(item) => item.id}
         onReorder={setList}
+        // 項目內有問題與答案的輸入框，整片可拖會讓它們無法點選與編輯
+        handleOnly
         className="flex flex-col gap-3"
         renderItem={(item) => (
           <div className="card-surface flex gap-3 rounded-[12px] p-4">
-            <GripVertical
-              aria-hidden
-              className="mt-2 size-5 shrink-0 cursor-grab text-brand"
-            />
+            <DragHandle className="mt-2" />
 
             <div className="flex min-w-0 flex-1 flex-col gap-2">
               <input
