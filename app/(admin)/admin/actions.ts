@@ -526,6 +526,48 @@ export async function createAccount(
   return { ok: true, email, password };
 }
 
+export type ResetPasswordResult =
+  | { ok: true; email: string; password: string }
+  | { ok: false; error: string };
+
+/**
+ * 重設某個帳號的密碼。
+ *
+ * 同樣由系統產生，因為明文無從從資料庫取回 —— 對方忘記密碼時只能換一組新的。
+ * 流程與 Better Auth 自己的 reset-password 路由一致：先找 credential
+ * account，有就更新、沒有就補建（例如帳號曾以其他方式建立）。
+ */
+export async function resetPassword(
+  id: string,
+): Promise<ResetPasswordResult> {
+  await requireSession();
+
+  const user = await prisma.user.findUnique({ where: { id } });
+  if (!user) return { ok: false, error: "找不到這個帳號" };
+
+  const password = generatePassword();
+  const ctx = await auth.$context;
+  const hashed = await ctx.password.hash(password);
+
+  const account = await ctx.internalAdapter.findCredentialAccount(id);
+  if (account) {
+    await ctx.internalAdapter.updatePassword(id, hashed);
+  } else {
+    await ctx.internalAdapter.createAccount({
+      userId: id,
+      providerId: "credential",
+      accountId: id,
+      password: hashed,
+    });
+  }
+
+  // 舊密碼已失效，該帳號在其他裝置上的登入狀態也一併清掉，
+  // 否則被交接的帳號仍可能停在別人手上的分頁裡
+  await ctx.internalAdapter.deleteUserSessions(id);
+
+  return { ok: true, email: user.email, password };
+}
+
 export async function removeAccount(id: string): Promise<ActionResult> {
   const session = await requireSession();
   // 刪掉自己會讓使用者當場登出且可能無人可管理，直接擋下

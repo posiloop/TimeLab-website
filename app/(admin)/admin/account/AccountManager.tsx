@@ -1,10 +1,10 @@
 "use client";
 
-import { Check, Copy, Plus, Trash } from "lucide-react";
+import { Check, Copy, KeyRound, Plus, Trash } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useState, useTransition } from "react";
 import { useToast } from "@/app/components/admin/Toast";
-import { createAccount, removeAccount } from "../actions";
+import { createAccount, removeAccount, resetPassword } from "../actions";
 
 type User = {
   id: string;
@@ -25,17 +25,18 @@ export default function AccountManager({
   const [adding, setAdding] = useState(false);
   const [pending, startTransition] = useTransition();
   const [error, setError] = useState("");
-  // 剛建立的帳號與密碼。明文只有這一次拿得到，資料庫存的是雜湊，
+  // 剛產生的帳密。明文只有這一次拿得到，資料庫存的是雜湊，
   // 所以要留在畫面上直到使用者自己關掉
-  const [created, setCreated] = useState<{
+  const [issued, setIssued] = useState<{
     email: string;
     password: string;
+    kind: "created" | "reset";
   } | null>(null);
   const [copied, setCopied] = useState(false);
 
   const add = (formData: FormData) => {
     setError("");
-    setCreated(null);
+    setIssued(null);
     setCopied(false);
     startTransition(async () => {
       const result = await createAccount(formData);
@@ -44,18 +45,49 @@ export default function AccountManager({
         return setError(result.error);
       }
       setAdding(false);
-      setCreated({ email: result.email, password: result.password });
+      setIssued({
+        email: result.email,
+        password: result.password,
+        kind: "created",
+      });
       toast("帳號已建立，請複製密碼交給對方");
       router.refresh();
     });
   };
 
   const copy = async () => {
-    if (!created) return;
+    if (!issued) return;
     await navigator.clipboard.writeText(
-      `帳號：${created.email}\n密碼：${created.password}`,
+      `帳號：${issued.email}\n密碼：${issued.password}`,
     );
     setCopied(true);
+  };
+
+  const reset = (user: User) => {
+    if (
+      !confirm(
+        `重設「${user.name}」的密碼？\n\n舊密碼會立刻失效，該帳號在所有裝置上也會被登出。`,
+      )
+    ) {
+      return;
+    }
+    setError("");
+    setIssued(null);
+    setCopied(false);
+    startTransition(async () => {
+      const result = await resetPassword(user.id);
+      if (!result.ok) {
+        toast(result.error, "error");
+        return setError(result.error);
+      }
+      setIssued({
+        email: result.email,
+        password: result.password,
+        kind: "reset",
+      });
+      toast("密碼已重設，請複製後交給對方");
+      router.refresh();
+    });
   };
 
   const remove = (user: User) => {
@@ -86,10 +118,12 @@ export default function AccountManager({
           {error}
         </p>
       )}
-      {created && (
+      {issued && (
         <div className="flex flex-col gap-3 rounded-[12px] border-2 border-brand bg-brand-mist p-4">
           <div>
-            <p className="text-sm font-bold text-brand">帳號已建立</p>
+            <p className="text-sm font-bold text-brand">
+              {issued.kind === "created" ? "帳號已建立" : "密碼已重設"}
+            </p>
             <p className="text-caption text-brand-ink">
               密碼只會顯示這一次，關掉之後就看不到了 ——
               請先複製並交給對方。
@@ -99,13 +133,13 @@ export default function AccountManager({
           <dl className="flex flex-col gap-1 rounded-[8px] bg-white p-3">
             <div className="flex gap-2 text-sm">
               <dt className="w-12 shrink-0 text-brand-ink/60">帳號</dt>
-              <dd className="break-all">{created.email}</dd>
+              <dd className="break-all">{issued.email}</dd>
             </div>
             <div className="flex gap-2 text-sm">
               <dt className="w-12 shrink-0 text-brand-ink/60">密碼</dt>
               {/* 等寬字讓 l 與 1、0 與 O 之類的字元容易分辨 */}
               <dd className="break-all font-mono font-bold">
-                {created.password}
+                {issued.password}
               </dd>
             </div>
           </dl>
@@ -125,7 +159,7 @@ export default function AccountManager({
             </button>
             <button
               type="button"
-              onClick={() => setCreated(null)}
+              onClick={() => setIssued(null)}
               className="rounded-full px-3 py-2 text-caption text-brand-ink transition-colors hover:bg-white"
             >
               我已經複製好了
@@ -154,16 +188,29 @@ export default function AccountManager({
               </p>
             </div>
 
-            <button
-              type="button"
-              onClick={() => remove(user)}
-              // 刪掉自己會當場登出，且可能讓後台無人可管
-              disabled={pending || user.id === currentUserId}
-              className="flex shrink-0 items-center gap-1 rounded-full px-3 py-1 text-caption text-red-600 transition-colors hover:bg-red-50 disabled:cursor-not-allowed disabled:text-brand-ink/30 disabled:hover:bg-transparent"
-            >
-              <Trash aria-hidden className="size-3.5" />
-              刪除
-            </button>
+            <div className="flex shrink-0 items-center gap-1">
+              <button
+                type="button"
+                onClick={() => reset(user)}
+                // 重設自己的密碼會當場把自己登出，要改密碼有其他途徑
+                disabled={pending || user.id === currentUserId}
+                className="flex items-center gap-1 rounded-full px-3 py-1 text-caption text-brand transition-colors hover:bg-brand-mist disabled:cursor-not-allowed disabled:text-brand-ink/30 disabled:hover:bg-transparent"
+              >
+                <KeyRound aria-hidden className="size-3.5" />
+                重設密碼
+              </button>
+
+              <button
+                type="button"
+                onClick={() => remove(user)}
+                // 刪掉自己會當場登出，且可能讓後台無人可管
+                disabled={pending || user.id === currentUserId}
+                className="flex items-center gap-1 rounded-full px-3 py-1 text-caption text-red-600 transition-colors hover:bg-red-50 disabled:cursor-not-allowed disabled:text-brand-ink/30 disabled:hover:bg-transparent"
+              >
+                <Trash aria-hidden className="size-3.5" />
+                刪除
+              </button>
+            </div>
           </li>
         ))}
       </ul>
