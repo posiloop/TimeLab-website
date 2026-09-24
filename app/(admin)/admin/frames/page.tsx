@@ -18,6 +18,7 @@ export default async function FramesAdminPage() {
       poster: { select: { key: true } },
       webm: { select: { key: true } },
       mp4: { select: { key: true } },
+      gif: { select: { key: true } },
     },
   });
 
@@ -30,6 +31,8 @@ export default async function FramesAdminPage() {
         posterUrl: mediaUrl(frame.poster.key),
         webmUrl: mediaUrl(frame.webm.key),
         mp4Url: mediaUrl(frame.mp4.key),
+        // 保留原始 GIF 之前上傳的拍貼框沒有這份資料，故可能為 undefined
+        gifUrl: frame.gif ? mediaUrl(frame.gif.key) : undefined,
         displayWidth: frame.displayWidth,
         displayHeight: frame.displayHeight,
         rotate: frame.rotate,

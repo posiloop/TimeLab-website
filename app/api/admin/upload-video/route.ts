@@ -1,4 +1,5 @@
 import { NextResponse } from "next/server";
+import sharp from "sharp";
 import { getSessionFrom } from "@/app/server/admin-guard";
 import { prisma } from "@/app/server/db";
 import { convertGif } from "@/app/server/gif-to-video";
@@ -62,13 +63,29 @@ export async function POST(request: Request) {
 
   const { width, height } = converted;
 
-  /** 三個產出各自建立或複用 asset。以內容雜湊去重，重複上傳同一個 GIF
-      不會在 S3 留下第二份 */
+  /** 原始 GIF 的真實尺寸。ffmpeg 已縮到 610px，故不能沿用轉檔後的值。
+      GIF 沒有 EXIF orientation，不必像一般照片那樣處理旋轉。
+      讀不出來就退回轉檔後的尺寸 —— 這個數字只用於後台顯示，
+      不值得讓整次上傳失敗 */
+  const gifMeta = await sharp(gif)
+    .metadata()
+    .catch(() => null);
+  const gifSize =
+    gifMeta?.width && gifMeta.height
+      ? { width: gifMeta.width, height: gifMeta.height }
+      : converted;
+
+  /** 各個檔案各自建立或複用 asset。以內容雜湊去重，重複上傳同一個 GIF
+      不會在 S3 留下第二份。
+
+      尺寸預設取轉檔後的值，但原始 GIF 未經縮放，得傳入自己的尺寸 ——
+      intrinsic* 記的是檔案的真實像素，填轉檔後的值等於寫進假資料 */
   const store = async (
     buffer: Buffer,
     ext: string,
     mimeType: string,
     originalName: string,
+    size: { width: number; height: number } = converted,
   ) => {
     const checksum = checksumOf(buffer);
     const existing = await prisma.mediaAsset.findUnique({
@@ -83,8 +100,8 @@ export async function POST(request: Request) {
       data: {
         kind: mimeType.startsWith("video/") ? "VIDEO" : "IMAGE",
         key,
-        intrinsicWidth: width,
-        intrinsicHeight: height,
+        intrinsicWidth: size.width,
+        intrinsicHeight: size.height,
         mimeType,
         byteSize: buffer.byteLength,
         checksum,
@@ -94,20 +111,27 @@ export async function POST(request: Request) {
     });
   };
 
-  // 副檔名前的原始檔名保留下來，後台才看得出這三個檔案同源
+  // 副檔名前的原始檔名保留下來，後台才看得出這幾個檔案同源
   const base = file.name.replace(/\.gif$/i, "");
 
-  const [poster, webm, mp4] = await Promise.all([
+  // 原始 GIF 一併存起來，後台才能下載回當初上傳的那一份。網站本身仍只用
+  // 轉檔後的三個檔案 —— GIF 未經壓縮，放上前台會讓首頁多載入數十 MB
+  const [poster, webm, mp4, original] = await Promise.all([
     store(converted.poster, "jpg", "image/jpeg", `${base}-poster.jpg`),
     store(converted.webm, "webm", "video/webm", `${base}.webm`),
     store(converted.mp4, "mp4", "video/mp4", `${base}.mp4`),
+    store(gif, "gif", "image/gif", file.name, gifSize),
   ]);
 
   return NextResponse.json({
     posterId: poster.id,
     webmId: webm.id,
     mp4Id: mp4.id,
+    gifId: original.id,
     posterUrl: mediaUrl(poster.key),
+    webmUrl: mediaUrl(webm.key),
+    mp4Url: mediaUrl(mp4.key),
+    gifUrl: mediaUrl(original.key),
     width,
     height,
     // 讓後台顯示「30MB 的 GIF 轉成 1.5MB」這類回饋

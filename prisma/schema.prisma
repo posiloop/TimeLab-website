@@ -144,6 +144,7 @@ model MediaAsset {
   framePosters   FrameAnimation[] @relation("FramePoster")
   frameWebms     FrameAnimation[] @relation("FrameWebm")
   frameMp4s      FrameAnimation[] @relation("FrameMp4")
+  frameGifs      FrameAnimation[] @relation("FrameGif")
 
   @@index([kind, createdAt])
   @@index([deletedAt])
@@ -256,6 +257,12 @@ model FrameAnimation {
 
   mp4Id String
   mp4   MediaAsset @relation("FrameMp4", fields: [mp4Id], references: [id], onDelete: Restrict)
+
+  /// 上傳的原始 GIF，留著供後台下載回原檔。可為空：在保留原檔之前
+  /// 就已存在的拍貼框沒有這份資料，且網站本身從不使用它 ——
+  /// 缺了只是後台少一顆下載按鈕，不影響任何前台呈現
+  gifId String?
+  gif   MediaAsset? @relation("FrameGif", fields: [gifId], references: [id], onDelete: SetNull)
 
   /// 圖框尺寸，非檔案尺寸：影片以 contain 置中，poster 原檔為 610x910，
   /// 版面用 305x410 呈現

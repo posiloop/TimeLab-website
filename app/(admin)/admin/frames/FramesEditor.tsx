@@ -26,6 +26,7 @@ type Frame = {
   posterUrl: string;
   webmUrl: string;
   mp4Url: string;
+  gifUrl?: string;
   displayWidth: number;
   displayHeight: number;
   rotate: number;
@@ -195,6 +196,7 @@ export default function FramesEditor({ frames }: { frames: Frame[] }) {
                       src: frame.posterUrl,
                       caption: frame.alt,
                       video: { webm: frame.webmUrl, mp4: frame.mp4Url },
+                      gif: frame.gifUrl,
                     })
                   }
                   aria-label={`放大檢視 ${frame.alt}`}

@@ -6,7 +6,11 @@ export type ConvertedFrame = {
   posterId: string;
   webmId: string;
   mp4Id: string;
+  gifId: string;
   posterUrl: string;
+  webmUrl: string;
+  mp4Url: string;
+  gifUrl: string;
   width: number;
   height: number;
   originalBytes: number;
