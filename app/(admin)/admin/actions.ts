@@ -1,5 +1,6 @@
 "use server";
 
+import { randomInt } from "node:crypto";
 import { z } from "zod";
 import { requireSession } from "@/app/server/admin-guard";
 import { auth } from "@/app/server/auth";
@@ -455,8 +456,26 @@ export async function removeFaq(id: string): Promise<ActionResult> {
 const accountSchema = z.object({
   email: z.email("請填寫有效的 Email"),
   name: z.string().trim().min(1, "請填寫姓名"),
-  password: z.string().min(12, "密碼至少 12 個字元"),
 });
+
+/**
+ * 產生一組隨機密碼。
+ *
+ * 由系統產生而非讓管理者自訂：人取的密碼通常偏弱，且這組密碼只需要
+ * 傳給新同事一次，不必好記。刻意排除容易誤認的字元（0/O、1/l/I），
+ * 因為它多半是用看的抄寫或口述轉達。
+ *
+ * 用 crypto.randomInt 而非 Math.random —— 後者不是密碼學安全的亂數源。
+ */
+function generatePassword(length = 16): string {
+  const alphabet =
+    "ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnopqrstuvwxyz23456789";
+  let out = "";
+  for (let i = 0; i < length; i++) {
+    out += alphabet[randomInt(alphabet.length)];
+  }
+  return out;
+}
 
 /**
  * 新增後台帳號。
@@ -464,24 +483,32 @@ const accountSchema = z.object({
  * auth.ts 設了 disableSignUp，對外的註冊端點是關閉的；這裡走 internal
  * adapter 直接建立，並以 requireSession() 確保只有已登入者能呼叫。
  */
+export type CreateAccountResult =
+  | { ok: true; email: string; password: string }
+  | { ok: false; error: string };
+
 export async function createAccount(
   formData: FormData,
-): Promise<ActionResult> {
+): Promise<CreateAccountResult> {
   await requireSession();
 
   const parsed = accountSchema.safeParse({
     email: formData.get("email"),
     name: formData.get("name"),
-    password: formData.get("password"),
   });
   if (!parsed.success) {
-    return fail(parsed.error.issues[0]?.message ?? "資料不正確");
+    return {
+      ok: false,
+      error: parsed.error.issues[0]?.message ?? "資料不正確",
+    };
   }
 
   const email = parsed.data.email.toLowerCase();
   if (await prisma.user.findUnique({ where: { email } })) {
-    return fail("這個 Email 已經有帳號了");
+    return { ok: false, error: "這個 Email 已經有帳號了" };
   }
+
+  const password = generatePassword();
 
   const ctx = await auth.$context;
   const user = await ctx.internalAdapter.createUser(
@@ -492,10 +519,11 @@ export async function createAccount(
     userId: user.id,
     providerId: "credential",
     accountId: user.id,
-    password: await ctx.password.hash(parsed.data.password),
+    password: await ctx.password.hash(password),
   });
 
-  return ok();
+  // 明文只在這一次回傳，資料庫存的是雜湊，之後無從取回
+  return { ok: true, email, password };
 }
 
 export async function removeAccount(id: string): Promise<ActionResult> {

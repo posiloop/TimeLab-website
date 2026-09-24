@@ -1,8 +1,9 @@
 "use client";
 
-import { Plus, Trash } from "lucide-react";
+import { Check, Copy, Plus, Trash } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useState, useTransition } from "react";
+import { useToast } from "@/app/components/admin/Toast";
 import { createAccount, removeAccount } from "../actions";
 
 type User = {
@@ -20,21 +21,41 @@ export default function AccountManager({
   currentUserId: string;
 }) {
   const router = useRouter();
+  const toast = useToast();
   const [adding, setAdding] = useState(false);
   const [pending, startTransition] = useTransition();
   const [error, setError] = useState("");
-  const [done, setDone] = useState("");
+  // 剛建立的帳號與密碼。明文只有這一次拿得到，資料庫存的是雜湊，
+  // 所以要留在畫面上直到使用者自己關掉
+  const [created, setCreated] = useState<{
+    email: string;
+    password: string;
+  } | null>(null);
+  const [copied, setCopied] = useState(false);
 
   const add = (formData: FormData) => {
     setError("");
-    setDone("");
+    setCreated(null);
+    setCopied(false);
     startTransition(async () => {
       const result = await createAccount(formData);
-      if (!result.ok) return setError(result.error);
+      if (!result.ok) {
+        toast(result.error, "error");
+        return setError(result.error);
+      }
       setAdding(false);
-      setDone("帳號已建立。");
+      setCreated({ email: result.email, password: result.password });
+      toast("帳號已建立，請複製密碼交給對方");
       router.refresh();
     });
+  };
+
+  const copy = async () => {
+    if (!created) return;
+    await navigator.clipboard.writeText(
+      `帳號：${created.email}\n密碼：${created.password}`,
+    );
+    setCopied(true);
   };
 
   const remove = (user: User) => {
@@ -42,7 +63,11 @@ export default function AccountManager({
     setError("");
     startTransition(async () => {
       const result = await removeAccount(user.id);
-      if (!result.ok) return setError(result.error);
+      if (!result.ok) {
+        toast(result.error, "error");
+        return setError(result.error);
+      }
+      toast(`已刪除「${user.name}」的帳號`);
       router.refresh();
     });
   };
@@ -61,10 +86,52 @@ export default function AccountManager({
           {error}
         </p>
       )}
-      {done && (
-        <p className="rounded-[8px] bg-brand-mist px-4 py-2 text-sm text-brand">
-          {done}
-        </p>
+      {created && (
+        <div className="flex flex-col gap-3 rounded-[12px] border-2 border-brand bg-brand-mist p-4">
+          <div>
+            <p className="text-sm font-bold text-brand">帳號已建立</p>
+            <p className="text-caption text-brand-ink">
+              密碼只會顯示這一次，關掉之後就看不到了 ——
+              請先複製並交給對方。
+            </p>
+          </div>
+
+          <dl className="flex flex-col gap-1 rounded-[8px] bg-white p-3">
+            <div className="flex gap-2 text-sm">
+              <dt className="w-12 shrink-0 text-brand-ink/60">帳號</dt>
+              <dd className="break-all">{created.email}</dd>
+            </div>
+            <div className="flex gap-2 text-sm">
+              <dt className="w-12 shrink-0 text-brand-ink/60">密碼</dt>
+              {/* 等寬字讓 l 與 1、0 與 O 之類的字元容易分辨 */}
+              <dd className="break-all font-mono font-bold">
+                {created.password}
+              </dd>
+            </div>
+          </dl>
+
+          <div className="flex items-center gap-2">
+            <button
+              type="button"
+              onClick={copy}
+              className="flex items-center gap-1 rounded-full bg-brand px-4 py-2 text-caption font-bold text-white transition-opacity hover:opacity-85"
+            >
+              {copied ? (
+                <Check aria-hidden className="size-3.5" />
+              ) : (
+                <Copy aria-hidden className="size-3.5" />
+              )}
+              {copied ? "已複製" : "複製帳號密碼"}
+            </button>
+            <button
+              type="button"
+              onClick={() => setCreated(null)}
+              className="rounded-full px-3 py-2 text-caption text-brand-ink transition-colors hover:bg-white"
+            >
+              我已經複製好了
+            </button>
+          </div>
+        </div>
       )}
 
       <ul className="flex flex-col gap-2">
@@ -125,19 +192,9 @@ export default function AccountManager({
             />
           </label>
 
-          <label className="flex flex-col gap-1">
-            <span className="text-caption text-brand-ink">
-              密碼（至少 12 個字元）
-            </span>
-            <input
-              name="password"
-              type="password"
-              required
-              minLength={12}
-              autoComplete="new-password"
-              className="rounded-[8px] border border-black/15 px-3 py-2 text-sm outline-none focus:border-brand"
-            />
-          </label>
+          <p className="text-caption text-brand-ink/60">
+            密碼由系統自動產生，建立後會顯示一次，請複製後交給對方。
+          </p>
 
           <div className="flex gap-2">
             <button
