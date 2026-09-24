@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useState, useTransition } from "react";
+import { PreviewableImage } from "@/app/components/admin/ImagePreview";
 import SaveBar from "@/app/components/admin/SaveBar";
 import SortableList from "@/app/components/admin/SortableList";
 import ToggleSwitch from "@/app/components/admin/ToggleSwitch";
@@ -142,10 +143,9 @@ export default function CaseItemsEditor({
         className="grid grid-cols-4 gap-3 max-lg:grid-cols-3 max-md:grid-cols-2"
         renderItem={(item) => (
           <div className="flex cursor-grab flex-col gap-2 rounded-[10px] border border-black/10 bg-white p-2">
-            {/* eslint-disable-next-line @next/next/no-img-element */}
-            <img
+            <PreviewableImage
               src={item.url}
-              alt=""
+              caption={item.name}
               className="aspect-[600/424] w-full rounded object-cover"
             />
 

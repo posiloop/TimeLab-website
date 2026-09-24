@@ -2,6 +2,7 @@
 
 import { useRouter } from "next/navigation";
 import { useCallback, useState, useTransition } from "react";
+import { PreviewableImage } from "@/app/components/admin/ImagePreview";
 import SaveBar from "@/app/components/admin/SaveBar";
 import SortableList from "@/app/components/admin/SortableList";
 import UploadDropzone, {
@@ -155,11 +156,9 @@ export default function HeroEditor({
               key={item.id}
               className="group relative w-24 overflow-hidden rounded-[8px] border border-black/10 bg-white"
             >
-              {/* 圖片來自 S3/CDN，尺寸固定且僅供辨識，用原生 img 省去設定 */}
-              {/* eslint-disable-next-line @next/next/no-img-element */}
-              <img
+              <PreviewableImage
                 src={item.url}
-                alt=""
+                caption={item.name}
                 className="h-32 w-full object-cover"
               />
               <p className="truncate px-1 py-1 text-caption text-brand-ink/70">
@@ -219,10 +218,9 @@ export default function HeroEditor({
               className="flex flex-wrap gap-2"
               renderItem={(slide, index) => (
                 <div className="w-16 cursor-grab">
-                  {/* eslint-disable-next-line @next/next/no-img-element */}
-                  <img
+                  <PreviewableImage
                     src={slide.url}
-                    alt=""
+                    caption={slide.name}
                     className="h-24 w-full rounded-[6px] border border-black/10 object-cover"
                   />
                   <p className="text-center text-caption text-brand-ink/50">

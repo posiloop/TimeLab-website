@@ -5,6 +5,7 @@ import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import { useState } from "react";
 import { authClient } from "./auth-client";
+import ImagePreviewProvider from "./ImagePreview";
 
 const NAV = [
   { href: "/admin", label: "總覽" },
@@ -90,7 +91,8 @@ export default function AdminShell({
       </aside>
 
       <main className="min-w-0 flex-1 p-8 pb-32 max-md:p-4 max-md:pb-32">
-        {children}
+        {/* 單一預覽實例供所有管理頁共用，各頁縮圖以 useImagePreview() 觸發 */}
+        <ImagePreviewProvider>{children}</ImagePreviewProvider>
       </main>
     </div>
   );

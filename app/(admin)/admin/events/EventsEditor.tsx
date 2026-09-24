@@ -2,6 +2,7 @@
 
 import { useRouter } from "next/navigation";
 import { useState, useTransition } from "react";
+import { PreviewableImage } from "@/app/components/admin/ImagePreview";
 import SaveBar from "@/app/components/admin/SaveBar";
 import SortableList from "@/app/components/admin/SortableList";
 import ToggleSwitch from "@/app/components/admin/ToggleSwitch";
@@ -150,10 +151,9 @@ export default function EventsEditor({
 
               return (
                 <div className="flex w-36 cursor-grab flex-col gap-1 rounded-[8px] border border-black/10 bg-white p-2">
-                  {/* eslint-disable-next-line @next/next/no-img-element */}
-                  <img
+                  <PreviewableImage
                     src={photo.url}
-                    alt=""
+                    caption={`${photo.name}（${photo.intrinsicWidth} × ${photo.intrinsicHeight}）`}
                     className="h-24 w-full rounded object-cover"
                   />
                   <p className="truncate text-caption text-brand-ink/70">

@@ -5,6 +5,7 @@ import { useState, useTransition } from "react";
 import GifUpload, {
   type ConvertedFrame,
 } from "@/app/components/admin/GifUpload";
+import { PreviewableImage } from "@/app/components/admin/ImagePreview";
 import SaveBar from "@/app/components/admin/SaveBar";
 import SortableList from "@/app/components/admin/SortableList";
 import ToggleSwitch from "@/app/components/admin/ToggleSwitch";
@@ -165,10 +166,9 @@ export default function FramesEditor({ frames }: { frames: Frame[] }) {
               </span>
               {/* 即時套用旋轉角度：數字對使用者沒有意義，看到圖歪掉才有 */}
               <div className="flex h-40 w-full items-center justify-center overflow-hidden">
-                {/* eslint-disable-next-line @next/next/no-img-element */}
-                <img
+                <PreviewableImage
                   src={frame.posterUrl}
-                  alt=""
+                  caption={frame.alt}
                   style={{ rotate: `${frame.rotate}deg` }}
                   className="max-h-full max-w-full object-contain transition-transform duration-200"
                 />

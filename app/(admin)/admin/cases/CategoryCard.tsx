@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useState, useTransition } from "react";
+import { PreviewableImage } from "@/app/components/admin/ImagePreview";
 import UploadDropzone, {
   type UploadedAsset,
 } from "@/app/components/admin/UploadDropzone";
@@ -54,10 +55,9 @@ export default function CategoryCard({ category }: { category: Category }) {
   return (
     <div className="card-surface flex gap-4 rounded-[12px] p-4 max-md:flex-col">
       <div className="flex w-48 shrink-0 flex-col gap-2">
-        {/* eslint-disable-next-line @next/next/no-img-element */}
-        <img
+        <PreviewableImage
           src={category.coverUrl}
-          alt=""
+          caption={`${category.label} 分類封面`}
           className="h-28 w-full rounded-[8px] object-cover"
         />
         <button
