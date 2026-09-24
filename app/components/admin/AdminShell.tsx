@@ -6,6 +6,7 @@ import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import { useState } from "react";
 import { authClient } from "./auth-client";
+import ChangePassword from "./ChangePassword";
 import ConfirmProvider from "./ConfirmDialog";
 import ImagePreviewProvider from "./ImagePreview";
 import ToastProvider from "./Toast";
@@ -22,9 +23,11 @@ const NAV = [
 ];
 
 export default function AdminShell({
+  userId,
   userName,
   children,
 }: {
+  userId: string;
   userName: string;
   children: React.ReactNode;
 }) {
@@ -40,21 +43,23 @@ export default function AdminShell({
   };
 
   return (
-    <div className="flex min-h-dvh bg-brand-canvas max-md:flex-col">
-      {/* sticky + 視窗高度：側邊欄若跟著內容一起長高，mt-auto 的登出區
-          會被推到整頁最底部，得捲到最後才看得到。
-          Mobile 改回一般流排版，選單橫向排列於頁面上方 */}
-      <aside className="sticky top-0 flex h-dvh w-60 shrink-0 flex-col gap-1 overflow-y-auto bg-brand-mist p-4 max-md:static max-md:h-auto max-md:w-full max-md:flex-row max-md:flex-wrap max-md:gap-2 max-md:overflow-visible">
-        <div className="flex flex-col gap-1 px-3 py-4 max-md:hidden">
-          <Image
-            src="/images/brand/logo-wide.png"
-            alt="時光研究室 TiMELAB"
-            width={488}
-            height={88}
-            priority
-            className="h-[26px] w-auto self-start object-contain"
-          />
-          <p className="text-caption text-brand-ink">網站內容管理</p>
+    // ToastProvider 包住整個版面而非只有 main —— 側邊欄的修改密碼也要能跳提示
+    <ToastProvider>
+      <div className="flex min-h-dvh bg-brand-canvas max-md:flex-col">
+        {/* sticky + 視窗高度：側邊欄若跟著內容一起長高，mt-auto 的登出區
+            會被推到整頁最底部，得捲到最後才看得到。
+            Mobile 改回一般流排版，選單橫向排列於頁面上方 */}
+        <aside className="sticky top-0 flex h-dvh w-60 shrink-0 flex-col gap-1 overflow-y-auto bg-brand-mist p-4 max-md:static max-md:h-auto max-md:w-full max-md:flex-row max-md:flex-wrap max-md:gap-2 max-md:overflow-visible">
+          <div className="flex flex-col gap-1 px-3 py-4 max-md:hidden">
+            <Image
+              src="/images/brand/logo-wide.png"
+              alt="時光研究室 TiMELAB"
+              width={488}
+              height={88}
+              priority
+              className="h-[26px] w-auto self-start object-contain"
+            />
+            <p className="text-caption text-brand-ink">網站內容管理</p>
         </div>
 
         {NAV.map((item) => {
@@ -76,10 +81,11 @@ export default function AdminShell({
           );
         })}
 
-        <div className="mt-auto flex items-center justify-between gap-2 border-t border-brand/20 px-3 pt-4 max-md:mt-0 max-md:w-full max-md:border-t-0 max-md:pt-0">
-          <span className="truncate text-caption text-brand-ink">
+        <div className="mt-auto flex flex-col gap-1 border-t border-brand/20 px-3 pt-4 max-md:mt-0 max-md:w-full max-md:flex-row max-md:items-center max-md:border-t-0 max-md:pt-0">
+          <span className="truncate px-3 text-caption text-brand-ink max-md:px-0">
             {userName}
           </span>
+          <ChangePassword userId={userId} />
           <button
             type="button"
             onClick={signOut}
@@ -95,13 +101,12 @@ export default function AdminShell({
       {/* 兩者各自只有一個實例供所有管理頁共用：
           放大預覽由縮圖以 useImagePreview() 觸發，提示訊息以 useToast()。
           Toast 固定在視窗角落，故包在 main 外層不受其內距影響 */}
-      <ToastProvider>
-        <main className="min-w-0 flex-1 p-8 pb-32 max-md:p-4 max-md:pb-32">
-          <ConfirmProvider>
-            <ImagePreviewProvider>{children}</ImagePreviewProvider>
-          </ConfirmProvider>
+      <main className="min-w-0 flex-1 p-8 pb-32 max-md:p-4 max-md:pb-32">
+        <ConfirmProvider>
+          <ImagePreviewProvider>{children}</ImagePreviewProvider>
+        </ConfirmProvider>
         </main>
-      </ToastProvider>
-    </div>
+      </div>
+    </ToastProvider>
   );
 }

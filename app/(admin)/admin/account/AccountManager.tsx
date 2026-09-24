@@ -65,20 +65,14 @@ export default function AccountManager({
     setCopied(true);
   };
 
+  /** 重設別人的密碼。自己的密碼在側邊欄底部改，那裡才能自訂 */
   const reset = async (user: User) => {
-    const self = user.id === currentUserId;
-
     const ok = await confirmAction({
-      title: self ? "重設自己的密碼？" : `重設「${user.name}」的密碼？`,
-      body: self
-        ? [
-            "新密碼會顯示在畫面上，請先複製再關掉。",
-            "目前這個視窗不會被登出，但其他裝置上的登入會失效。",
-          ]
-        : [
-            "舊密碼會立刻失效，該帳號在所有裝置上也會被登出。",
-            "新密碼會顯示在畫面上，請複製後交給對方。",
-          ],
+      title: `重設「${user.name}」的密碼？`,
+      body: [
+        "舊密碼會立刻失效，該帳號在所有裝置上也會被登出。",
+        "新密碼由系統產生並顯示在畫面上，請複製後交給對方。",
+      ],
       confirmLabel: "重設密碼",
     });
     if (!ok) return;
@@ -207,15 +201,18 @@ export default function AccountManager({
             </div>
 
             <div className="flex shrink-0 items-center gap-1">
-              <button
-                type="button"
-                onClick={() => reset(user)}
-                disabled={pending}
-                className="flex items-center gap-1 rounded-full px-3 py-1 text-caption text-brand transition-colors hover:bg-brand-mist disabled:cursor-not-allowed disabled:text-brand-ink/30 disabled:hover:bg-transparent"
-              >
-                <KeyRound aria-hidden className="size-3.5" />
-                重設密碼
-              </button>
+              {/* 自己的密碼在側邊欄底部改，那裡可以自訂而非隨機產生 */}
+              {user.id !== currentUserId && (
+                <button
+                  type="button"
+                  onClick={() => reset(user)}
+                  disabled={pending}
+                  className="flex items-center gap-1 rounded-full px-3 py-1 text-caption text-brand transition-colors hover:bg-brand-mist disabled:cursor-not-allowed disabled:text-brand-ink/30 disabled:hover:bg-transparent"
+                >
+                  <KeyRound aria-hidden className="size-3.5" />
+                  重設密碼
+                </button>
+              )}
 
               <button
                 type="button"

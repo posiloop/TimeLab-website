@@ -527,25 +527,40 @@ export async function createAccount(
 }
 
 export type ResetPasswordResult =
-  | { ok: true; email: string; password: string }
+  | { ok: true; email: string; password: string; generated: boolean }
   | { ok: false; error: string };
 
 /**
  * 重設某個帳號的密碼。
  *
- * 同樣由系統產生，因為明文無從從資料庫取回 —— 對方忘記密碼時只能換一組新的。
+ * 改自己的密碼可以自訂（要記得住才有意義）；改別人的一律由系統產生 ——
+ * 替別人指定一組自己知道的密碼，等於能無聲接管對方的帳號。
+ * 這個限制在伺服器端強制，不倚賴介面是否送出 newPassword。
+ *
  * 流程與 Better Auth 自己的 reset-password 路由一致：先找 credential
  * account，有就更新、沒有就補建（例如帳號曾以其他方式建立）。
  */
 export async function resetPassword(
   id: string,
+  newPassword?: string,
 ): Promise<ResetPasswordResult> {
   const session = await requireSession();
 
   const user = await prisma.user.findUnique({ where: { id } });
   if (!user) return { ok: false, error: "找不到這個帳號" };
 
-  const password = generatePassword();
+  const isSelf = session.user.id === id;
+
+  if (newPassword !== undefined && !isSelf) {
+    return { ok: false, error: "只能為自己指定密碼" };
+  }
+
+  if (newPassword !== undefined && newPassword.length < 12) {
+    return { ok: false, error: "密碼至少 12 個字元" };
+  }
+
+  const generated = newPassword === undefined;
+  const password = newPassword ?? generatePassword();
   const ctx = await auth.$context;
   const hashed = await ctx.password.hash(password);
 
@@ -570,11 +585,11 @@ export async function resetPassword(
   await prisma.session.deleteMany({
     where: {
       userId: id,
-      ...(session.user.id === id ? { NOT: { id: session.session.id } } : {}),
+      ...(isSelf ? { NOT: { id: session.session.id } } : {}),
     },
   });
 
-  return { ok: true, email: user.email, password };
+  return { ok: true, email: user.email, password, generated };
 }
 
 export async function removeAccount(id: string): Promise<ActionResult> {
