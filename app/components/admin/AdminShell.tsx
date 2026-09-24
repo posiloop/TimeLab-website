@@ -32,9 +32,11 @@ const NAV = [
 
 export default function AdminShell({
   userName,
+  userEmail,
   children,
 }: {
   userName: string;
+  userEmail: string;
   children: React.ReactNode;
 }) {
   const pathname = usePathname();
@@ -90,9 +92,19 @@ export default function AdminShell({
         })}
 
         <div className="mt-auto flex flex-col gap-1 border-t border-brand/20 px-3 pt-4 max-md:mt-0 max-md:w-full max-md:flex-row max-md:items-center max-md:border-t-0 max-md:pt-0">
-          <span className="truncate px-3 text-caption text-brand-ink max-md:px-0">
-            {userName}
-          </span>
+          {/* 多帳號時要看得出現在是誰登入 —— 名字可能重複或含糊，
+              email 才是唯一的識別。過長時截斷，滑過去看得到完整值 */}
+          <div className="flex min-w-0 flex-col px-3 max-md:px-0">
+            <span className="truncate text-caption text-brand-ink">
+              {userName}
+            </span>
+            <span
+              title={userEmail}
+              className="truncate text-[12px] leading-4 text-brand-ink/50"
+            >
+              {userEmail}
+            </span>
+          </div>
           <ChangePassword />
           <button
             type="button"
