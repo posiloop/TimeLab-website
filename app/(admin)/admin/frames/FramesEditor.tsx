@@ -5,7 +5,6 @@ import { useState, useTransition } from "react";
 import GifUpload, {
   type ConvertedFrame,
 } from "@/app/components/admin/GifUpload";
-import { PreviewableImage } from "@/app/components/admin/ImagePreview";
 import SaveBar from "@/app/components/admin/SaveBar";
 import { useToast } from "@/app/components/admin/Toast";
 import SortableList, {
@@ -24,6 +23,8 @@ type Frame = {
   slug: string;
   alt: string;
   posterUrl: string;
+  webmUrl: string;
+  mp4Url: string;
   displayWidth: number;
   displayHeight: number;
   rotate: number;
@@ -179,19 +180,30 @@ export default function FramesEditor({ frames }: { frames: Frame[] }) {
                   拍貼框是直式（610×910），高度給 240 才填得滿這欄的寬度；
                   給 160 的話 contain 後只剩 107px 寬，圖會小到看不清內容 */}
               <div className="flex h-60 w-full items-center justify-center">
-                <PreviewableImage
-                  src={frame.posterUrl}
-                  caption={frame.alt}
+                {/* 播放實際的影片而非封面圖 —— 這一頁的重點就是確認動畫內容，
+                    靜態圖看不出動了什麼。poster 在影片載入前先頂著。
+                    muted 是自動播放的前提，playsInline 避免 iOS 搶全螢幕 */}
+                <video
+                  key={frame.webmUrl}
+                  poster={frame.posterUrl}
+                  autoPlay
+                  muted
+                  loop
+                  playsInline
+                  aria-label={frame.alt}
                   style={{ rotate: `${frame.rotate}deg` }}
                   className="max-h-full max-w-full object-contain transition-transform duration-200"
-                />
+                >
+                  <source src={frame.webmUrl} type="video/webm" />
+                  <source src={frame.mp4Url} type="video/mp4" />
+                </video>
               </div>
             </div>
 
             <div className="flex min-w-0 flex-1 flex-col gap-3">
               <label className="flex flex-col gap-1">
                 <span className="text-caption text-brand-ink">
-                  描述文字（給視障輔助工具朗讀）
+                  描述文字
                 </span>
                 <input
                   value={frame.alt}

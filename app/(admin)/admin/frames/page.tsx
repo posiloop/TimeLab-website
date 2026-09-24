@@ -16,6 +16,8 @@ export default async function FramesAdminPage() {
       boxHeight: true,
       isVisible: true,
       poster: { select: { key: true } },
+      webm: { select: { key: true } },
+      mp4: { select: { key: true } },
     },
   });
 
@@ -26,6 +28,8 @@ export default async function FramesAdminPage() {
         slug: frame.slug,
         alt: frame.alt,
         posterUrl: mediaUrl(frame.poster.key),
+        webmUrl: mediaUrl(frame.webm.key),
+        mp4Url: mediaUrl(frame.mp4.key),
         displayWidth: frame.displayWidth,
         displayHeight: frame.displayHeight,
         rotate: frame.rotate,
