@@ -1,5 +1,6 @@
 "use client";
 
+import { ImageUp } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
 
 export type UploadedAsset = {
@@ -186,6 +187,7 @@ export default function UploadDropzone({
             : "border-brand/40 bg-white hover:border-brand"
         }`}
       >
+        <ImageUp aria-hidden className="size-7 text-brand/70" />
         <span className="text-sm font-bold text-brand">
           把圖片拖到這裡，或點擊選擇檔案
         </span>

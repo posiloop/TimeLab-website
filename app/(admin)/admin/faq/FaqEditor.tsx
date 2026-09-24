@@ -1,5 +1,6 @@
 "use client";
 
+import { GripVertical, Plus, Trash } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useState, useTransition } from "react";
 import SaveBar from "@/app/components/admin/SaveBar";
@@ -136,13 +137,10 @@ export default function FaqEditor({ items }: { items: Item[] }) {
         className="flex flex-col gap-3"
         renderItem={(item) => (
           <div className="card-surface flex gap-3 rounded-[12px] p-4">
-            <span
+            <GripVertical
               aria-hidden
-              className="cursor-grab select-none pt-2 text-brand"
-              title="拖曳以調整順序"
-            >
-              ⠿
-            </span>
+              className="mt-2 size-5 shrink-0 cursor-grab text-brand"
+            />
 
             <div className="flex min-w-0 flex-1 flex-col gap-2">
               <input
@@ -174,8 +172,9 @@ export default function FaqEditor({ items }: { items: Item[] }) {
                   type="button"
                   onClick={() => remove(item.id, item.question)}
                   disabled={pending}
-                  className="rounded-full px-3 py-1 text-caption text-red-600 transition-colors hover:bg-red-50 disabled:opacity-50"
+                  className="flex items-center gap-1 rounded-full px-3 py-1 text-caption text-red-600 transition-colors hover:bg-red-50 disabled:opacity-50"
                 >
+                  <Trash aria-hidden className="size-3.5" />
                   刪除
                 </button>
               </div>
@@ -220,9 +219,10 @@ export default function FaqEditor({ items }: { items: Item[] }) {
         <button
           type="button"
           onClick={() => setAdding(true)}
-          className="self-start rounded-full border-2 border-dashed border-brand/40 px-5 py-2 text-sm text-brand transition-colors hover:border-brand hover:bg-white"
+          className="flex items-center gap-1 self-start rounded-full border-2 border-dashed border-brand/40 px-5 py-2 text-sm text-brand transition-colors hover:border-brand hover:bg-white"
         >
-          ＋ 新增問答
+          <Plus aria-hidden className="size-4" />
+          新增問答
         </button>
       )}
 

@@ -1,5 +1,6 @@
 "use client";
 
+import { Plus, Trash } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useState, useTransition } from "react";
 import { createAccount, removeAccount } from "../actions";
@@ -91,8 +92,9 @@ export default function AccountManager({
               onClick={() => remove(user)}
               // 刪掉自己會當場登出，且可能讓後台無人可管
               disabled={pending || user.id === currentUserId}
-              className="shrink-0 rounded-full px-3 py-1 text-caption text-red-600 transition-colors hover:bg-red-50 disabled:cursor-not-allowed disabled:text-brand-ink/30 disabled:hover:bg-transparent"
+              className="flex shrink-0 items-center gap-1 rounded-full px-3 py-1 text-caption text-red-600 transition-colors hover:bg-red-50 disabled:cursor-not-allowed disabled:text-brand-ink/30 disabled:hover:bg-transparent"
             >
+              <Trash aria-hidden className="size-3.5" />
               刪除
             </button>
           </li>
@@ -158,9 +160,10 @@ export default function AccountManager({
         <button
           type="button"
           onClick={() => setAdding(true)}
-          className="self-start rounded-full border-2 border-dashed border-brand/40 px-5 py-2 text-sm text-brand transition-colors hover:border-brand hover:bg-white"
+          className="flex items-center gap-1 self-start rounded-full border-2 border-dashed border-brand/40 px-5 py-2 text-sm text-brand transition-colors hover:border-brand hover:bg-white"
         >
-          ＋ 新增帳號
+          <Plus aria-hidden className="size-4" />
+          新增帳號
         </button>
       )}
     </div>

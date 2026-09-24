@@ -1,5 +1,6 @@
 "use client";
 
+import { ArrowRight } from "lucide-react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useState, useTransition } from "react";
@@ -93,9 +94,10 @@ export default function CategoryCard({ category }: { category: Category }) {
         <div className="flex flex-wrap items-center gap-3">
           <Link
             href={`/admin/cases/${category.slug}`}
-            className="rounded-full bg-brand px-4 py-2 text-caption font-bold text-white transition-opacity hover:opacity-85"
+            className="flex items-center gap-1 rounded-full bg-brand px-4 py-2 text-caption font-bold text-white transition-opacity hover:opacity-85"
           >
-            管理 {category.itemCount} 張案例照 →
+            管理 {category.itemCount} 張案例照
+            <ArrowRight aria-hidden className="size-3.5" />
           </Link>
 
           {dirty && (

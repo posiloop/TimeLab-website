@@ -1,5 +1,6 @@
 "use client";
 
+import { GripVertical } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useState, useTransition } from "react";
 import GifUpload, {
@@ -157,13 +158,10 @@ export default function FramesEditor({ frames }: { frames: Frame[] }) {
         renderItem={(frame) => (
           <div className="card-surface flex gap-4 rounded-[12px] p-4 max-md:flex-col">
             <div className="flex w-48 shrink-0 flex-col items-center gap-2">
-              <span
+              <GripVertical
                 aria-hidden
-                className="cursor-grab select-none self-start text-brand"
-                title="拖曳以調整順序"
-              >
-                ⠿
-              </span>
+                className="size-5 shrink-0 cursor-grab self-start text-brand"
+              />
               {/* 即時套用旋轉角度：數字對使用者沒有意義，看到圖歪掉才有 */}
               <div className="flex h-40 w-full items-center justify-center overflow-hidden">
                 <PreviewableImage

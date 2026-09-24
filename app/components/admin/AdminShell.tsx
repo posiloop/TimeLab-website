@@ -1,5 +1,6 @@
 "use client";
 
+import { LogOut } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
@@ -83,8 +84,9 @@ export default function AdminShell({
             type="button"
             onClick={signOut}
             disabled={signingOut}
-            className="shrink-0 rounded-full px-3 py-1 text-caption text-brand transition-colors hover:bg-white disabled:opacity-50"
+            className="flex shrink-0 items-center gap-1 rounded-full px-3 py-1 text-caption text-brand transition-colors hover:bg-white disabled:opacity-50"
           >
+            <LogOut aria-hidden className="size-3.5" />
             {signingOut ? "登出中…" : "登出"}
           </button>
         </div>

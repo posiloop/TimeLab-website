@@ -1,3 +1,4 @@
+import { ArrowLeft } from "lucide-react";
 import Link from "next/link";
 import { prisma } from "@/app/server/db";
 import { mediaUrl } from "@/app/server/s3";
@@ -49,9 +50,10 @@ export default async function CasesAdminPage() {
 
       <Link
         href="/admin"
-        className="self-start text-caption text-brand hover:underline"
+        className="flex items-center gap-1 self-start text-caption text-brand hover:underline"
       >
-        ← 回總覽
+        <ArrowLeft aria-hidden className="size-3.5" />
+        回總覽
       </Link>
     </div>
   );

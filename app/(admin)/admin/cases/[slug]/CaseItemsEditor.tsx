@@ -1,5 +1,6 @@
 "use client";
 
+import { ArrowLeft, Trash } from "lucide-react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useState, useTransition } from "react";
@@ -110,9 +111,10 @@ export default function CaseItemsEditor({
       <div>
         <Link
           href="/admin/cases"
-          className="text-caption text-brand hover:underline"
+          className="flex items-center gap-1 self-start text-caption text-brand hover:underline"
         >
-          ← 回分類列表
+          <ArrowLeft aria-hidden className="size-3.5" />
+          回分類列表
         </Link>
         <h1 className="mt-1 text-h2 text-brand-ink">
           【{category.label}】案例照片
@@ -177,8 +179,9 @@ export default function CaseItemsEditor({
                 type="button"
                 onClick={() => remove(item.id, item.name)}
                 disabled={pending}
-                className="rounded-full px-2 py-1 text-caption text-red-600 transition-colors hover:bg-red-50 disabled:opacity-50"
+                className="flex items-center gap-1 rounded-full px-2 py-1 text-caption text-red-600 transition-colors hover:bg-red-50 disabled:opacity-50"
               >
+                <Trash aria-hidden className="size-3.5" />
                 移除
               </button>
             </div>

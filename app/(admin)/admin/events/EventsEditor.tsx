@@ -1,5 +1,6 @@
 "use client";
 
+import { Trash } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useState, useTransition } from "react";
 import { PreviewableImage } from "@/app/components/admin/ImagePreview";
@@ -179,8 +180,9 @@ export default function EventsEditor({
                       type="button"
                       onClick={() => remove(photo.id, photo.name)}
                       disabled={pending}
-                      className="rounded-full px-2 py-1 text-caption text-red-600 transition-colors hover:bg-red-50 disabled:opacity-50"
+                      className="flex items-center gap-1 rounded-full px-2 py-1 text-caption text-red-600 transition-colors hover:bg-red-50 disabled:opacity-50"
                     >
+                      <Trash aria-hidden className="size-3.5" />
                       移除
                     </button>
                   </div>

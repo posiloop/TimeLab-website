@@ -1,5 +1,6 @@
 "use client";
 
+import { Shuffle, X } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useCallback, useState, useTransition } from "react";
 import { PreviewableImage } from "@/app/components/admin/ImagePreview";
@@ -169,9 +170,9 @@ export default function HeroEditor({
                 onClick={() => removeFromLibrary(item.id, item.name)}
                 disabled={pending}
                 aria-label={`刪除 ${item.name}`}
-                className="absolute right-1 top-1 hidden size-6 rounded-full bg-black/60 text-white transition-colors hover:bg-red-600 group-hover:block disabled:opacity-50"
+                className="absolute right-1 top-1 hidden size-6 place-items-center rounded-full bg-black/60 text-white transition-colors hover:bg-red-600 group-hover:grid disabled:opacity-50"
               >
-                ✕
+                <X aria-hidden className="size-3.5" />
               </button>
             </li>
           ))}
@@ -202,8 +203,9 @@ export default function HeroEditor({
               <button
                 type="button"
                 onClick={() => shuffle(key)}
-                className="rounded-full bg-brand-mist px-4 py-1 text-caption text-brand transition-colors hover:bg-brand hover:text-white"
+                className="flex items-center gap-1 rounded-full bg-brand-mist px-4 py-1 text-caption text-brand transition-colors hover:bg-brand hover:text-white"
               >
+                <Shuffle aria-hidden className="size-3.5" />
                 打亂順序
               </button>
             </div>
