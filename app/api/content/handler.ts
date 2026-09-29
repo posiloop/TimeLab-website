@@ -22,6 +22,9 @@ export type AnyDelegate = {
   delete(args: { where: { id: string } }): Promise<Record<string, unknown>>;
 };
 
+/** 網站上現場照的版面高度，與後台 EventsEditor 的 DISPLAY_HEIGHT 一致 */
+export const EVENT_DISPLAY_HEIGHT = 760;
+
 /** 網站上拍貼框的版面高度，與既有五組及後台的 createFrameAnimation 一致 */
 const FRAME_DISPLAY_HEIGHT = 410;
 
@@ -85,7 +88,7 @@ export function buildCreateData(
 /**
  * 把通過驗證的輸入轉成 Prisma 的 update data。
  *
- * 拍貼框改了角度或版面尺寸時要一併重算 box*，否則影片四角會被裁掉 ——
+ * 拍貼框改了角度時要一併重算 box*，否則影片四角會被裁掉 ——
  * schema 的註解說了這件事由 handler 負責，就是這裡。
  */
 export function buildUpdateData(
@@ -95,16 +98,13 @@ export function buildUpdateData(
 ): Record<string, unknown> {
   if (resource !== "frames") return input;
 
-  const touchesGeometry =
-    "rotate" in input || "displayWidth" in input || "displayHeight" in input;
-  if (!touchesGeometry) return input;
+  if (!("rotate" in input)) return input;
 
-  // 沒送的欄位沿用現值，三者任一改動都要以最終的組合重算
-  const rotate = (input.rotate ?? current.rotate) as number;
-  const width = (input.displayWidth ?? current.displayWidth) as number;
-  const height = (input.displayHeight ?? current.displayHeight) as number;
+  // 版面尺寸不開放修改，取現值即可
+  const width = current.displayWidth as number;
+  const height = current.displayHeight as number;
 
-  return { ...input, ...boundingBox(width, height, rotate) };
+  return { ...input, ...boundingBox(width, height, input.rotate as number) };
 }
 
 /**

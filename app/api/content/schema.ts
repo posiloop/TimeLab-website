@@ -29,11 +29,12 @@ const CREATE = {
     alt: z.string().trim().optional(),
     isVisible: z.boolean().default(true),
   }),
-  events: z.object({
+  // 尺寸由伺服器依圖片比例算（見 route 的 events 分支），與後台新增時
+  // 同一個算法。不收呼叫方的值 —— 算錯的寬度會把照片拉伸，而這種錯誤
+  // 後台只會提醒不會擋。多送尺寸回 422，理由同主視覺
+  events: z.strictObject({
     assetId: z.string().min(1),
     track: trackSchema,
-    displayWidth: z.number().int().positive(),
-    displayHeight: z.number().int().positive().default(760),
     alt: z.string().trim().optional(),
     isVisible: z.boolean().default(true),
   }),
@@ -67,6 +68,8 @@ const CREATE = {
  * 各資源可更新的欄位，全部選填 —— PATCH 只改送來的那幾個。
  *
  * 少數欄位刻意不開放：
+ * - 版面尺寸（displayWidth/Height）：相框、照片之間的對齊都靠它，
+ *   後台也沒有地方可以改。主視覺一律 275×410，現場照照圖片比例
  * - 分類的 slug：對外連結依賴它，改了舊連結會靜默導向錯誤分類
  * - 任何資源的 position：排序另有專屬端點，散著改會撞唯一約束
  * - asset 關聯：換圖等同換內容，走建立新項目比較不會出意外
@@ -74,14 +77,10 @@ const CREATE = {
 const UPDATE = {
   hero: z.object({
     alt: z.string().trim().optional(),
-    displayWidth: z.number().int().positive().optional(),
-    displayHeight: z.number().int().positive().optional(),
     isVisible: z.boolean().optional(),
   }),
   events: z.object({
     alt: z.string().trim().optional(),
-    displayWidth: z.number().int().positive().optional(),
-    displayHeight: z.number().int().positive().optional(),
     isVisible: z.boolean().optional(),
   }),
   faq: z.object({
@@ -104,8 +103,6 @@ const UPDATE = {
   frames: z.object({
     alt: z.string().trim().min(1).optional(),
     rotate: z.number().min(-45).max(45).optional(),
-    displayWidth: z.number().int().positive().optional(),
-    displayHeight: z.number().int().positive().optional(),
     isVisible: z.boolean().optional(),
   }),
 } as const;

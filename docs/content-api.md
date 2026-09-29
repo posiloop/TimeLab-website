@@ -83,7 +83,7 @@ Authorization: Bearer <CONTENT_API_KEY>
 { "assetId": "…" }
 
 // POST /api/content/events
-{ "assetId": "…", "track": "TRACK_1", "displayWidth": 1013 }  // 高預設 760
+{ "assetId": "…", "track": "TRACK_1" }  // 高 760，寬度由伺服器依圖片比例算
 
 // POST /api/content/cases
 { "categoryId": "…", "assetId": "…", "name": "標準 - 籃球隊" }
@@ -99,6 +99,7 @@ Authorization: Bearer <CONTENT_API_KEY>
 | 欄位 | 原因 |
 |---|---|
 | `position` | 排序有唯一約束，散著改會撞鍵。請用「排序」端點 |
+| `displayWidth`、`displayHeight` | 相框、照片之間的對齊都靠它，後台也不能改。主視覺一律 275×410，現場照照圖片比例由伺服器算，新增時多送會回 422 |
 | 分類的 `slug` | 首頁連結、社群貼文與名片上的網址都依賴它 |
 | `assetId`、`coverId` 等檔案關聯 | 換圖有連帶效果，請用「換圖」端點 |
 | `frames` 的 `slug`、`boxWidth`、`boxHeight` | 由伺服器推導，見下 |
@@ -177,7 +178,7 @@ id 去新增項目或換圖。同一個檔案重複上傳會回傳既有的 id�
 ### 伺服器推導的值
 
 拍貼框的 `boxWidth` / `boxHeight` 是旋轉後的外接矩形，由版面尺寸與角度
-唯一決定。改 `rotate` 或版面尺寸時會自動重算 —— 公式與後台的
+唯一決定。改 `rotate` 時會自動重算 —— 公式與後台的
 `FramesEditor.boundingBox()` 相同，兩處不一致會讓同一個角度從不同入口
 改出不同的保留空間，而保留不足時影片四角會被容器裁掉。
 

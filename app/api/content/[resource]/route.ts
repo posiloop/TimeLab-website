@@ -4,7 +4,13 @@ import { prisma } from "@/app/server/db";
 import { revalidateContent } from "@/app/server/content/revalidate";
 import { STEP } from "@/app/server/content/reorder";
 import { definitionOf, isResource, resourceList } from "../schema";
-import { buildCreateData, INCLUDE, present, type AnyDelegate } from "../handler";
+import {
+  buildCreateData,
+  EVENT_DISPLAY_HEIGHT,
+  INCLUDE,
+  present,
+  type AnyDelegate,
+} from "../handler";
 import { createHero } from "../hero";
 
 export const runtime = "nodejs";
@@ -117,11 +123,39 @@ export async function POST(
     return NextResponse.json(result.body, { status: result.status });
   }
 
+  let input = parsed.data as Record<string, unknown>;
+
+  if (resource === "events") {
+    const asset = await prisma.mediaAsset.findUnique({
+      where: { id: input.assetId as string },
+      select: { mimeType: true, intrinsicWidth: true, intrinsicHeight: true },
+    });
+    if (!asset) {
+      return NextResponse.json(
+        { error: "關聯的項目不存在 —— 請確認 assetId 是有效的 ID" },
+        { status: 409 },
+      );
+    }
+    if (!["image/jpeg", "image/png", "image/webp"].includes(asset.mimeType)) {
+      return NextResponse.json(
+        { error: `這個檔案是 ${asset.mimeType}，現場照只能用 JPG、PNG 或 WebP` },
+        { status: 422 },
+      );
+    }
+    // 高度統一、寬度照比例，與後台 EventsEditor 新增時同一個算法
+    input = {
+      ...input,
+      displayHeight: EVENT_DISPLAY_HEIGHT,
+      displayWidth: Math.round(
+        (asset.intrinsicWidth / asset.intrinsicHeight) * EVENT_DISPLAY_HEIGHT,
+      ),
+    };
+  }
+
   const table = prisma[definition.model as keyof typeof prisma] as unknown as AnyDelegate;
 
   // position 接在同範圍的最後一筆之後。hero/events 依 track、cases 依分類
   // 各自連號，取錯範圍會撞 @@unique
-  const input = parsed.data as Record<string, unknown>;
   const scope = definition.scopedBy
     ? { [definition.scopedBy]: input[definition.scopedBy] }
     : {};
@@ -131,7 +165,7 @@ export async function POST(
     select: { position: true },
   });
 
-  const data = buildCreateData(resource, parsed.data, {
+  const data = buildCreateData(resource, input, {
     position: ((last?.position as number) ?? 0) + STEP,
   });
 
