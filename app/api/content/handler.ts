@@ -1,3 +1,4 @@
+import { mediaUrl } from "@/app/server/s3";
 import type { Resource } from "./schema";
 
 /**
@@ -9,10 +10,14 @@ export type AnyDelegate = {
   findMany(args?: unknown): Promise<Record<string, unknown>[]>;
   findFirst(args?: unknown): Promise<Record<string, unknown> | null>;
   findUnique(args: unknown): Promise<Record<string, unknown> | null>;
-  create(args: { data: Record<string, unknown> }): Promise<Record<string, unknown>>;
+  create(args: {
+    data: Record<string, unknown>;
+    include?: unknown;
+  }): Promise<Record<string, unknown>>;
   update(args: {
     where: { id: string };
     data: Record<string, unknown>;
+    include?: unknown;
   }): Promise<Record<string, unknown>>;
   delete(args: { where: { id: string } }): Promise<Record<string, unknown>>;
 };
@@ -112,6 +117,65 @@ export function serialise(row: Record<string, unknown>) {
   const out: Record<string, unknown> = {};
   for (const [key, value] of Object.entries(row)) {
     out[key] = value instanceof Date ? value.toISOString() : value;
+  }
+  return out;
+}
+
+const FILE = { select: { key: true, originalName: true } } as const;
+
+/**
+ * 讀取項目時一併帶出的檔案。
+ *
+ * 資料表本身只存 assetId，而後台每張圖都有縮圖與檔名可以辨認 —— 外部呼叫方
+ * 若只拿到一串 id，就分不出「第二排那張紅色的」是哪一筆，也沒辦法把圖
+ * 給使用者看。所有回傳項目的端點都要帶上這組 include
+ */
+export const INCLUDE: Record<Resource, Record<string, unknown> | undefined> = {
+  hero: { asset: FILE },
+  events: { asset: FILE },
+  cases: { asset: FILE },
+  categories: { cover: FILE },
+  frames: { poster: FILE, webm: FILE, mp4: FILE, gif: FILE },
+  faq: undefined,
+};
+
+type File = { key: string; originalName: string | null } | null;
+
+/**
+ * 回傳給外部的項目：資料列本身，加上檔案網址與原始檔名。
+ *
+ * 關聯物件攤平成 imageUrl／fileName 這類欄位而非原樣輸出 —— 對方要的是
+ * 能直接打開的網址，S3 key 要組上網域才有用，這件事不該讓每個呼叫方
+ * 各自處理一次
+ */
+export function present(resource: Resource, row: Record<string, unknown>) {
+  const { asset, cover, poster, webm, mp4, gif, ...rest } = row as Record<
+    string,
+    unknown
+  > & { asset?: File; cover?: File; poster?: File; webm?: File; mp4?: File; gif?: File };
+
+  const out = serialise(rest);
+  const url = (file: File | undefined) => (file ? mediaUrl(file.key) : null);
+
+  switch (resource) {
+    case "hero":
+    case "events":
+    case "cases":
+      out.imageUrl = url(asset);
+      out.fileName = asset?.originalName ?? null;
+      break;
+    case "categories":
+      out.coverUrl = url(cover);
+      out.coverFileName = cover?.originalName ?? null;
+      break;
+    case "frames":
+      out.posterUrl = url(poster);
+      out.webmUrl = url(webm);
+      out.mp4Url = url(mp4);
+      out.gifUrl = url(gif);
+      // 使用者認得的是當初上傳的 GIF 檔名；早期匯入的沒有原檔，退回影片的
+      out.fileName = gif?.originalName ?? webm?.originalName ?? null;
+      break;
   }
   return out;
 }

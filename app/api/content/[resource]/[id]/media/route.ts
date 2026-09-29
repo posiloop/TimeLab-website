@@ -4,7 +4,7 @@ import { verifyApiKey } from "@/app/server/api-key";
 import { prisma } from "@/app/server/db";
 import { revalidateContent } from "@/app/server/content/revalidate";
 import { definitionOf, isResource, resourceList, type Resource } from "../../../schema";
-import { serialise } from "../../../handler";
+import { INCLUDE, present } from "../../../handler";
 
 export const runtime = "nodejs";
 
@@ -145,8 +145,11 @@ async function replaceImage(
       const slides = await prisma.heroSlide.findMany({
         where: { assetId: asset.id },
         orderBy: { track: "asc" },
+        include: INCLUDE.hero,
       });
-      return { body: { replaced: count, items: slides.map(serialise) } };
+      return {
+        body: { replaced: count, items: slides.map((row) => present("hero", row)) },
+      };
     }
 
     case "events": {
@@ -164,8 +167,9 @@ async function replaceImage(
       const updated = await prisma.eventPhoto.update({
         where: { id },
         data: { assetId: asset.id, displayWidth },
+        include: INCLUDE.events,
       });
-      return { body: { item: serialise(updated) } };
+      return { body: { item: present("events", updated) } };
     }
 
     case "cases": {
@@ -174,8 +178,9 @@ async function replaceImage(
       const updated = await prisma.caseItem.update({
         where: { id },
         data: { assetId: asset.id },
+        include: INCLUDE.cases,
       });
-      return { body: { item: serialise(updated) } };
+      return { body: { item: present("cases", updated) } };
     }
 
     case "categories": {
@@ -184,8 +189,9 @@ async function replaceImage(
       const updated = await prisma.caseCategory.update({
         where: { id },
         data: { coverId: asset.id },
+        include: INCLUDE.categories,
       });
-      return { body: { item: serialise(updated) } };
+      return { body: { item: present("categories", updated) } };
     }
   }
 }
@@ -227,6 +233,7 @@ async function replaceFrame(id: string, body: unknown): Promise<Outcome> {
   const updated = await prisma.frameAnimation.update({
     where: { id },
     data: { posterId, webmId, mp4Id, gifId: gifId ?? null },
+    include: INCLUDE.frames,
   });
-  return { body: { item: serialise(updated) } };
+  return { body: { item: present("frames", updated) } };
 }

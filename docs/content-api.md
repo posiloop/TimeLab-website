@@ -79,8 +79,8 @@ Authorization: Bearer <CONTENT_API_KEY>
 // POST /api/content/faq
 { "question": "…", "answer": "…", "isVisible": true }
 
-// POST /api/content/hero
-{ "assetId": "…", "track": "TRACK_1", "displayWidth": 275, "displayHeight": 410 }
+// POST /api/content/hero —— 一次加進三排，見下方「主視覺是三排一起」
+{ "assetId": "…" }
 
 // POST /api/content/events
 { "assetId": "…", "track": "TRACK_1", "displayWidth": 1013 }  // 高預設 760
@@ -189,7 +189,36 @@ id 去新增項目或換圖。同一個檔案重複上傳會回傳既有的 id�
 { "item": { … } }                              // 單筆，POST 回 201
 { "resource": "faq", "count": 5, "items": [] }  // 列表
 { "deleted": "<id>" }                           // 刪除
+{ "items": [ … ] } / { "deleted": [ … ] }       // 主視覺：三排各一筆
 ```
+
+每筆項目除了資料表的欄位，還會附上檔案網址與原始檔名，可以直接打開或
+傳給使用者看：
+
+| 資源 | 附加欄位 |
+|---|---|
+| `hero`、`events`、`cases` | `imageUrl`、`fileName` |
+| `categories` | `coverUrl`、`coverFileName` |
+| `frames` | `posterUrl`、`webmUrl`、`mp4Url`、`gifUrl`、`fileName` |
+
+`fileName` 是上傳時的原始檔名（例如 `roll-07.png`）。主視覺與現場照的
+`alt` 多半是空的，要辨認「哪一張」得靠檔名或直接看圖。
+
+### 主視覺是三排一起
+
+三排共用同一組相框、各自排序。所以主視覺的新增、修改、刪除、換圖都以
+「一張相框」為單位，一次處理三排，並包在交易裡 —— 三排要嘛全部成功，
+要嘛全部不動，不會留下只有某一排才有的相框：
+
+| 操作 | 行為 |
+|---|---|
+| `POST` | 只收 `assetId`（可選 `alt`、`isVisible`），加進三排的最後面，版面尺寸沿用各排既有的值。送了 `track` 會回 422 |
+| `PATCH` | 對任一排的 id 修改，三排的同一張一起改（例如隱藏） |
+| `DELETE` | 對任一排的 id 刪除，三排的同一張一起刪 |
+| 換圖 | 三排一起換 |
+
+同一張圖已經在主視覺裡時，新增與換圖都會回 409。排序仍是一排一排排，
+因為三排本來就刻意排成不同順序。
 
 失敗一律是 `{ "error": "…" }`，驗證錯誤另帶 `issues` 逐欄說明：
 

@@ -21,11 +21,11 @@ const trackSchema = z.enum(["TRACK_1", "TRACK_2", "TRACK_3"]);
  * 不在這裡的資源（categories）不開放新增，POST 會回 405。
  */
 const CREATE = {
-  hero: z.object({
+  // 主視覺一次加進三排（見 hero.ts），所以不收 track；版面尺寸沿用各排
+  // 既有的值，也不收。用 strictObject：多送了 track 的呼叫方多半以為只加
+  // 一排，靜默忽略會讓對方誤會結果，直接回 422 說清楚
+  hero: z.strictObject({
     assetId: z.string().min(1),
-    track: trackSchema,
-    displayWidth: z.number().int().positive().default(275),
-    displayHeight: z.number().int().positive().default(410),
     alt: z.string().trim().optional(),
     isVisible: z.boolean().default(true),
   }),

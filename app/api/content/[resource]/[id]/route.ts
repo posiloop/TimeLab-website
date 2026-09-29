@@ -3,7 +3,8 @@ import { verifyApiKey } from "@/app/server/api-key";
 import { prisma } from "@/app/server/db";
 import { revalidateContent } from "@/app/server/content/revalidate";
 import { definitionOf, isResource, resourceList } from "../../schema";
-import { buildUpdateData, serialise, type AnyDelegate } from "../../handler";
+import { buildUpdateData, INCLUDE, present, type AnyDelegate } from "../../handler";
+import { deleteHero, updateHero } from "../../hero";
 
 export const runtime = "nodejs";
 
@@ -41,7 +42,7 @@ async function resolve(request: Request, context: Context) {
 
   const definition = definitionOf(resource);
   const table = prisma[definition.model as keyof typeof prisma] as unknown as AnyDelegate;
-  const row = await table.findUnique({ where: { id } });
+  const row = await table.findUnique({ where: { id }, include: INCLUDE[resource] });
 
   if (!row) {
     return {
@@ -56,7 +57,7 @@ export async function GET(request: Request, context: Context) {
   const resolved = await resolve(request, context);
   if (resolved.error) return resolved.error;
 
-  return NextResponse.json({ item: serialise(resolved.row) });
+  return NextResponse.json({ item: present(resolved.resource, resolved.row) });
 }
 
 export async function PATCH(request: Request, context: Context) {
@@ -99,23 +100,42 @@ export async function PATCH(request: Request, context: Context) {
   }
 
   const data = buildUpdateData(resource, parsed.data, row);
-  const updated = await table.update({ where: { id }, data });
+
+  if (resource === "hero") {
+    const result = await updateHero(id, data);
+    if ("error" in result) {
+      return NextResponse.json({ error: result.error }, { status: result.status });
+    }
+    revalidateContent(definition.section);
+    return NextResponse.json(result.body);
+  }
+
+  const updated = await table.update({ where: { id }, data, include: INCLUDE[resource] });
 
   revalidateContent(definition.section);
-  return NextResponse.json({ item: serialise(updated) });
+  return NextResponse.json({ item: present(resource, updated) });
 }
 
 export async function DELETE(request: Request, context: Context) {
   const resolved = await resolve(request, context);
   if (resolved.error) return resolved.error;
 
-  const { id, definition, table } = resolved;
+  const { resource, id, definition, table } = resolved;
 
   if (!definition.deletable) {
     return NextResponse.json(
       { error: "這個資源不開放刪除" },
       { status: 405, headers: { Allow: "GET, PATCH" } },
     );
+  }
+
+  if (resource === "hero") {
+    const result = await deleteHero(id);
+    if ("error" in result) {
+      return NextResponse.json({ error: result.error }, { status: result.status });
+    }
+    revalidateContent(definition.section);
+    return NextResponse.json(result.body);
   }
 
   try {

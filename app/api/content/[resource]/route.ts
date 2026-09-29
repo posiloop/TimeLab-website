@@ -4,7 +4,8 @@ import { prisma } from "@/app/server/db";
 import { revalidateContent } from "@/app/server/content/revalidate";
 import { STEP } from "@/app/server/content/reorder";
 import { definitionOf, isResource, resourceList } from "../schema";
-import { buildCreateData, serialise, type AnyDelegate } from "../handler";
+import { buildCreateData, INCLUDE, present, type AnyDelegate } from "../handler";
+import { createHero } from "../hero";
 
 export const runtime = "nodejs";
 
@@ -48,12 +49,12 @@ export async function GET(
         ? [{ category: { position: "asc" } }, { position: "asc" }]
         : { position: "asc" };
 
-  const rows = await table.findMany({ orderBy });
+  const rows = await table.findMany({ orderBy, include: INCLUDE[resource] });
 
   return NextResponse.json({
     resource,
     count: rows.length,
-    items: rows.map(serialise),
+    items: rows.map((row) => present(resource, row)),
   });
 }
 
@@ -105,6 +106,17 @@ export async function POST(
     );
   }
 
+  if (resource === "hero") {
+    const result = await createHero(
+      parsed.data as { assetId: string; alt?: string; isVisible: boolean },
+    );
+    if ("error" in result) {
+      return NextResponse.json({ error: result.error }, { status: result.status });
+    }
+    revalidateContent(definition.section);
+    return NextResponse.json(result.body, { status: result.status });
+  }
+
   const table = prisma[definition.model as keyof typeof prisma] as unknown as AnyDelegate;
 
   // position 接在同範圍的最後一筆之後。hero/events 依 track、cases 依分類
@@ -125,7 +137,7 @@ export async function POST(
 
   let created;
   try {
-    created = await table.create({ data });
+    created = await table.create({ data, include: INCLUDE[resource] });
   } catch (error) {
     // 最常見的是 assetId 指向不存在的檔案（外鍵），訊息要說得出是哪裡錯，
     // 否則對接的人只會看到一串 Prisma 內部錯誤
@@ -137,7 +149,7 @@ export async function POST(
 
   revalidateContent(definition.section);
 
-  return NextResponse.json({ item: serialise(created) }, { status: 201 });
+  return NextResponse.json({ item: present(resource, created) }, { status: 201 });
 }
 
 /**
