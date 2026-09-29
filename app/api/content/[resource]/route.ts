@@ -66,6 +66,14 @@ export async function POST(
     );
   }
 
+  const definition = definitionOf(resource);
+  if (!definition.create) {
+    return NextResponse.json(
+      { error: "這個資源不開放新增，只能讀取與修改" },
+      { status: 405, headers: { Allow: "GET" } },
+    );
+  }
+
   let body: unknown;
   try {
     body = await request.json();
@@ -73,7 +81,6 @@ export async function POST(
     return NextResponse.json({ error: "請求主體不是有效的 JSON" }, { status: 400 });
   }
 
-  const definition = definitionOf(resource);
   const parsed = definition.create.safeParse(body);
   if (!parsed.success) {
     // 回報所有有問題的欄位而非只回第一個 —— 外部整合是寫程式的人在對接，

@@ -43,7 +43,18 @@ Authorization: Bearer <CONTENT_API_KEY>
 | `events` | 活動現場照 | 最下方的三排 |
 | `frames` | 拍貼框動畫 | 中段會動的那排 |
 | `cases` | 案例照片 | 五個分類底下的照片 |
+| `categories` | 案例分類 | 首頁的分類卡片、案例頁的分類標題與副標 |
 | `faq` | 常見問題 | FAQ 清單 |
+
+`categories` 只能讀取與修改名稱（`label`）、副標（`tagline`），
+**不開放新增與刪除**，送 `POST` 或 `DELETE` 會回 405：
+
+- 刪除分類會連帶刪除底下所有案例照（資料庫設為 cascade），
+  一個請求就能清掉幾十張照片
+- 前台的連結、hash 白名單與 redirect 都寫死了這五個 slug，
+  多一個或少一個分類都要一併改程式碼
+
+新增案例照時需要的 `categoryId`，可以從 `GET /api/content/categories` 查到。
 
 ## 端點
 
@@ -88,6 +99,7 @@ Authorization: Bearer <CONTENT_API_KEY>
 | `position` | 排序有唯一約束，散著改會撞鍵。要重排請用後台 |
 | 分類的 `slug` | 首頁連結、社群貼文與名片上的網址都依賴它 |
 | `assetId` 等關聯 | 換圖等同換內容，請建立新項目 |
+| 分類的封面 | 同上；且封面只能在後台上傳更換 |
 | `frames` 的 `slug`、`boxWidth`、`boxHeight` | 由伺服器推導，見下 |
 
 `PATCH` 只送了這些欄位時會回 422 而非靜默成功，避免對接的人以為改掉了。
@@ -116,6 +128,7 @@ Authorization: Bearer <CONTENT_API_KEY>
 | 400 | 請求主體不是有效的 JSON |
 | 401 | 金鑰缺少或不正確 |
 | 404 | 未知的資源名稱，或該 id 不存在 |
+| 405 | 該資源不開放這個方法（`categories` 的新增與刪除） |
 | 409 | 關聯不存在（`assetId` / `categoryId` 無效）或撞上約束 |
 | 422 | 欄位驗證失敗，或沒有任何可更新的欄位 |
 | 503 | `CONTENT_API_KEY` 未設定，端點等同關閉 |

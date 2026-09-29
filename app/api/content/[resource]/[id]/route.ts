@@ -111,6 +111,13 @@ export async function DELETE(request: Request, context: Context) {
 
   const { id, definition, table } = resolved;
 
+  if (!definition.deletable) {
+    return NextResponse.json(
+      { error: "這個資源不開放刪除" },
+      { status: 405, headers: { Allow: "GET, PATCH" } },
+    );
+  }
+
   try {
     await table.delete({ where: { id } });
   } catch (error) {
@@ -118,8 +125,8 @@ export async function DELETE(request: Request, context: Context) {
       typeof error === "object" && error !== null && "code" in error
         ? String((error as { code: unknown }).code)
         : "";
-    // 分類底下還有案例照時會被外鍵擋下。這裡刪的是 caseItem 而非分類，
-    // 照理不會遇到，但 model 是查表決定的，留著訊息比較誠實
+    // 目前開放刪除的資源都沒有被其他表以 Restrict 引用，照理不會遇到；
+    // 但 model 是查表決定的，日後加了資源時這裡要能說清楚原因
     if (code === "P2003") {
       return NextResponse.json(
         { error: "還有其他項目依賴這筆資料，無法刪除" },
