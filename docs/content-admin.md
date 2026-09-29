@@ -3,6 +3,10 @@
 讓非技術人員自行更新網站的輪播圖片、活動案例照片與常見問題，
 儲存後線上立即生效。
 
+同一份內容另有一條給外部系統用的寫入路徑（金鑰認證的 HTTP API），
+見 [docs/content-api.md](./content-api.md)。兩者共用同一組驗證規則與
+同一個快取失效入口，差別只在誰有資格呼叫。
+
 ## 可管理的內容
 
 | 後台頁面 | 對應網站位置 |
@@ -29,6 +33,9 @@ openssl rand -base64 32   # 產生 BETTER_AUTH_SECRET
 `NEXT_PUBLIC_MEDIA_URL` 與 `NEXT_PUBLIC_SITE_URL` 會在 **build 時**寫進
 前端程式碼，執行期才設定是讀不到的 —— Docker 部署時要透過 build arg 傳入
 （`compose.yaml` 已設定好）。
+
+`CONTENT_API_KEY` 只在要開放外部系統寫入時才需要設定，留空即等同關閉
+（端點一律回 503）。它與後台登入完全無關，不設也不影響後台運作。
 
 ### 2. AWS S3
 
@@ -166,17 +173,26 @@ H.264 的 yuv420p 要求長寬皆為偶數，奇數會讓 ffmpeg 直接失敗。
 
 ### 權限
 
-三層，缺一不可：
+後台（session）三層，缺一不可：
 
 1. `proxy.ts` —— 看 cookie 在不在，決定要不要導向登入頁（僅為體驗）
 2. `app/(admin)/admin/layout.tsx` —— 驗證 session 才渲染頁面
-3. **每個 action 與 route handler 各自 `requireSession()`** —— 真正的防線
+3. **每個 action 與後台 route handler 各自 `requireSession()`** —— 真正的防線
 
 第三層不能省：每個 server action 都是對其所在路由的公開 POST 端點，
 而 proxy 的 matcher 一旦調整，可能連帶讓某些路由失去保護。
 
 `auth.ts` 的 `disableSignUp: true` 也不可移除，
 否則 `/api/auth/sign-up/email` 會對全世界開放註冊。
+
+內容 API（`/api/content/*`）**不走上面這套**，改以 `verifyApiKey()` 比對
+`CONTENT_API_KEY`。兩套憑證刻意獨立：金鑰外洩不會連帶取得後台登入權，
+後台帳號被刪也不影響既有的外部整合。proxy 的 matcher 只涵蓋
+`/admin/:path*`，碰不到這些路由，所以它們的認證完全由自己負責。
+
+上傳端點（`/api/admin/upload`、`upload-video`）仍只認 session，
+**不接受內容 API 金鑰** —— 外部系統目前只能引用已存在的 `assetId`，
+無法自行上傳檔案。
 
 ### 資料模型的關鍵切分
 
@@ -218,6 +234,17 @@ Dockerfile 的 runner 階段會 `apk add ffmpeg`，若自行調整過請確認�
 **手機拍的照片方向不對**
 上傳時已依 EXIF orientation 校正寬高（5–8 代表旋轉存檔，寬高需對調）。
 若仍有問題，請提供原始檔案。
+
+**內容 API 回 503「內容 API 未啟用」**
+`CONTENT_API_KEY` 沒設定，或短於 32 字元。這是刻意的預設關閉 ——
+「忘了設」與「不打算開」在環境變數上長得一樣，預設放行會讓一次疏漏
+把整份內容曝露成可寫入。用 `openssl rand -base64 32` 產生後填入並重啟服務
+（環境變數是程序啟動時讀的）。
+
+**內容 API 回 422「沒有可更新的欄位」**
+送的欄位不在該資源的可更新白名單裡。`position`、分類的 `slug` 與 asset
+關聯都不開放修改，理由見 content-api.md。回 422 而非靜默成功，是為了
+避免對接的人以為改掉了。
 
 **`prisma` 指令報找不到 DATABASE_URL**
 Prisma 7 起不再自動載入 `.env`，請用 `package.json` 裡的 `db:*` 指令，
