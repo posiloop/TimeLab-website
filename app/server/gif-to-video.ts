@@ -62,8 +62,18 @@ export async function convertGif(gif: Buffer): Promise<ConvertedVideo> {
       "-y", "-v", "error",
       "-i", src,
       "-vf", SCALE,
-      // crf 40 搭配 b:v 0 是 VP9 的固定品質模式，實測 5MB 的 GIF 約壓到 70KB
-      "-c:v", "libvpx-vp9", "-b:v", "0", "-crf", "40",
+      // crf 40 搭配 b:v 0 是 VP9 的固定品質模式，實測 5MB 的 GIF 約壓到 70KB。
+      //
+      // pix_fmt 必須明寫，不能交給 ffmpeg 自動協商 —— 帶透明通道的 GIF
+      // 會被解成含 alpha 的格式，而 alpine 的 libvpx 在支援清單裡列了
+      // gbrap 卻開不起該模式，ffmpeg 選中它就會失敗（Error while opening
+      // encoder），產出 0 byte 的檔案。本機 Homebrew 版的清單沒有 gbrap，
+      // 會自動降級成 yuv420p 而正常轉完 —— 所以這個問題只在正式環境出現。
+      //
+      // 用 yuv420p 而非能保留透明的 yuva420p：MP4 那路的 H.264 做不到透明，
+      // 兩者不一致會變成「Chrome 有透明、Safari 沒有」這類難查的差異。
+      // 透明區在這裡會填成黑色，而拍貼框是滿版照片，影響僅限邊緣殘留
+      "-c:v", "libvpx-vp9", "-pix_fmt", "yuv420p", "-b:v", "0", "-crf", "40",
       "-an",
       webmPath,
     ]);
