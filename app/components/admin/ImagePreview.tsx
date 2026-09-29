@@ -136,7 +136,7 @@ export default function ImagePreviewProvider({
           // 點背景（dialog 本身而非圖片）關閉
           if (event.target === dialogRef.current) setTarget(null);
         }}
-        className="m-auto max-h-[90dvh] max-w-[90vw] bg-transparent p-0 backdrop:bg-black/70"
+        className="m-auto max-h-[90dvh] max-w-[90vw] bg-transparent p-0 backdrop:bg-black/70 max-md:max-h-[92dvh] max-md:max-w-[94vw]"
       >
         {target && (
           <div className="flex flex-col items-center gap-3">
@@ -149,7 +149,7 @@ export default function ImagePreviewProvider({
                 loop
                 playsInline
                 aria-label={target.caption}
-                className="max-h-[78dvh] max-w-[90vw] rounded-[8px] object-contain"
+                className="max-h-[78dvh] max-w-[90vw] rounded-[8px] object-contain max-md:max-h-[62dvh] max-md:max-w-[94vw]"
               >
                 <source src={video.webm} type="video/webm" />
                 <source src={video.mp4} type="video/mp4" />
@@ -160,13 +160,15 @@ export default function ImagePreviewProvider({
               <img
                 src={target.src}
                 alt={target.caption ?? ""}
-                className="max-h-[78dvh] max-w-[90vw] rounded-[8px] object-contain"
+                className="max-h-[78dvh] max-w-[90vw] rounded-[8px] object-contain max-md:max-h-[62dvh] max-md:max-w-[94vw]"
               />
             )}
 
-            <div className="flex flex-wrap items-center justify-center gap-3">
+            {/* 拍貼框的預覽最多帶三顆下載鈕加一顆關閉，手機排不進一列。
+                改直向堆疊並各自全寬，比擠成四顆小藥丸好按得多 */}
+            <div className="flex flex-wrap items-center justify-center gap-3 max-md:w-full max-md:flex-col max-md:items-stretch max-md:gap-2">
               {target.caption && (
-                <span className="rounded-full bg-black/60 px-3 py-1 text-caption text-white">
+                <span className="rounded-full bg-black/60 px-3 py-1 text-caption text-white max-md:text-center max-md:break-all">
                   {target.caption}
                 </span>
               )}
@@ -196,7 +198,7 @@ export default function ImagePreviewProvider({
               <button
                 type="button"
                 onClick={() => setTarget(null)}
-                className="rounded-full bg-white px-4 py-1 text-caption text-brand-ink transition-opacity hover:opacity-85"
+                className="rounded-full bg-white px-4 py-1 text-caption text-brand-ink transition-opacity hover:opacity-85 max-md:py-3"
               >
                 關閉
               </button>
@@ -222,7 +224,7 @@ function DownloadButton({
       type="button"
       onClick={onClick}
       disabled={disabled}
-      className="flex items-center gap-1.5 rounded-full bg-white px-4 py-1 text-caption text-brand-ink transition-opacity hover:opacity-85 disabled:opacity-50"
+      className="flex items-center gap-1.5 rounded-full bg-white px-4 py-1 text-caption text-brand-ink transition-opacity hover:opacity-85 disabled:opacity-50 max-md:justify-center max-md:py-3"
     >
       <Download aria-hidden className="size-3.5" />
       {label}

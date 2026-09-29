@@ -206,7 +206,7 @@ export default function HeroEditor({
 
         {/* 等寬網格而非 flex-wrap：後者的縮圖寬度固定，排完一列剩下的
             餘量會留成空白，右緣就與下方的上傳區對不齊 */}
-        <ul className="grid grid-cols-8 gap-2 max-2xl:grid-cols-6 max-lg:grid-cols-4 max-md:grid-cols-3">
+        <ul className="grid grid-cols-8 gap-2 max-2xl:grid-cols-6 max-lg:grid-cols-4 max-md:grid-cols-3 max-[380px]:grid-cols-2">
           {library.map((item) => (
             <li
               key={item.id}
@@ -226,7 +226,9 @@ export default function HeroEditor({
                 onClick={() => removeFromLibrary(item.id, item.name)}
                 disabled={pending}
                 aria-label={`刪除 ${item.name}`}
-                className="absolute right-1 top-1 hidden size-6 place-items-center rounded-full bg-black/60 text-white transition-colors hover:bg-red-600 group-hover:grid disabled:opacity-50"
+                // 觸控裝置沒有 hover，group-hover 的刪除鈕在手機永遠按不到，
+                // 故手機一律常駐顯示並放大到好按的尺寸
+                className="absolute right-1 top-1 hidden size-6 place-items-center rounded-full bg-black/60 text-white transition-colors hover:bg-red-600 group-hover:grid disabled:opacity-50 max-md:grid max-md:size-8"
               >
                 <X aria-hidden className="size-3.5" />
               </button>
@@ -249,7 +251,7 @@ export default function HeroEditor({
             key={key}
             className="card-surface flex flex-col gap-2 rounded-[12px] p-4"
           >
-            <div className="flex items-center justify-between gap-3">
+            <div className="flex flex-wrap items-center justify-between gap-3">
               <span className="text-sm font-bold text-brand-ink">
                 {TRACK_LABEL[key]}
                 <span className="ml-2 text-caption font-normal text-brand-ink/60">
@@ -259,7 +261,7 @@ export default function HeroEditor({
               <button
                 type="button"
                 onClick={() => shuffle(key)}
-                className="flex items-center gap-1 rounded-full bg-brand-mist px-4 py-1 text-caption text-brand transition-colors hover:bg-brand hover:text-white"
+                className="flex items-center gap-1 rounded-full bg-brand-mist px-4 py-1 text-caption text-brand transition-colors hover:bg-brand hover:text-white max-md:py-2"
               >
                 <Shuffle aria-hidden className="size-3.5" />
                 打亂順序
@@ -278,12 +280,12 @@ export default function HeroEditor({
                 // 這裡的縮圖只用來拖曳排序，不開放點擊放大 ——
                 // 要看大圖在上方圖庫，同一張圖不必兩處都能點。
                 // 游標也該維持 grab，被 zoom-in 蓋掉會讓人以為點了會放大
-                <div className="w-16 cursor-grab">
+                <div className="w-16 cursor-grab max-md:w-20">
                   {/* eslint-disable-next-line @next/next/no-img-element */}
                   <img
                     src={slide.url}
                     alt=""
-                    className="h-24 w-full rounded-[6px] border border-black/10 object-cover"
+                    className="h-24 w-full rounded-[6px] border border-black/10 object-cover max-md:h-28"
                   />
                   <p className="text-center text-caption text-brand-ink/50">
                     {index + 1}

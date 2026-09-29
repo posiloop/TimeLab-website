@@ -191,7 +191,7 @@ export default function FaqEditor({ items }: { items: Item[] }) {
                 className="resize-y rounded-[8px] border border-black/15 px-3 py-2 text-sm outline-none focus:border-brand"
               />
 
-              <div className="flex items-center justify-between gap-3">
+              <div className="flex flex-wrap items-center justify-between gap-3">
                 <ToggleSwitch
                   checked={item.isVisible}
                   onChange={(next) => toggle(item.id, next)}
@@ -202,7 +202,7 @@ export default function FaqEditor({ items }: { items: Item[] }) {
                   type="button"
                   onClick={() => remove(item.id, item.question)}
                   disabled={pending}
-                  className="flex items-center gap-1 rounded-full px-3 py-1 text-caption text-red-600 transition-colors hover:bg-red-50 disabled:opacity-50"
+                  className="flex items-center gap-1 rounded-full px-3 py-1 text-caption text-red-600 transition-colors hover:bg-red-50 disabled:opacity-50 max-md:py-2"
                 >
                   <Trash aria-hidden className="size-3.5" />
                   刪除
@@ -232,14 +232,14 @@ export default function FaqEditor({ items }: { items: Item[] }) {
             <button
               type="submit"
               disabled={pending}
-              className="rounded-full bg-brand px-5 py-2 text-sm font-bold text-white transition-opacity hover:opacity-85 disabled:opacity-50"
+              className="rounded-full bg-brand px-5 py-2 text-sm font-bold text-white transition-opacity hover:opacity-85 disabled:opacity-50 max-md:flex-1 max-md:py-3"
             >
               新增
             </button>
             <button
               type="button"
               onClick={() => setAdding(false)}
-              className="rounded-full px-4 py-2 text-sm text-brand-ink transition-colors hover:bg-brand-mist"
+              className="rounded-full px-4 py-2 text-sm text-brand-ink transition-colors hover:bg-brand-mist max-md:py-3"
             >
               取消
             </button>
@@ -249,7 +249,7 @@ export default function FaqEditor({ items }: { items: Item[] }) {
         <button
           type="button"
           onClick={() => setAdding(true)}
-          className="flex items-center gap-1 self-start rounded-full border-2 border-dashed border-brand/40 px-5 py-2 text-sm text-brand transition-colors hover:border-brand hover:bg-white"
+          className="flex items-center gap-1 self-start rounded-full border-2 border-dashed border-brand/40 px-5 py-2 text-sm text-brand transition-colors hover:border-brand hover:bg-white max-md:justify-center max-md:self-stretch max-md:py-3"
         >
           <Plus aria-hidden className="size-4" />
           新增問答

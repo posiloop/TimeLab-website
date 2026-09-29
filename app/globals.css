@@ -96,3 +96,31 @@
     animation: none !important;
   }
 }
+
+/* 後台表單欄位在手機一律至少 16px。iOS Safari 會自動放大任何字級小於
+   16px 的聚焦欄位，放大後版面偏移且不會自己還原 —— 使用者得手動縮回去。
+   只作用於後台：前台沒有需要打字的欄位。
+   字級提高會讓欄位變高，正好也補上 py-1/py-2 不足的觸控高度 */
+@media (width < 48rem) {
+  .admin-scope :is(input, textarea, select) {
+    font-size: 16px;
+    line-height: 24px;
+  }
+}
+
+/* 觸控裝置的最小可點高度。
+   max-md: 斷在 767px，而 iPad 直向正好是 768px —— 它拿到的是桌機版面，
+   卻仍然是用手指操作，py-1 的按鈕（約 30px）在那裡一樣按不準。
+   以 pointer: coarse 判斷「用手指」而非用螢幕寬度，才涵蓋得到平板。
+   只提高內距不動字級，視覺上與桌機一致 */
+@media (pointer: coarse) {
+  .admin-scope :is(button, a, label, summary):not(.no-touch-pad) {
+    min-height: 40px;
+  }
+
+  /* 圖示按鈕（縮圖上的刪除、清單的 X）本來就是方的，
+     一併給寬度，否則只長高會變成細長條 */
+  .admin-scope button:has(> svg:only-child) {
+    min-width: 40px;
+  }
+}

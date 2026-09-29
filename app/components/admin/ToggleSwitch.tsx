@@ -20,7 +20,9 @@ export default function ToggleSwitch({
   return (
     // shrink-0 與 nowrap：窄卡片裡與其他按鈕並排時，沒有這兩者
     // 文字會被壓成一字一行
-    <label className="inline-flex shrink-0 cursor-pointer items-center gap-2 whitespace-nowrap">
+    // 手機補上上下內距把可點高度撐到 40px —— 軌道本身只有 20px 高，
+    // 而整個 label 都是 checkbox 的觸發範圍，加內距不動視覺就能變好按
+    <label className="inline-flex shrink-0 cursor-pointer items-center gap-2 whitespace-nowrap max-md:-my-2 max-md:py-2">
       <input
         type="checkbox"
         checked={checked}

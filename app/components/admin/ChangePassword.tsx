@@ -58,7 +58,7 @@ export default function ChangePassword() {
           setError("");
           setOpen(true);
         }}
-        className="flex shrink-0 items-center gap-1 rounded-full px-3 py-1 text-caption text-brand transition-colors hover:bg-white"
+        className="flex shrink-0 items-center gap-1 rounded-full px-3 py-2 text-caption text-brand transition-colors hover:bg-white"
       >
         <KeyRound aria-hidden className="size-3.5" />
         修改密碼
@@ -111,18 +111,18 @@ export default function ChangePassword() {
               </p>
             )}
 
-            <div className="flex justify-end gap-2">
+            <div className="flex justify-end gap-2 max-md:flex-col-reverse">
               <button
                 type="button"
                 onClick={() => setOpen(false)}
-                className="rounded-full px-4 py-2 text-caption text-brand-ink transition-colors hover:bg-brand-mist"
+                className="rounded-full px-4 py-2 text-caption text-brand-ink transition-colors hover:bg-brand-mist max-md:py-3"
               >
                 取消
               </button>
               <button
                 type="submit"
                 disabled={pending}
-                className="rounded-full bg-brand px-5 py-2 text-caption font-bold text-white transition-opacity hover:opacity-85 disabled:opacity-50"
+                className="rounded-full bg-brand px-5 py-2 text-caption font-bold text-white transition-opacity hover:opacity-85 disabled:opacity-50 max-md:py-3"
               >
                 {pending ? "更新中…" : "更新密碼"}
               </button>

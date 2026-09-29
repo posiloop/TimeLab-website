@@ -190,7 +190,9 @@ export default function CaseItemsEditor({
         direction="grid"
         // 卡片裡有名稱輸入框、顯示開關與移除鈕，整片可拖會讓它們無法操作
         handleOnly
-        className="grid grid-cols-4 gap-3 max-lg:grid-cols-3 max-md:grid-cols-2"
+        // 手機維持兩欄看得到比較多張，但 380px 以下卡片只剩約 160px，
+        // 塞不下名稱輸入框加上顯示開關與移除鈕，故改單欄
+        className="grid grid-cols-4 gap-3 max-lg:grid-cols-3 max-md:grid-cols-2 max-[380px]:grid-cols-1"
         renderItem={(item, index) => (
           <div className="flex flex-col gap-2 rounded-[10px] border border-black/10 bg-white p-2">
             <DragHandleWithIndex index={index} className="self-start" />
@@ -217,7 +219,9 @@ export default function CaseItemsEditor({
               }`}
             />
 
-            <div className="flex items-center justify-between gap-1">
+            {/* flex-wrap：窄欄時開關與移除鈕擺不進一列就各自成行，
+                硬擠在一起會讓兩者都變得難按 */}
+            <div className="flex flex-wrap items-center justify-between gap-x-1 gap-y-2">
               <ToggleSwitch
                 checked={item.isVisible}
                 onChange={(next) => toggle(item.id, next)}
@@ -228,7 +232,7 @@ export default function CaseItemsEditor({
                 type="button"
                 onClick={() => remove(item.id, item.name)}
                 disabled={pending}
-                className="flex items-center gap-1 rounded-full px-2 py-1 text-caption text-red-600 transition-colors hover:bg-red-50 disabled:opacity-50"
+                className="flex items-center gap-1 rounded-full px-2 py-1 text-caption text-red-600 transition-colors hover:bg-red-50 disabled:opacity-50 max-md:px-3 max-md:py-2"
               >
                 <Trash aria-hidden className="size-3.5" />
                 移除

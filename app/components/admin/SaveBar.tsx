@@ -41,15 +41,20 @@ export default function SaveBar({
       }`}
       aria-hidden={!dirty}
     >
-      <div className="mx-auto flex max-w-4xl items-center justify-between gap-4 rounded-t-[16px] bg-brand px-6 py-4 text-white shadow-[0_-4px_16px_rgba(0,0,0,0.12)] max-md:gap-2 max-md:px-4">
-        <span className="text-sm">有 {count} 項變更尚未儲存</span>
+      {/* 手機改直向堆疊：「儲存並更新網站」擠在同一列會被壓到只剩幾個字，
+          而它是這條列存在的唯一理由。pb 補上 iPhone 底部的安全區，
+          否則按鈕會落在首頁指示條下面 */}
+      <div className="mx-auto flex max-w-4xl items-center justify-between gap-4 rounded-t-[16px] bg-brand px-6 py-4 pb-[max(1rem,env(safe-area-inset-bottom))] text-white shadow-[0_-4px_16px_rgba(0,0,0,0.12)] max-md:flex-col max-md:items-stretch max-md:gap-3 max-md:px-4">
+        <span className="text-sm max-md:text-center">
+          有 {count} 項變更尚未儲存
+        </span>
 
         <div className="flex shrink-0 gap-2">
           <button
             type="button"
             onClick={onCancel}
             disabled={saving}
-            className="rounded-full px-4 py-2 text-sm transition-colors hover:bg-white/15 disabled:opacity-50"
+            className="rounded-full px-4 py-2 text-sm transition-colors hover:bg-white/15 disabled:opacity-50 max-md:py-3"
           >
             取消
           </button>
@@ -57,7 +62,7 @@ export default function SaveBar({
             type="button"
             onClick={onSave}
             disabled={saving}
-            className="rounded-full bg-white px-5 py-2 text-sm font-bold text-brand transition-opacity hover:opacity-85 disabled:opacity-50"
+            className="rounded-full bg-white px-5 py-2 text-sm font-bold text-brand transition-opacity hover:opacity-85 disabled:opacity-50 max-md:flex-1 max-md:py-3"
           >
             {saving ? "儲存中…" : "儲存並更新網站"}
           </button>

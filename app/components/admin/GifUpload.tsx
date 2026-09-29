@@ -206,7 +206,8 @@ export default function GifUpload({
             accept(event.dataTransfer.files);
           }}
           onClick={() => inputRef.current?.click()}
-          className={`flex cursor-pointer flex-col items-center justify-center gap-1 rounded-[12px] border-2 border-dashed px-8 py-14 text-center transition-colors duration-[400ms] ease-[cubic-bezier(0.22,1,0.36,1)] ${
+          // 手機縮短上下內距，理由同 UploadDropzone
+          className={`flex cursor-pointer flex-col items-center justify-center gap-1 rounded-[12px] border-2 border-dashed px-8 py-14 text-center transition-colors duration-[400ms] ease-[cubic-bezier(0.22,1,0.36,1)] max-md:px-4 max-md:py-8 ${
             dragOver
               ? "border-brand bg-brand-mist"
               : "border-brand/40 bg-white hover:border-brand"
@@ -217,7 +218,9 @@ export default function GifUpload({
             {pending.length > 0 && !multiple ? "換一個 GIF" : label}
           </span>
           <span className="text-caption text-brand-ink">
-            把 GIF 拖到這裡，或點擊選擇檔案
+            {/* 手機沒有拖放，只說得到的那半 */}
+            <span className="max-md:hidden">把 GIF 拖到這裡，或點擊選擇檔案</span>
+            <span className="hidden max-md:inline">點擊選擇 GIF</span>
             {multiple && "，可一次選多個"}
           </span>
         </div>
@@ -226,7 +229,7 @@ export default function GifUpload({
           type="button"
           onClick={() => inputRef.current?.click()}
           disabled={status === "working"}
-          className="rounded-full bg-brand-mist px-4 py-2 text-caption text-brand transition-colors hover:bg-brand hover:text-white disabled:opacity-50"
+          className="rounded-full bg-brand-mist px-4 py-2 text-caption text-brand transition-colors hover:bg-brand hover:text-white disabled:opacity-50 max-md:py-2.5"
         >
           {pending.length > 0 ? "重新選擇 GIF" : label}
         </button>
@@ -247,7 +250,7 @@ export default function GifUpload({
 
       {pending.length > 0 && (
         <div className="flex flex-col gap-2">
-          <ul className="flex flex-wrap gap-2">
+          <ul className="flex flex-wrap gap-2 max-md:flex-col">
             {pending.map((item) => (
               <li
                 key={item.uid}
@@ -260,8 +263,8 @@ export default function GifUpload({
                   alt=""
                   className="h-16 w-auto rounded border border-black/10"
                 />
-                <div className="flex min-w-0 flex-col">
-                  <span className="max-w-[10rem] truncate text-caption text-brand-ink">
+                <div className="flex min-w-0 flex-1 flex-col">
+                  <span className="max-w-[10rem] truncate text-caption text-brand-ink max-md:max-w-none">
                     {item.file.name}
                   </span>
                   <span className="text-caption text-brand-ink/60">
@@ -273,9 +276,10 @@ export default function GifUpload({
                   onClick={() => drop(item.uid)}
                   disabled={status === "working"}
                   aria-label={`不要上傳 ${item.file.name}`}
-                  className="shrink-0 self-start text-brand-ink/40 transition-colors hover:text-red-600 disabled:opacity-40"
+                  // 手機補上留白把可點範圍撐到約 32px
+                  className="shrink-0 self-start text-brand-ink/40 transition-colors hover:text-red-600 disabled:opacity-40 max-md:-m-1 max-md:grid max-md:size-8 max-md:place-items-center max-md:self-center"
                 >
-                  <X aria-hidden className="size-3.5" />
+                  <X aria-hidden className="size-3.5 max-md:size-4" />
                 </button>
               </li>
             ))}
@@ -286,7 +290,7 @@ export default function GifUpload({
               type="button"
               onClick={() => void submit()}
               disabled={status === "working"}
-              className="rounded-full bg-brand px-4 py-1 text-caption text-white transition-opacity hover:opacity-85 disabled:opacity-50"
+              className="rounded-full bg-brand px-4 py-1 text-caption text-white transition-opacity hover:opacity-85 disabled:opacity-50 max-md:flex-1 max-md:py-3"
             >
               {status === "working"
                 ? "轉檔中…"
@@ -298,7 +302,7 @@ export default function GifUpload({
               type="button"
               onClick={clear}
               disabled={status === "working"}
-              className="rounded-full px-3 py-1 text-caption text-brand-ink/70 transition-colors hover:bg-black/5 disabled:opacity-50"
+              className="rounded-full px-3 py-1 text-caption text-brand-ink/70 transition-colors hover:bg-black/5 disabled:opacity-50 max-md:py-3"
             >
               取消
             </button>

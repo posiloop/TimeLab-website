@@ -156,11 +156,11 @@ export default function AccountManager({
             </div>
           </dl>
 
-          <div className="flex items-center gap-2">
+          <div className="flex items-center gap-2 max-md:flex-col max-md:items-stretch">
             <button
               type="button"
               onClick={copy}
-              className="flex items-center gap-1 rounded-full bg-brand px-4 py-2 text-caption font-bold text-white transition-opacity hover:opacity-85"
+              className="flex items-center gap-1 rounded-full bg-brand px-4 py-2 text-caption font-bold text-white transition-opacity hover:opacity-85 max-md:justify-center max-md:py-3"
             >
               {copied ? (
                 <Check aria-hidden className="size-3.5" />
@@ -172,7 +172,7 @@ export default function AccountManager({
             <button
               type="button"
               onClick={() => setIssued(null)}
-              className="rounded-full px-3 py-2 text-caption text-brand-ink transition-colors hover:bg-white"
+              className="rounded-full px-3 py-2 text-caption text-brand-ink transition-colors hover:bg-white max-md:py-3"
             >
               我已經複製好了
             </button>
@@ -184,7 +184,9 @@ export default function AccountManager({
         {users.map((user) => (
           <li
             key={user.id}
-            className="card-surface flex items-center justify-between gap-3 rounded-[10px] px-4 py-3"
+            // 手機改上下堆疊：email 加上建立日期本來就佔滿一列寬，
+            // 再擺「重設密碼」「刪除」兩顆按鈕會把兩邊都壓到看不清
+            className="card-surface flex items-center justify-between gap-3 rounded-[10px] px-4 py-3 max-md:flex-col max-md:items-stretch"
           >
             <div className="min-w-0">
               <p className="truncate text-sm font-bold text-brand-ink">
@@ -195,19 +197,24 @@ export default function AccountManager({
                   </span>
                 )}
               </p>
-              <p className="truncate text-caption text-brand-ink/60">
-                {user.email}　建立於 {user.createdAt}
+              {/* 手機不截斷 email —— 這一列是識別帳號的唯一依據，
+                  截掉尾巴就分不出兩個相近的信箱。建立日期另起一行 */}
+              <p className="truncate text-caption text-brand-ink/60 max-md:whitespace-normal max-md:break-all">
+                {user.email}
+                <span className="max-md:block max-md:break-normal">
+                  　建立於 {user.createdAt}
+                </span>
               </p>
             </div>
 
-            <div className="flex shrink-0 items-center gap-1">
+            <div className="flex shrink-0 items-center gap-1 max-md:justify-end max-md:border-t max-md:border-black/5 max-md:pt-2">
               {/* 自己的密碼在側邊欄底部改，那裡可以自訂而非隨機產生 */}
               {user.id !== currentUserId && (
                 <button
                   type="button"
                   onClick={() => reset(user)}
                   disabled={pending}
-                  className="flex items-center gap-1 rounded-full px-3 py-1 text-caption text-brand transition-colors hover:bg-brand-mist disabled:cursor-not-allowed disabled:text-brand-ink/30 disabled:hover:bg-transparent"
+                  className="flex items-center gap-1 rounded-full px-3 py-1 text-caption text-brand transition-colors hover:bg-brand-mist disabled:cursor-not-allowed disabled:text-brand-ink/30 disabled:hover:bg-transparent max-md:py-2"
                 >
                   <KeyRound aria-hidden className="size-3.5" />
                   重設密碼
@@ -219,7 +226,7 @@ export default function AccountManager({
                 onClick={() => remove(user)}
                 // 刪掉自己會當場登出，且可能讓後台無人可管
                 disabled={pending || user.id === currentUserId}
-                className="flex items-center gap-1 rounded-full px-3 py-1 text-caption text-red-600 transition-colors hover:bg-red-50 disabled:cursor-not-allowed disabled:text-brand-ink/30 disabled:hover:bg-transparent"
+                className="flex items-center gap-1 rounded-full px-3 py-1 text-caption text-red-600 transition-colors hover:bg-red-50 disabled:cursor-not-allowed disabled:text-brand-ink/30 disabled:hover:bg-transparent max-md:py-2"
               >
                 <Trash aria-hidden className="size-3.5" />
                 刪除
@@ -261,14 +268,14 @@ export default function AccountManager({
             <button
               type="submit"
               disabled={pending}
-              className="rounded-full bg-brand px-5 py-2 text-sm font-bold text-white transition-opacity hover:opacity-85 disabled:opacity-50"
+              className="rounded-full bg-brand px-5 py-2 text-sm font-bold text-white transition-opacity hover:opacity-85 disabled:opacity-50 max-md:flex-1 max-md:py-3"
             >
               {pending ? "建立中…" : "建立帳號"}
             </button>
             <button
               type="button"
               onClick={() => setAdding(false)}
-              className="rounded-full px-4 py-2 text-sm text-brand-ink transition-colors hover:bg-brand-mist"
+              className="rounded-full px-4 py-2 text-sm text-brand-ink transition-colors hover:bg-brand-mist max-md:py-3"
             >
               取消
             </button>
@@ -278,7 +285,7 @@ export default function AccountManager({
         <button
           type="button"
           onClick={() => setAdding(true)}
-          className="flex items-center gap-1 self-start rounded-full border-2 border-dashed border-brand/40 px-5 py-2 text-sm text-brand transition-colors hover:border-brand hover:bg-white"
+          className="flex items-center gap-1 self-start rounded-full border-2 border-dashed border-brand/40 px-5 py-2 text-sm text-brand transition-colors hover:border-brand hover:bg-white max-md:justify-center max-md:self-stretch max-md:py-3"
         >
           <Plus aria-hidden className="size-4" />
           新增帳號

@@ -46,7 +46,9 @@ export default function ToastProvider({
       {/* 固定在右下角，避開底部置中的未儲存提示列 */}
       <div
         aria-live="polite"
-        className="pointer-events-none fixed bottom-6 right-6 z-[60] flex flex-col items-end gap-2 max-md:bottom-24 max-md:left-4 max-md:right-4 max-md:items-stretch"
+        // 手機的未儲存提示列是直向堆疊的，比桌機高（約 114px），
+        // 提示訊息要讓過它才不會被蓋住
+        className="pointer-events-none fixed bottom-6 right-6 z-[60] flex flex-col items-end gap-2 max-md:bottom-32 max-md:left-4 max-md:right-4 max-md:items-stretch"
       >
         {toasts.map((toast) => (
           <ToastItem

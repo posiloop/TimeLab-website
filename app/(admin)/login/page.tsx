@@ -91,7 +91,7 @@ function LoginForm() {
 
 export default function LoginPage() {
   return (
-    <main className="flex min-h-dvh items-center justify-center bg-brand-canvas px-4">
+    <main className="admin-scope flex min-h-dvh items-center justify-center bg-brand-canvas px-4 py-8">
       {/* useSearchParams 需要 Suspense 邊界，否則整頁會被迫動態渲染 */}
       <Suspense>
         <LoginForm />

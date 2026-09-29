@@ -201,7 +201,9 @@ export default function EventsEditor({
             handleOnly
             // 等寬網格而非 flex-wrap：後者的卡片寬度固定，排完一列剩下的
             // 餘量會留成空白，右緣就與上傳區對不齊
-            className="grid grid-cols-7 gap-3 max-2xl:grid-cols-5 max-lg:grid-cols-3 max-md:grid-cols-2"
+            // 手機維持兩欄，但 380px 以下卡片只剩約 160px，裝不下尺寸說明
+            // 加上顯示開關與移除鈕，故改單欄
+            className="grid grid-cols-7 gap-3 max-2xl:grid-cols-5 max-lg:grid-cols-3 max-md:grid-cols-2 max-[380px]:grid-cols-1"
             renderItem={(photo, index) => {
               // 版面寬與檔案比例算出來的寬不一致時要提醒 —— 這是版面歪掉
               // 最常見的原因，但不自動修正，改不改由使用者決定
@@ -233,7 +235,8 @@ export default function EventsEditor({
                     </p>
                   )}
 
-                  <div className="flex items-center justify-between gap-1">
+                  {/* flex-wrap：窄欄時開關與移除鈕擺不進一列就各自成行 */}
+                  <div className="flex flex-wrap items-center justify-between gap-x-1 gap-y-2">
                     <ToggleSwitch
                       checked={photo.isVisible}
                       onChange={(next) => toggle(photo.id, next)}
@@ -244,7 +247,7 @@ export default function EventsEditor({
                       type="button"
                       onClick={() => remove(photo.id, photo.name)}
                       disabled={pending}
-                      className="flex shrink-0 items-center gap-1 whitespace-nowrap rounded-full px-2 py-1 text-caption text-red-600 transition-colors hover:bg-red-50 disabled:opacity-50"
+                      className="flex shrink-0 items-center gap-1 whitespace-nowrap rounded-full px-2 py-1 text-caption text-red-600 transition-colors hover:bg-red-50 disabled:opacity-50 max-md:px-3 max-md:py-2"
                     >
                       <Trash aria-hidden className="size-3.5" />
                       移除

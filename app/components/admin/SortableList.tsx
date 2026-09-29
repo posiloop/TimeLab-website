@@ -195,10 +195,12 @@ export function DragHandle({ className = "" }: { className?: string }) {
       type="button"
       aria-label="拖曳以調整順序"
       // touch-none 讓觸控裝置把這個範圍的手勢交給 dnd-kit 而非捲動頁面
-      className={`inline-flex shrink-0 cursor-grab touch-none items-center justify-center text-brand active:cursor-grabbing ${className}`}
+      // 手機把可點範圍撐到 40px：排序是這個後台在手機上最常做的事，
+      // 20px 的圖示按不準，長按 250ms 又落在旁邊就變成捲動頁面
+      className={`inline-flex shrink-0 cursor-grab touch-none items-center justify-center text-brand active:cursor-grabbing max-md:size-10 ${className}`}
       {...dragProps}
     >
-      <GripVertical aria-hidden className="size-5" />
+      <GripVertical aria-hidden className="size-5 max-md:size-6" />
     </button>
   );
 }

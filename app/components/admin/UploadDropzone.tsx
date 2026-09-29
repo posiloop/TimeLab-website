@@ -260,7 +260,9 @@ export default function UploadDropzone({
           void accept(event.dataTransfer.files);
         }}
         onClick={() => inputRef.current?.click()}
-        className={`flex cursor-pointer flex-col items-center justify-center gap-1 rounded-[12px] border-2 border-dashed px-8 py-14 text-center transition-colors duration-[400ms] ease-[cubic-bezier(0.22,1,0.36,1)] ${
+        // 手機縮短上下內距：112px 的拖放區在手機上幾乎佔滿一個螢幕，
+        // 而手機根本沒有「拖放檔案」這個動作，它實際上只是一顆選檔按鈕
+        className={`flex cursor-pointer flex-col items-center justify-center gap-1 rounded-[12px] border-2 border-dashed px-8 py-14 text-center transition-colors duration-[400ms] ease-[cubic-bezier(0.22,1,0.36,1)] max-md:px-4 max-md:py-8 ${
           dragOver
             ? "border-brand bg-brand-mist"
             : "border-brand/40 bg-white hover:border-brand"
@@ -268,7 +270,9 @@ export default function UploadDropzone({
       >
         <ImageUp aria-hidden className="size-7 text-brand/70" />
         <span className="text-sm font-bold text-brand">
-          把圖片拖到這裡，或點擊選擇檔案
+          {/* 手機沒有拖放，只說得到的那半 */}
+          <span className="max-md:hidden">把圖片拖到這裡，或點擊選擇檔案</span>
+          <span className="hidden max-md:inline">點擊選擇圖片</span>
         </span>
         <span className="text-caption text-brand-ink">
           支援 JPG、PNG、WebP，單檔上限 12MB
@@ -293,7 +297,7 @@ export default function UploadDropzone({
         <ul
           className={`grid gap-3 ${
             nameField
-              ? "grid-cols-5 max-2xl:grid-cols-4 max-lg:grid-cols-3 max-md:grid-cols-2"
+              ? "grid-cols-5 max-2xl:grid-cols-4 max-lg:grid-cols-3 max-md:grid-cols-2 max-[380px]:grid-cols-1"
               : "grid-cols-7 max-2xl:grid-cols-5 max-lg:grid-cols-4 max-md:grid-cols-2"
           }`}
         >
@@ -329,9 +333,11 @@ export default function UploadDropzone({
                       onClick={() => drop(item.uid)}
                       disabled={uploading}
                       aria-label={`不要上傳 ${item.file.name}`}
-                      className="shrink-0 text-brand-ink/40 transition-colors hover:text-red-600 disabled:opacity-40"
+                      // 手機補上留白把可點範圍撐到約 32px —— 14px 的圖示
+                      // 本身遠小於手指按得準的尺寸
+                      className="shrink-0 text-brand-ink/40 transition-colors hover:text-red-600 disabled:opacity-40 max-md:-m-2 max-md:grid max-md:size-8 max-md:place-items-center"
                     >
-                      <X aria-hidden className="size-3.5" />
+                      <X aria-hidden className="size-3.5 max-md:size-4" />
                     </button>
                   )}
                 </div>
@@ -384,7 +390,7 @@ export default function UploadDropzone({
             type="button"
             onClick={() => void upload()}
             disabled={uploading}
-            className="rounded-full bg-brand px-5 py-2 text-caption text-white transition-opacity hover:opacity-85 disabled:opacity-50"
+            className="rounded-full bg-brand px-5 py-2 text-caption text-white transition-opacity hover:opacity-85 disabled:opacity-50 max-md:flex-1 max-md:py-3"
           >
             {uploading ? "上傳中…" : `開始上傳 ${queued} 張`}
           </button>
@@ -392,7 +398,7 @@ export default function UploadDropzone({
             type="button"
             onClick={clear}
             disabled={uploading}
-            className="rounded-full px-4 py-2 text-caption text-brand-ink/70 transition-colors hover:bg-black/5 disabled:opacity-50"
+            className="rounded-full px-4 py-2 text-caption text-brand-ink/70 transition-colors hover:bg-black/5 disabled:opacity-50 max-md:py-3"
           >
             全部清除
           </button>

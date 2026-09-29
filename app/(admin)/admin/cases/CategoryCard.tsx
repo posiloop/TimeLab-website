@@ -55,7 +55,7 @@ export default function CategoryCard({ category }: { category: Category }) {
 
   return (
     <div className="card-surface flex gap-4 rounded-[12px] p-4 max-md:flex-col">
-      <div className="flex w-48 shrink-0 flex-col gap-2">
+      <div className="flex w-48 shrink-0 flex-col gap-2 max-md:w-full">
         <PreviewableImage
           src={category.coverUrl}
           caption={`${category.label} 分類封面`}
@@ -64,7 +64,7 @@ export default function CategoryCard({ category }: { category: Category }) {
         <button
           type="button"
           onClick={() => setChangingCover((prev) => !prev)}
-          className="rounded-full bg-brand-mist px-3 py-1 text-caption text-brand transition-colors hover:bg-brand hover:text-white"
+          className="rounded-full bg-brand-mist px-3 py-1 text-caption text-brand transition-colors hover:bg-brand hover:text-white max-md:py-2"
         >
           {changingCover ? "取消更換" : "更換封面圖"}
         </button>
@@ -73,11 +73,13 @@ export default function CategoryCard({ category }: { category: Category }) {
       {/* justify-center：左欄的封面加按鈕比右欄內容高，不置中的話
           輸入框會擠在上緣、卡片下方留一塊空白 */}
       <div className="flex min-w-0 flex-1 flex-col justify-center gap-2">
-        <div className="flex items-center gap-2">
+        {/* flex-wrap：分類名稱欄位加上網址代號的標籤在窄螢幕排不進一列，
+            不換行會把標籤推出卡片外 */}
+        <div className="flex flex-wrap items-center gap-2">
           <input
             value={label}
             onChange={(event) => setLabel(event.target.value)}
-            className="w-32 rounded-[8px] border border-black/15 px-3 py-2 text-sm font-bold outline-none focus:border-brand"
+            className="w-32 rounded-[8px] border border-black/15 px-3 py-2 text-sm font-bold outline-none focus:border-brand max-md:w-full"
           />
           <span className="rounded-full bg-brand-mist px-2 py-1 text-caption text-brand-ink/60">
             網址代號 {category.slug}

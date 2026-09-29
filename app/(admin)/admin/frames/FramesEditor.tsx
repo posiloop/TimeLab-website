@@ -256,12 +256,15 @@ export default function FramesEditor({ frames }: { frames: Frame[] }) {
         className="flex flex-col gap-3"
         renderItem={(frame, index) => (
           <div className="card-surface flex gap-4 rounded-[12px] p-4 max-md:flex-col">
-            <div className="flex w-48 shrink-0 flex-col items-center gap-2">
+            {/* 手機堆疊時改成整列寬並置中 —— 固定 192px 會讓旋轉預覽
+                偏在左側、右邊留一大塊空白。預覽框同時降低高度，
+                免得手機上光是這張圖就佔掉半個螢幕 */}
+            <div className="flex w-48 shrink-0 flex-col items-center gap-2 max-md:w-full">
               <DragHandleWithIndex index={index} className="self-start" />
               {/* 即時套用旋轉角度：數字對使用者沒有意義，看到圖歪掉才有。
                   容器留得比圖片大：最大傾斜 20° 時，直式圖旋轉後會往外佔到
                   約 1.45 倍寬、1.17 倍高，不留空間四角就會被裁掉 */}
-              <div className="flex h-72 w-full items-center justify-center overflow-visible">
+              <div className="flex h-72 w-full items-center justify-center overflow-visible max-md:h-56">
                 {/* 播放實際的影片而非封面圖 —— 這一頁的重點就是確認動畫內容，
                     靜態圖看不出動了什麼。poster 在影片載入前先頂著。
                     muted 是自動播放的前提，playsInline 避免 iOS 搶全螢幕。
@@ -348,7 +351,7 @@ export default function FramesEditor({ frames }: { frames: Frame[] }) {
                     type="button"
                     onClick={() => remove(frame.id, frame.alt)}
                     disabled={pending}
-                    className="flex shrink-0 items-center gap-1 whitespace-nowrap rounded-full px-3 py-1 text-caption text-red-600 transition-colors hover:bg-red-50 disabled:opacity-50"
+                    className="flex shrink-0 items-center gap-1 whitespace-nowrap rounded-full px-3 py-1 text-caption text-red-600 transition-colors hover:bg-red-50 disabled:opacity-50 max-md:py-2"
                   >
                     <Trash aria-hidden className="size-3.5" />
                     刪除

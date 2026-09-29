@@ -110,11 +110,13 @@ export default function ConfirmProvider({
               </div>
             </div>
 
-            <div className="flex justify-end gap-2">
+            {/* 手機把兩顆按鈕撐成等寬全寬。刪除這類不可復原的操作，
+                按鈕小又靠在一起最容易誤按到旁邊那顆 */}
+            <div className="flex justify-end gap-2 max-md:flex-col-reverse">
               <button
                 type="button"
                 onClick={() => settle(false)}
-                className="rounded-full px-4 py-2 text-caption text-brand-ink transition-colors hover:bg-brand-mist"
+                className="rounded-full px-4 py-2 text-caption text-brand-ink transition-colors hover:bg-brand-mist max-md:py-3"
               >
                 取消
               </button>
@@ -122,7 +124,7 @@ export default function ConfirmProvider({
                 ref={confirmRef}
                 type="button"
                 onClick={() => settle(true)}
-                className={`rounded-full px-5 py-2 text-caption font-bold text-white transition-opacity hover:opacity-85 ${
+                className={`rounded-full px-5 py-2 text-caption font-bold text-white transition-opacity hover:opacity-85 max-md:py-3 ${
                   pending.danger ? "bg-red-600" : "bg-brand"
                 }`}
               >
