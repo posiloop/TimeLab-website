@@ -5,6 +5,7 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useState, useTransition } from "react";
 import { PreviewableImage } from "@/app/components/admin/ImagePreview";
+import { useToast } from "@/app/components/admin/Toast";
 import UploadDropzone, {
   type UploadedAsset,
 } from "@/app/components/admin/UploadDropzone";
@@ -21,6 +22,7 @@ type Category = {
 
 export default function CategoryCard({ category }: { category: Category }) {
   const router = useRouter();
+  const toast = useToast();
   const [label, setLabel] = useState(category.label);
   const [tagline, setTagline] = useState(category.tagline);
   const [changingCover, setChangingCover] = useState(false);
@@ -37,7 +39,11 @@ export default function CategoryCard({ category }: { category: Category }) {
         label,
         tagline,
       });
-      if (!result.ok) return setError(result.error);
+      if (!result.ok) {
+        toast(result.error, "error");
+        return setError(result.error);
+      }
+      toast("已更新");
       router.refresh();
     });
   };
@@ -47,8 +53,12 @@ export default function CategoryCard({ category }: { category: Category }) {
     if (!asset) return;
     startTransition(async () => {
       const result = await updateCategoryCover(category.id, asset.id);
-      if (!result.ok) return setError(result.error);
+      if (!result.ok) {
+        toast(result.error, "error");
+        return setError(result.error);
+      }
       setChangingCover(false);
+      toast("封面圖已更換");
       router.refresh();
     });
   };
