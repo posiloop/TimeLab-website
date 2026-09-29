@@ -190,9 +190,9 @@ H.264 的 yuv420p 要求長寬皆為偶數，奇數會讓 ffmpeg 直接失敗。
 後台帳號被刪也不影響既有的外部整合。proxy 的 matcher 只涵蓋
 `/admin/:path*`，碰不到這些路由，所以它們的認證完全由自己負責。
 
-上傳端點（`/api/admin/upload`、`upload-video`）仍只認 session，
-**不接受內容 API 金鑰** —— 外部系統目前只能引用已存在的 `assetId`，
-無法自行上傳檔案。
+上傳端點（`/api/admin/upload`、`upload-video`）兩種憑證都收，由
+`authorizeUpload()` 判斷：先看 session，沒有才驗金鑰。後台與外部共用同一組
+端點，檔案檢查、去重與 S3 路徑才不會分岔。以金鑰上傳的檔案不記錄上傳者。
 
 ### 資料模型的關鍵切分
 

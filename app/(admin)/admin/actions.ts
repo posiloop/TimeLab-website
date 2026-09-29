@@ -7,6 +7,7 @@ import { requireSession } from "@/app/server/admin-guard";
 import { auth } from "@/app/server/auth";
 import { prisma } from "@/app/server/db";
 import { revalidateContent } from "@/app/server/content/revalidate";
+import { reorder, STEP } from "@/app/server/content/reorder";
 import { deleteObject, mediaUrl } from "@/app/server/s3";
 
 // 每個 action 都是對其所在路由的公開 POST 端點，任何人知道 action ID
@@ -26,9 +27,6 @@ export type ActionData<T> =
   | { ok: true; data: T }
   | { ok: false; error: string };
 
-/** 排序採間隔 1000 的稀疏配置，與遷移腳本一致 */
-const STEP = 1000;
-
 const ok = (): ActionResult => ({ ok: true });
 const okWith = <T,>(data: T): ActionData<T> => ({ ok: true, data });
 // 回傳型別寫成失敗分支本身，而非 ActionResult —— 它同時是
@@ -41,43 +39,7 @@ const fail = (error: string) => ({ ok: false as const, error });
 
 const idListSchema = z.array(z.string().min(1)).min(1);
 
-/**
- * 整軌重新編號。
- *
- * 一次送整排而非每拖一次打一次 API：後者會讓使用者調整 12 張順序時
- * 觸發數十次前台失效，且無法取消。
- *
- * position 有 @@unique 約束，中途狀態會撞鍵，故必須包在交易裡並先挪到
- * 負數區 —— 負數不會與正式值衝突，交易結束前就會全部改寫完畢。
- */
-type Reorderable =
-  | "heroSlide"
-  | "eventPhoto"
-  | "frameAnimation"
-  | "faqItem"
-  | "caseItem";
-
-/** 五個 model 的 update 都吃得下這個形狀，但 TypeScript 無法把五組泛型
-    簽章合併成可呼叫的聯集，故在此收窄成實際用到的那一個方法 */
-type PositionUpdater = {
-  update(args: {
-    where: { id: string };
-    data: { position: number };
-  }): Promise<unknown>;
-};
-
-async function reorder(model: Reorderable, ids: string[]): Promise<void> {
-  await prisma.$transaction(async (tx) => {
-    const table = tx[model] as unknown as PositionUpdater;
-    const update = (id: string, position: number) =>
-      table.update({ where: { id }, data: { position } });
-
-    // 先全部挪到負數區：position 有唯一約束，依序改寫會在中途撞鍵，
-    // 而負數不可能與正式值衝突
-    for (const [index, id] of ids.entries()) await update(id, -(index + 1));
-    for (const [index, id] of ids.entries()) await update(id, (index + 1) * STEP);
-  });
-}
+// 整軌重新編號的實作在 app/server/content/reorder.ts，與內容 API 共用
 
 export async function reorderHeroTrack(
   ids: string[],

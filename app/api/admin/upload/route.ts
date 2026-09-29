@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
 import sharp from "sharp";
-import { getSessionFrom } from "@/app/server/admin-guard";
+import { authorizeUpload } from "@/app/server/api-key";
 import { prisma } from "@/app/server/db";
 import { checksumOf, mediaKey, mediaUrl, putObject } from "@/app/server/s3";
 
@@ -31,9 +31,10 @@ const FOLDERS = new Set(["hero", "event", "cases", "case-covers", "frames"]);
  * action 是序列的，一次傳 84 張會排隊。
  */
 export async function POST(request: Request) {
-  const session = await getSessionFrom(request);
-  if (!session) {
-    return NextResponse.json({ error: "未登入" }, { status: 401 });
+  // 後台 session 或內容 API 金鑰擇一，見 authorizeUpload()
+  const auth = await authorizeUpload(request);
+  if ("error" in auth) {
+    return NextResponse.json({ error: auth.error }, { status: auth.status });
   }
 
   const form = await request.formData();
@@ -116,7 +117,7 @@ export async function POST(request: Request) {
       byteSize: buffer.byteLength,
       checksum,
       originalName: file.name,
-      uploadedById: session.user.id,
+      uploadedById: auth.uploadedById,
     },
   });
 

@@ -1,4 +1,5 @@
 import { timingSafeEqual } from "node:crypto";
+import { getSessionFrom } from "./admin-guard";
 
 /**
  * 內容 API 的金鑰驗證。
@@ -56,4 +57,31 @@ export function verifyApiKey(request: Request): AuthFailure | null {
   }
 
   return null;
+}
+
+/**
+ * 上傳端點用：後台 session 或 API 金鑰擇一。
+ *
+ * 上傳端點原本只給後台用，現在也讓外部系統上傳，但不另開一組路由 ——
+ * 兩者的檔案檢查、去重與 S3 路徑必須完全一致，複製一份遲早會分岔。
+ *
+ * 先看 session：後台的請求不帶 Authorization，不能因為沒有金鑰就擋掉。
+ * 沒有 session 但帶了 Authorization，才當成外部呼叫驗金鑰。
+ *
+ * 回傳的 uploadedById 在金鑰上傳時為 null —— 金鑰不代表任何一個人，
+ * 填誰都是假資料。代價是這些檔案查不出是誰傳的
+ */
+export async function authorizeUpload(
+  request: Request,
+): Promise<{ uploadedById: string | null } | AuthFailure> {
+  const session = await getSessionFrom(request);
+  if (session) return { uploadedById: session.user.id };
+
+  if (request.headers.has("authorization")) {
+    const denied = verifyApiKey(request);
+    if (denied) return denied;
+    return { uploadedById: null };
+  }
+
+  return { error: "未登入", status: 401 };
 }

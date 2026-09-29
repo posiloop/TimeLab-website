@@ -1,4 +1,5 @@
 import { z } from "zod";
+import type { Reorderable } from "@/app/server/content/reorder";
 import type { ContentSection } from "@/app/server/content/tags";
 
 /**
@@ -147,6 +148,18 @@ const SECTION: Record<Resource, ContentSection> = {
 const NOT_DELETABLE: ReadonlySet<Resource> = new Set(["categories"]);
 
 /**
+ * 可排序的資源。分類不在其中 —— 後台也沒有開放調整分類順序，
+ * 首頁卡片與案例頁的分類順序是版面設計的一部分
+ */
+const REORDERABLE: Partial<Record<Resource, Reorderable>> = {
+  hero: "heroSlide",
+  events: "eventPhoto",
+  cases: "caseItem",
+  faq: "faqItem",
+  frames: "frameAnimation",
+};
+
+/**
  * 有些資源的 position 唯一性是「每軌各自連號」而非全表連號，
  * 新增時要挑對範圍的最後一筆，否則會撞 @@unique([track, position])
  */
@@ -171,5 +184,7 @@ export function definitionOf(resource: Resource) {
     section: SECTION[resource],
     scopedBy: SCOPED_BY[resource],
     deletable: !NOT_DELETABLE.has(resource),
+    // undefined 代表不開放排序
+    reorderAs: REORDERABLE[resource],
   };
 }

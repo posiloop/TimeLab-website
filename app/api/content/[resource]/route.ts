@@ -2,13 +2,11 @@ import { NextResponse } from "next/server";
 import { verifyApiKey } from "@/app/server/api-key";
 import { prisma } from "@/app/server/db";
 import { revalidateContent } from "@/app/server/content/revalidate";
+import { STEP } from "@/app/server/content/reorder";
 import { definitionOf, isResource, resourceList } from "../schema";
 import { buildCreateData, serialise, type AnyDelegate } from "../handler";
 
 export const runtime = "nodejs";
-
-/** 排序採間隔 1000 的稀疏配置，與後台 action 及遷移腳本一致 */
-const STEP = 1000;
 
 /**
  * 內容 API 的集合端點。
@@ -40,7 +38,17 @@ export async function GET(
   const definition = definitionOf(resource);
   const table = prisma[definition.model as keyof typeof prisma] as unknown as AnyDelegate;
 
-  const rows = await table.findMany({ orderBy: { position: "asc" } });
+  // 分軌或分類的資源先依範圍排，再依 position —— 三排的 position 都從
+  // 1000 起跳，只排 position 的話同值的幾筆先後由資料庫決定，每次讀到
+  // 的順序可能不同，對方據此組出的排序清單也會跟著亂
+  const orderBy =
+    definition.scopedBy === "track"
+      ? [{ track: "asc" }, { position: "asc" }]
+      : definition.scopedBy === "categoryId"
+        ? [{ category: { position: "asc" } }, { position: "asc" }]
+        : { position: "asc" };
+
+  const rows = await table.findMany({ orderBy });
 
   return NextResponse.json({
     resource,

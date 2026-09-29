@@ -3,9 +3,10 @@
 給外部系統讀寫網站內容的 HTTP 端點。與後台介面寫入同一份資料、
 共用同一組驗證規則，差別只在認證方式：後台走登入 session，這裡走金鑰。
 
-> **這把金鑰能刪除所有前台內容。** 沒有分級權限、沒有稽核紀錄，
-> 也無法在不重新部署的情況下撤銷。外洩的後果等同把網站內容交出去，
-> 請比照資料庫密碼保管。若日後需要多方對接或可撤銷的憑證，
+> **這把金鑰能刪除所有前台內容，也能上傳檔案。** 沒有分級權限、沒有稽核紀錄，
+> 也無法在不重新部署的情況下撤銷。外洩的後果等同把網站內容交出去；
+> 上傳沒有頻率限制，每個 GIF 都會在伺服器上跑三次 ffmpeg 轉檔，大量上傳
+> 會吃滿 CPU 並持續佔用 S3 空間。請比照資料庫密碼保管。若日後需要多方對接或可撤銷的憑證，
 > 應改為資料庫裡的 ApiKey 表，而不是把這把金鑰分給更多人。
 
 ## 啟用
@@ -60,11 +61,14 @@ Authorization: Bearer <CONTENT_API_KEY>
 
 | 方法 | 路徑 | 用途 |
 |---|---|---|
-| `GET` | `/api/content/<resource>` | 列出全部，依 position 排序 |
+| `GET` | `/api/content/<resource>` | 列出全部（分排、分類的先依範圍，再依 position） |
 | `POST` | `/api/content/<resource>` | 新增一筆，接在最後 |
 | `GET` | `/api/content/<resource>/<id>` | 取單筆 |
 | `PATCH` | `/api/content/<resource>/<id>` | 只改送來的欄位 |
 | `DELETE` | `/api/content/<resource>/<id>` | 刪除 |
+| `PUT` | `/api/content/<resource>/order` | 重新排序，見「排序」 |
+| `PUT` | `/api/content/<resource>/<id>/media` | 更換圖片或影片，見「換圖」 |
+| `POST` | `/api/admin/upload`、`/api/admin/upload-video` | 上傳檔案，見「上傳」 |
 
 用 `PATCH` 而非 `PUT`：外部系統多半只想改一個欄位（例如把某張照片下架），
 `PUT` 的語義要求送出完整資源，漏送的欄位會被清成預設值。
@@ -88,21 +92,87 @@ Authorization: Bearer <CONTENT_API_KEY>
 { "alt": "…", "posterId": "…", "webmId": "…", "mp4Id": "…", "width": 610, "height": 910 }
 ```
 
-`assetId` 要先透過 `/api/admin/upload`（圖片）或 `/api/admin/upload-video`
-（GIF 轉檔）取得 —— 那兩個端點走後台 session，目前**不接受這把金鑰**。
-外部系統若也需要上傳檔案，得再開一次；現階段它只能引用已存在的 asset。
+`assetId` 等檔案 id 要先透過上傳取得，見下方「上傳」。
 
 ### 不開放修改的欄位
 
 | 欄位 | 原因 |
 |---|---|
-| `position` | 排序有唯一約束，散著改會撞鍵。要重排請用後台 |
+| `position` | 排序有唯一約束，散著改會撞鍵。請用「排序」端點 |
 | 分類的 `slug` | 首頁連結、社群貼文與名片上的網址都依賴它 |
-| `assetId` 等關聯 | 換圖等同換內容，請建立新項目 |
-| 分類的封面 | 同上；且封面只能在後台上傳更換 |
+| `assetId`、`coverId` 等檔案關聯 | 換圖有連帶效果，請用「換圖」端點 |
 | `frames` 的 `slug`、`boxWidth`、`boxHeight` | 由伺服器推導，見下 |
 
 `PATCH` 只送了這些欄位時會回 422 而非靜默成功，避免對接的人以為改掉了。
+
+## 上傳
+
+```bash
+# 圖片：JPG / PNG / WebP，單檔 12MB
+curl -X POST -H "Authorization: Bearer $KEY" \
+  -F folder=cases -F "file=@photo.jpg" \
+  https://timelabtw.com/api/admin/upload
+# → { "id": "…", "url": "…", "width": 960, "height": 679, "reused": false }
+
+# GIF：伺服器轉成 WebM、MP4 與封面圖，單檔 40MB，大檔可能要十幾秒
+curl -X POST -H "Authorization: Bearer $KEY" \
+  -F "file=@frame.gif" \
+  https://timelabtw.com/api/admin/upload-video
+# → { "posterId": "…", "webmId": "…", "mp4Id": "…", "gifId": "…", "width": 610, "height": 910, … }
+```
+
+`folder` 決定檔案放在 S3 的哪個資料夾，只接受
+`hero`、`event`、`cases`、`case-covers`、`frames`。
+
+這兩個端點與後台共用：有後台登入就用登入身分，沒有則檢查這把金鑰。
+**上傳只是把檔案放上去，網站不會因此改變** —— 要顯示在網站上，還要拿回傳的
+id 去新增項目或換圖。同一個檔案重複上傳會回傳既有的 id（`reused: true`），
+不會在 S3 多存一份。
+
+以金鑰上傳的檔案不記錄上傳者（`uploadedById` 為空）：金鑰不代表任何一個人。
+
+## 排序
+
+```jsonc
+// PUT /api/content/faq/order
+{ "ids": ["…", "…", "…"] }   // 新的完整順序
+```
+
+`ids` 必須是**同一個範圍的全部項目**，少送、多送、重複或混了範圍都會回 422，
+錯誤訊息會列出缺了哪幾筆：
+
+| 資源 | 一次排的範圍 |
+|---|---|
+| `hero`、`events` | 一排（`track` 相同的全部） |
+| `cases` | 一個分類底下的全部 |
+| `faq`、`frames` | 全部 |
+| `categories` | 不開放（405），分類順序是版面設計的一部分 |
+
+後台的拖曳清單永遠送整排，所以後台沒有這道檢查；外部呼叫方可能只送想移動的
+那幾筆，不擋的話新編號會撞上沒送的項目，或把兩排編進同一組順序。
+
+## 換圖
+
+```jsonc
+// PUT /api/content/<resource>/<id>/media
+{ "assetId": "…" }                                        // hero、events、cases、categories
+{ "posterId": "…", "webmId": "…", "mp4Id": "…", "gifId": "…" }   // frames
+```
+
+| 資源 | 換圖時的連帶效果 |
+|---|---|
+| `hero` | **三排一起換**。三排共用同一組相框，只換一排會讓圖庫多出一張只有那排才有的圖。新圖若已在主視覺裡會回 409。版面尺寸維持 275×410 |
+| `events` | 高度不變，寬度照新圖比例重算 —— 沿用舊寬度會把比例不同的照片拉伸 |
+| `cases` | 只換圖 |
+| `categories` | 換的是封面 |
+| `frames` | 角度與版面尺寸不動。`gifId` 沒給就清空，否則後台「下載原始 GIF」會下載到舊的那份 |
+| `faq` | 沒有圖（405） |
+
+檔案種類會逐一檢查：照片只接受 JPG、PNG、WebP（GIF 原檔未經壓縮，不上前台），
+拍貼框的四個欄位必須分別是 `image/jpeg`、`video/webm`、`video/mp4`、`image/gif`。
+填錯欄位在網站上會是一格播不出來的空白，所以寫入前就擋下。
+
+舊檔案不會刪除，換錯了可以換回來。
 
 ### 伺服器推導的值
 
@@ -128,7 +198,7 @@ Authorization: Bearer <CONTENT_API_KEY>
 | 400 | 請求主體不是有效的 JSON |
 | 401 | 金鑰缺少或不正確 |
 | 404 | 未知的資源名稱，或該 id 不存在 |
-| 405 | 該資源不開放這個方法（`categories` 的新增與刪除） |
+| 405 | 該資源不開放這個方法（`categories` 的新增、刪除與排序，`faq` 的換圖） |
 | 409 | 關聯不存在（`assetId` / `categoryId` 無效）或撞上約束 |
 | 422 | 欄位驗證失敗，或沒有任何可更新的欄位 |
 | 503 | `CONTENT_API_KEY` 未設定，端點等同關閉 |
