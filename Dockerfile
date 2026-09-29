@@ -11,7 +11,21 @@ COPY . .
 ENV NEXT_TELEMETRY_DISABLED=1
 
 # Prisma client 是產生出來的，不在版控內，build 前必須先產生。
-# 這一步只讀 schema，不需要連得到資料庫
+# 這一步只讀 schema，不需要連得到資料庫 —— 但 prisma.config.ts 以
+# env("DATABASE_URL") 取值，變數「缺漏」本身就會讓設定檔載入失敗，
+# 於是連 generate 也跑不起來。compose.yaml 只傳 NEXT_PUBLIC_* 兩個
+# build arg，所以 docker compose up --build 會停在這一行。
+#
+# 預設給佔位字串讓 generate 能跑；但 next build 會預先產生首頁，而首頁
+# 會查資料庫，所以正式建置時必須傳入真的連線字串並讓 builder 連得到 db
+# （docker build --network <compose 網路> --build-arg DATABASE_URL=...）。
+ARG DATABASE_URL=postgresql://placeholder:placeholder@127.0.0.1:5432/placeholder
+ENV DATABASE_URL=$DATABASE_URL
+
+# next build 期間 Better Auth 會初始化，缺少密鑰會整頁報錯
+ARG BETTER_AUTH_SECRET=build-time-placeholder-not-used-at-runtime
+ENV BETTER_AUTH_SECRET=$BETTER_AUTH_SECRET
+
 RUN npx prisma generate
 
 # 媒體檔案的 CDN 網域會被 next.config.ts 的 remotePatterns 與前端 bundle
