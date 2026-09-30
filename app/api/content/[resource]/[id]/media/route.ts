@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { z } from "zod";
 import { verifyApiKey } from "@/app/server/api-key";
+import { API_ACTOR, recordAudit, snapshot } from "@/app/server/audit";
 import { prisma } from "@/app/server/db";
 import { revalidateContent } from "@/app/server/content/revalidate";
 import { definitionOf, isResource, resourceList, type Resource } from "../../../schema";
@@ -68,6 +69,9 @@ export async function PUT(request: Request, context: Context) {
     );
   }
 
+  const definition = definitionOf(resource);
+  const before = await snapshot(definition.model, id);
+
   const result =
     resource === "frames"
       ? await replaceFrame(id, body)
@@ -77,7 +81,15 @@ export async function PUT(request: Request, context: Context) {
     return NextResponse.json({ error: result.error }, { status: result.status });
   }
 
-  revalidateContent(definitionOf(resource).section);
+  await recordAudit({
+    actor: API_ACTOR,
+    action: "replace-media",
+    resource,
+    targetId: id,
+    before,
+    after: result.body,
+  });
+  revalidateContent(definition.section);
   return NextResponse.json(result.body);
 }
 

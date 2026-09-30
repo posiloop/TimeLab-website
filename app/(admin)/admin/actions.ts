@@ -4,6 +4,12 @@ import { randomInt } from "node:crypto";
 import { headers } from "next/headers";
 import { z } from "zod";
 import { requireSession } from "@/app/server/admin-guard";
+import {
+  recordAudit,
+  snapshot,
+  userActor,
+  type AuditEntry,
+} from "@/app/server/audit";
 import { auth } from "@/app/server/auth";
 import { prisma } from "@/app/server/db";
 import { revalidateContent } from "@/app/server/content/revalidate";
@@ -33,6 +39,12 @@ const okWith = <T,>(data: T): ActionData<T> => ({ ok: true, data });
 // ActionData<T> 的失敗分支，兩種 action 才能共用這個輔助函式
 const fail = (error: string) => ({ ok: false as const, error });
 
+// 每個會改動資料的 action 都要在成功後呼叫，事後才查得到是誰改的
+const audit = (
+  session: Awaited<ReturnType<typeof requireSession>>,
+  entry: Omit<AuditEntry, "actor">,
+) => recordAudit({ actor: userActor(session), ...entry });
+
 // ---------------------------------------------------------------------------
 // 排序
 // ---------------------------------------------------------------------------
@@ -44,11 +56,17 @@ const idListSchema = z.array(z.string().min(1)).min(1);
 export async function reorderHeroTrack(
   ids: string[],
 ): Promise<ActionResult> {
-  await requireSession();
+  const session = await requireSession();
   const parsed = idListSchema.safeParse(ids);
   if (!parsed.success) return fail("排序資料不正確");
 
-  await reorder("heroSlide", parsed.data);
+  const previous = await reorder("heroSlide", parsed.data);
+  await audit(session, {
+    action: "reorder",
+    resource: "hero",
+    before: { ids: previous },
+    after: { ids: parsed.data },
+  });
   revalidateContent("hero");
   return ok();
 }
@@ -56,41 +74,65 @@ export async function reorderHeroTrack(
 export async function reorderEventTrack(
   ids: string[],
 ): Promise<ActionResult> {
-  await requireSession();
+  const session = await requireSession();
   const parsed = idListSchema.safeParse(ids);
   if (!parsed.success) return fail("排序資料不正確");
 
-  await reorder("eventPhoto", parsed.data);
+  const previous = await reorder("eventPhoto", parsed.data);
+  await audit(session, {
+    action: "reorder",
+    resource: "events",
+    before: { ids: previous },
+    after: { ids: parsed.data },
+  });
   revalidateContent("events");
   return ok();
 }
 
 export async function reorderFrames(ids: string[]): Promise<ActionResult> {
-  await requireSession();
+  const session = await requireSession();
   const parsed = idListSchema.safeParse(ids);
   if (!parsed.success) return fail("排序資料不正確");
 
-  await reorder("frameAnimation", parsed.data);
+  const previous = await reorder("frameAnimation", parsed.data);
+  await audit(session, {
+    action: "reorder",
+    resource: "frames",
+    before: { ids: previous },
+    after: { ids: parsed.data },
+  });
   revalidateContent("frames");
   return ok();
 }
 
 export async function reorderCaseItems(ids: string[]): Promise<ActionResult> {
-  await requireSession();
+  const session = await requireSession();
   const parsed = idListSchema.safeParse(ids);
   if (!parsed.success) return fail("排序資料不正確");
 
-  await reorder("caseItem", parsed.data);
+  const previous = await reorder("caseItem", parsed.data);
+  await audit(session, {
+    action: "reorder",
+    resource: "cases",
+    before: { ids: previous },
+    after: { ids: parsed.data },
+  });
   revalidateContent("cases");
   return ok();
 }
 
 export async function reorderFaq(ids: string[]): Promise<ActionResult> {
-  await requireSession();
+  const session = await requireSession();
   const parsed = idListSchema.safeParse(ids);
   if (!parsed.success) return fail("排序資料不正確");
 
-  await reorder("faqItem", parsed.data);
+  const previous = await reorder("faqItem", parsed.data);
+  await audit(session, {
+    action: "reorder",
+    resource: "faq",
+    before: { ids: previous },
+    after: { ids: parsed.data },
+  });
   revalidateContent("faq");
   return ok();
 }
@@ -103,8 +145,10 @@ export async function toggleHeroSlide(
   id: string,
   isVisible: boolean,
 ): Promise<ActionResult> {
-  await requireSession();
-  await prisma.heroSlide.update({ where: { id }, data: { isVisible } });
+  const session = await requireSession();
+  const before = await snapshot("heroSlide", id);
+  const after = await prisma.heroSlide.update({ where: { id }, data: { isVisible } });
+  await audit(session, { action: "update", resource: "hero", targetId: id, before, after });
   revalidateContent("hero");
   return ok();
 }
@@ -113,8 +157,10 @@ export async function toggleEventPhoto(
   id: string,
   isVisible: boolean,
 ): Promise<ActionResult> {
-  await requireSession();
-  await prisma.eventPhoto.update({ where: { id }, data: { isVisible } });
+  const session = await requireSession();
+  const before = await snapshot("eventPhoto", id);
+  const after = await prisma.eventPhoto.update({ where: { id }, data: { isVisible } });
+  await audit(session, { action: "update", resource: "events", targetId: id, before, after });
   revalidateContent("events");
   return ok();
 }
@@ -123,8 +169,10 @@ export async function toggleFrame(
   id: string,
   isVisible: boolean,
 ): Promise<ActionResult> {
-  await requireSession();
-  await prisma.frameAnimation.update({ where: { id }, data: { isVisible } });
+  const session = await requireSession();
+  const before = await snapshot("frameAnimation", id);
+  const after = await prisma.frameAnimation.update({ where: { id }, data: { isVisible } });
+  await audit(session, { action: "update", resource: "frames", targetId: id, before, after });
   revalidateContent("frames");
   return ok();
 }
@@ -133,8 +181,10 @@ export async function toggleCaseItem(
   id: string,
   isVisible: boolean,
 ): Promise<ActionResult> {
-  await requireSession();
-  await prisma.caseItem.update({ where: { id }, data: { isVisible } });
+  const session = await requireSession();
+  const before = await snapshot("caseItem", id);
+  const after = await prisma.caseItem.update({ where: { id }, data: { isVisible } });
+  await audit(session, { action: "update", resource: "cases", targetId: id, before, after });
   revalidateContent("cases");
   return ok();
 }
@@ -143,8 +193,10 @@ export async function toggleFaq(
   id: string,
   isVisible: boolean,
 ): Promise<ActionResult> {
-  await requireSession();
-  await prisma.faqItem.update({ where: { id }, data: { isVisible } });
+  const session = await requireSession();
+  const before = await snapshot("faqItem", id);
+  const after = await prisma.faqItem.update({ where: { id }, data: { isVisible } });
+  await audit(session, { action: "update", resource: "faq", targetId: id, before, after });
   revalidateContent("faq");
   return ok();
 }
@@ -175,7 +227,7 @@ export type CreatedHeroSlide = {
 export async function addHeroSlide(
   assetId: string,
 ): Promise<ActionData<CreatedHeroSlide[]>> {
-  await requireSession();
+  const session = await requireSession();
 
   const tracks = ["TRACK_1", "TRACK_2", "TRACK_3"] as const;
   const created: CreatedHeroSlide[] = [];
@@ -217,13 +269,15 @@ export async function addHeroSlide(
     });
   }
 
+  await audit(session, { action: "create", resource: "hero", after: created });
   revalidateContent("hero");
   return okWith(created);
 }
 
 export async function removeHeroSlide(id: string): Promise<ActionResult> {
-  await requireSession();
-  await prisma.heroSlide.delete({ where: { id } });
+  const session = await requireSession();
+  const before = await prisma.heroSlide.delete({ where: { id } });
+  await audit(session, { action: "delete", resource: "hero", targetId: id, before });
   revalidateContent("hero");
   return ok();
 }
@@ -249,7 +303,7 @@ export type CreatedEventPhoto = {
 export async function addEventPhoto(
   input: z.infer<typeof addEventSchema>,
 ): Promise<ActionData<CreatedEventPhoto>> {
-  await requireSession();
+  const session = await requireSession();
   const parsed = addEventSchema.safeParse(input);
   if (!parsed.success) return fail("資料不正確");
 
@@ -283,6 +337,12 @@ export async function addEventPhoto(
     },
   });
 
+  await audit(session, {
+    action: "create",
+    resource: "events",
+    targetId: created.id,
+    after: created,
+  });
   revalidateContent("events");
   return okWith({
     id: created.id,
@@ -297,8 +357,9 @@ export async function addEventPhoto(
 }
 
 export async function removeEventPhoto(id: string): Promise<ActionResult> {
-  await requireSession();
-  await prisma.eventPhoto.delete({ where: { id } });
+  const session = await requireSession();
+  const before = await prisma.eventPhoto.delete({ where: { id } });
+  await audit(session, { action: "delete", resource: "events", targetId: id, before });
   revalidateContent("events");
   return ok();
 }
@@ -319,7 +380,7 @@ export type CreatedCaseItem = {
 export async function addCaseItem(
   input: z.infer<typeof addCaseItemSchema>,
 ): Promise<ActionData<CreatedCaseItem>> {
-  await requireSession();
+  const session = await requireSession();
   const parsed = addCaseItemSchema.safeParse(input);
   if (!parsed.success) {
     return fail(parsed.error.issues[0]?.message ?? "資料不正確");
@@ -346,6 +407,12 @@ export async function addCaseItem(
     },
   });
 
+  await audit(session, {
+    action: "create",
+    resource: "cases",
+    targetId: created.id,
+    after: created,
+  });
   revalidateContent("cases");
   return okWith({
     id: created.id,
@@ -359,18 +426,24 @@ export async function updateCaseItemName(
   id: string,
   name: string,
 ): Promise<ActionResult> {
-  await requireSession();
+  const session = await requireSession();
   const trimmed = name.trim();
   if (!trimmed) return fail("請填寫案例名稱");
 
-  await prisma.caseItem.update({ where: { id }, data: { name: trimmed } });
+  const before = await snapshot("caseItem", id);
+  const after = await prisma.caseItem.update({
+    where: { id },
+    data: { name: trimmed },
+  });
+  await audit(session, { action: "update", resource: "cases", targetId: id, before, after });
   revalidateContent("cases");
   return ok();
 }
 
 export async function removeCaseItem(id: string): Promise<ActionResult> {
-  await requireSession();
-  await prisma.caseItem.delete({ where: { id } });
+  const session = await requireSession();
+  const before = await prisma.caseItem.delete({ where: { id } });
+  await audit(session, { action: "delete", resource: "cases", targetId: id, before });
   revalidateContent("cases");
   return ok();
 }
@@ -395,15 +468,23 @@ const categorySchema = z.object({
 export async function updateCaseCategory(
   input: z.infer<typeof categorySchema>,
 ): Promise<ActionResult> {
-  await requireSession();
+  const session = await requireSession();
   const parsed = categorySchema.safeParse(input);
   if (!parsed.success) {
     return fail(parsed.error.issues[0]?.message ?? "資料不正確");
   }
 
-  await prisma.caseCategory.update({
+  const before = await snapshot("caseCategory", parsed.data.id);
+  const after = await prisma.caseCategory.update({
     where: { id: parsed.data.id },
     data: { label: parsed.data.label, tagline: parsed.data.tagline },
+  });
+  await audit(session, {
+    action: "update",
+    resource: "categories",
+    targetId: parsed.data.id,
+    before,
+    after,
   });
 
   revalidateContent("cases");
@@ -414,8 +495,19 @@ export async function updateCategoryCover(
   id: string,
   coverId: string,
 ): Promise<ActionResult> {
-  await requireSession();
-  await prisma.caseCategory.update({ where: { id }, data: { coverId } });
+  const session = await requireSession();
+  const before = await snapshot("caseCategory", id);
+  const after = await prisma.caseCategory.update({
+    where: { id },
+    data: { coverId },
+  });
+  await audit(session, {
+    action: "replace-media",
+    resource: "categories",
+    targetId: id,
+    before,
+    after,
+  });
   revalidateContent("cases");
   return ok();
 }
@@ -437,14 +529,16 @@ const frameSchema = z.object({
 export async function updateFrame(
   input: z.infer<typeof frameSchema>,
 ): Promise<ActionResult> {
-  await requireSession();
+  const session = await requireSession();
   const parsed = frameSchema.safeParse(input);
   if (!parsed.success) {
     return fail(parsed.error.issues[0]?.message ?? "資料不正確");
   }
 
   const { id, ...data } = parsed.data;
-  await prisma.frameAnimation.update({ where: { id }, data });
+  const before = await snapshot("frameAnimation", id);
+  const after = await prisma.frameAnimation.update({ where: { id }, data });
+  await audit(session, { action: "update", resource: "frames", targetId: id, before, after });
   revalidateContent("frames");
   return ok();
 }
@@ -453,8 +547,16 @@ export async function replaceFrameMedia(
   id: string,
   media: { posterId: string; webmId: string; mp4Id: string; gifId: string },
 ): Promise<ActionResult> {
-  await requireSession();
-  await prisma.frameAnimation.update({ where: { id }, data: media });
+  const session = await requireSession();
+  const before = await snapshot("frameAnimation", id);
+  const after = await prisma.frameAnimation.update({ where: { id }, data: media });
+  await audit(session, {
+    action: "replace-media",
+    resource: "frames",
+    targetId: id,
+    before,
+    after,
+  });
   revalidateContent("frames");
   return ok();
 }
@@ -470,20 +572,18 @@ export async function replaceFrameMedia(
  * 使用者以為沒刪成功而重按。留下的孤兒檔案不影響網站，成本也極低。
  */
 export async function removeFrameAnimation(id: string): Promise<ActionResult> {
-  await requireSession();
+  const session = await requireSession();
 
-  const frame = await prisma.frameAnimation.findUnique({
-    where: { id },
-    select: {
-      posterId: true,
-      webmId: true,
-      mp4Id: true,
-      gifId: true,
-    },
-  });
+  const frame = await prisma.frameAnimation.findUnique({ where: { id } });
   if (!frame) return fail("找不到這個拍貼框");
 
   await prisma.frameAnimation.delete({ where: { id } });
+  await audit(session, {
+    action: "delete",
+    resource: "frames",
+    targetId: id,
+    before: frame,
+  });
 
   const assetIds = [
     frame.posterId,
@@ -565,7 +665,7 @@ const FRAME_DISPLAY_HEIGHT = 410;
 export async function createFrameAnimation(
   input: z.infer<typeof createFrameSchema>,
 ): Promise<ActionData<CreatedFrame>> {
-  await requireSession();
+  const session = await requireSession();
   const parsed = createFrameSchema.safeParse(input);
   if (!parsed.success) {
     return fail(parsed.error.issues[0]?.message ?? "資料不正確");
@@ -619,6 +719,12 @@ export async function createFrameAnimation(
     },
   });
 
+  await audit(session, {
+    action: "create",
+    resource: "frames",
+    targetId: created.id,
+    after: created,
+  });
   revalidateContent("frames");
   return okWith({
     id: created.id,
@@ -656,7 +762,7 @@ export type CreatedFaqItem = {
 export async function createFaq(
   input: z.infer<typeof faqSchema>,
 ): Promise<ActionData<CreatedFaqItem>> {
-  await requireSession();
+  const session = await requireSession();
   const parsed = faqSchema.safeParse(input);
   if (!parsed.success) {
     return fail(parsed.error.issues[0]?.message ?? "資料不正確");
@@ -672,6 +778,12 @@ export async function createFaq(
     select: { id: true, question: true, answer: true, isVisible: true },
   });
 
+  await audit(session, {
+    action: "create",
+    resource: "faq",
+    targetId: created.id,
+    after: created,
+  });
   revalidateContent("faq");
   return okWith(created);
 }
@@ -680,20 +792,23 @@ export async function updateFaq(
   id: string,
   input: z.infer<typeof faqSchema>,
 ): Promise<ActionResult> {
-  await requireSession();
+  const session = await requireSession();
   const parsed = faqSchema.safeParse(input);
   if (!parsed.success) {
     return fail(parsed.error.issues[0]?.message ?? "資料不正確");
   }
 
-  await prisma.faqItem.update({ where: { id }, data: parsed.data });
+  const before = await snapshot("faqItem", id);
+  const after = await prisma.faqItem.update({ where: { id }, data: parsed.data });
+  await audit(session, { action: "update", resource: "faq", targetId: id, before, after });
   revalidateContent("faq");
   return ok();
 }
 
 export async function removeFaq(id: string): Promise<ActionResult> {
-  await requireSession();
-  await prisma.faqItem.delete({ where: { id } });
+  const session = await requireSession();
+  const before = await prisma.faqItem.delete({ where: { id } });
+  await audit(session, { action: "delete", resource: "faq", targetId: id, before });
   revalidateContent("faq");
   return ok();
 }
@@ -739,7 +854,7 @@ export type CreateAccountResult =
 export async function createAccount(
   formData: FormData,
 ): Promise<CreateAccountResult> {
-  await requireSession();
+  const session = await requireSession();
 
   const parsed = accountSchema.safeParse({
     email: formData.get("email"),
@@ -769,6 +884,13 @@ export async function createAccount(
     providerId: "credential",
     accountId: user.id,
     password: await ctx.password.hash(password),
+  });
+
+  await audit(session, {
+    action: "create",
+    resource: "account",
+    targetId: user.id,
+    after: { email, name: parsed.data.name },
   });
 
   // 明文只在這一次回傳，資料庫存的是雜湊，之後無從取回
@@ -821,6 +943,14 @@ export async function resetPassword(
   // 否則被交接的帳號仍可能停在別人手上的分頁裡
   await prisma.session.deleteMany({ where: { userId: id } });
 
+  // 只記「誰替誰重設了」，新密碼不進紀錄
+  await audit(session, {
+    action: "reset-password",
+    resource: "account",
+    targetId: id,
+    after: { email: user.email },
+  });
+
   return { ok: true, email: user.email, password };
 }
 
@@ -837,7 +967,7 @@ export async function changeOwnPassword(
   currentPassword: string,
   newPassword: string,
 ): Promise<ActionResult> {
-  await requireSession();
+  const session = await requireSession();
 
   if (newPassword.length < 12) return fail("新密碼至少 12 個字元");
 
@@ -858,6 +988,11 @@ export async function changeOwnPassword(
     return fail("目前的密碼不正確");
   }
 
+  await audit(session, {
+    action: "change-password",
+    resource: "account",
+    targetId: session.user.id,
+  });
   return ok();
 }
 
@@ -869,6 +1004,12 @@ export async function removeAccount(id: string): Promise<ActionResult> {
   const count = await prisma.user.count();
   if (count <= 1) return fail("至少要保留一個帳號");
 
-  await prisma.user.delete({ where: { id } });
+  const removed = await prisma.user.delete({ where: { id } });
+  await audit(session, {
+    action: "delete",
+    resource: "account",
+    targetId: id,
+    before: { email: removed.email, name: removed.name },
+  });
   return ok();
 }

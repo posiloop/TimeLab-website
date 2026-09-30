@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 import { verifyApiKey } from "@/app/server/api-key";
+import { API_ACTOR, recordAudit } from "@/app/server/audit";
 import { prisma } from "@/app/server/db";
 import { revalidateContent } from "@/app/server/content/revalidate";
 import { definitionOf, isResource, resourceList } from "../../schema";
@@ -106,11 +107,27 @@ export async function PATCH(request: Request, context: Context) {
     if ("error" in result) {
       return NextResponse.json({ error: result.error }, { status: result.status });
     }
+    await recordAudit({
+      actor: API_ACTOR,
+      action: "update",
+      resource,
+      targetId: id,
+      before: row,
+      after: result.body,
+    });
     revalidateContent(definition.section);
     return NextResponse.json(result.body);
   }
 
   const updated = await table.update({ where: { id }, data, include: INCLUDE[resource] });
+  await recordAudit({
+    actor: API_ACTOR,
+    action: "update",
+    resource,
+    targetId: id,
+    before: row,
+    after: updated,
+  });
 
   revalidateContent(definition.section);
   return NextResponse.json({ item: present(resource, updated) });
@@ -120,7 +137,7 @@ export async function DELETE(request: Request, context: Context) {
   const resolved = await resolve(request, context);
   if (resolved.error) return resolved.error;
 
-  const { resource, id, definition, table } = resolved;
+  const { resource, id, definition, table, row } = resolved;
 
   if (!definition.deletable) {
     return NextResponse.json(
@@ -134,6 +151,14 @@ export async function DELETE(request: Request, context: Context) {
     if ("error" in result) {
       return NextResponse.json({ error: result.error }, { status: result.status });
     }
+    await recordAudit({
+      actor: API_ACTOR,
+      action: "delete",
+      resource,
+      targetId: id,
+      before: row,
+      after: result.body,
+    });
     revalidateContent(definition.section);
     return NextResponse.json(result.body);
   }
@@ -156,6 +181,13 @@ export async function DELETE(request: Request, context: Context) {
     throw error;
   }
 
+  await recordAudit({
+    actor: API_ACTOR,
+    action: "delete",
+    resource,
+    targetId: id,
+    before: row,
+  });
   revalidateContent(definition.section);
 
   // 刪除只回結果不回內容 —— 東西已經不在了，回傳它的欄位只會讓人

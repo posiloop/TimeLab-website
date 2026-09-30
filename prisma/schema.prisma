@@ -41,6 +41,7 @@ model User {
 
   // 稽核用：內容被改壞時要能查出是誰在何時上傳的
   uploadedAssets MediaAsset[] @relation("AssetUploader")
+  auditLogs      AuditLog[]
 
   @@map("user")
 }
@@ -384,4 +385,47 @@ model RateLimit {
 
   @@unique([key])
   @@map("rateLimit")
+}
+
+// ---------------------------------------------------------------------------
+// 稽核紀錄
+
+enum AuditActor {
+  /// 後台登入的使用者
+  USER
+  /// 帶 CONTENT_API_KEY 的外部系統。金鑰不代表任何一個人，所以沒有 actorId
+  API_KEY
+}
+
+/// 每一次內容或帳號異動留一筆，只增不改。
+///
+/// before/after 存異動前後的整筆資料，不只存差異 —— 被改壞或誤刪時，
+/// 要能直接照 before 還原，而不是回頭推算當時的值。
+model AuditLog {
+  id String @id @default(cuid())
+
+  actor AuditActor
+
+  /// 帳號被刪後設為 null，但 actorEmail 仍留著，紀錄不會因此變成「查無此人」
+  actorId    String?
+  user       User?   @relation(fields: [actorId], references: [id], onDelete: SetNull)
+  actorEmail String?
+
+  /// create／update／delete／reorder／replace-media／reset-password 等
+  action String
+
+  /// 與內容 API 的資源名一致（hero、events、frames、cases、categories、faq），
+  /// 另加 account
+  resource String
+
+  targetId String?
+
+  before Json?
+  after  Json?
+
+  createdAt DateTime @default(now())
+
+  @@index([createdAt])
+  @@index([resource, targetId])
+  @@map("audit_log")
 }

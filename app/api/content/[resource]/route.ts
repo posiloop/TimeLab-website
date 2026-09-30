@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 import { verifyApiKey } from "@/app/server/api-key";
+import { API_ACTOR, recordAudit } from "@/app/server/audit";
 import { prisma } from "@/app/server/db";
 import { revalidateContent } from "@/app/server/content/revalidate";
 import { STEP } from "@/app/server/content/reorder";
@@ -119,6 +120,12 @@ export async function POST(
     if ("error" in result) {
       return NextResponse.json({ error: result.error }, { status: result.status });
     }
+    await recordAudit({
+      actor: API_ACTOR,
+      action: "create",
+      resource,
+      after: result.body,
+    });
     revalidateContent(definition.section);
     return NextResponse.json(result.body, { status: result.status });
   }
@@ -181,6 +188,13 @@ export async function POST(
     );
   }
 
+  await recordAudit({
+    actor: API_ACTOR,
+    action: "create",
+    resource,
+    targetId: created.id as string,
+    after: created,
+  });
   revalidateContent(definition.section);
 
   return NextResponse.json({ item: present(resource, created) }, { status: 201 });

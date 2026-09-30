@@ -22,6 +22,11 @@ type PositionUpdater = {
     where: { id: string };
     data: { position: number };
   }): Promise<unknown>;
+  findMany(args: {
+    where: { id: { in: string[] } };
+    orderBy: { position: "asc" };
+    select: { id: true };
+  }): Promise<{ id: string }[]>;
 };
 
 /**
@@ -36,14 +41,21 @@ type PositionUpdater = {
  * 呼叫端負責確保 ids 剛好是同一範圍（同一軌、同一分類或整張表）的
  * 全部項目。少送幾筆，新編號會撞上沒送的那幾筆；混送兩軌，兩軌會被
  * 編進同一組連號。這裡不檢查，因為後台的前端永遠送整排，檢查只在
- * 外部入口需要
+ * 外部入口需要。
+ *
+ * 回傳排序前的順序，供稽核紀錄使用 —— 排錯了要能照原樣排回去
  */
 export async function reorder(
   model: Reorderable,
   ids: string[],
-): Promise<void> {
-  await prisma.$transaction(async (tx) => {
+): Promise<string[]> {
+  return prisma.$transaction(async (tx) => {
     const table = tx[model] as unknown as PositionUpdater;
+    const previous = await table.findMany({
+      where: { id: { in: ids } },
+      orderBy: { position: "asc" },
+      select: { id: true },
+    });
     const update = (id: string, position: number) =>
       table.update({ where: { id }, data: { position } });
 
@@ -51,5 +63,6 @@ export async function reorder(
     // 而負數不可能與正式值衝突
     for (const [index, id] of ids.entries()) await update(id, -(index + 1));
     for (const [index, id] of ids.entries()) await update(id, (index + 1) * STEP);
+    return previous.map((row) => row.id);
   });
 }

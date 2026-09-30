@@ -4,6 +4,7 @@ import {
   Camera,
   CircleQuestionMark,
   Film,
+  History,
   Images,
   LayoutTemplate,
   LogOut,
@@ -22,7 +23,7 @@ import ImagePreviewProvider from "./ImagePreview";
 import ToastProvider from "./Toast";
 
 // 順序依使用者指定，大致對應內容在網站上由上而下的位置，
-// 最後才是與內容無關的帳號管理
+// 最後才是與內容無關的帳號管理與操作紀錄
 const NAV = [
   { href: "/admin/hero", label: "首頁主視覺", icon: LayoutTemplate },
   { href: "/admin/frames", label: "拍貼框動畫", icon: Film },
@@ -30,6 +31,7 @@ const NAV = [
   { href: "/admin/faq", label: "常見問題", icon: CircleQuestionMark },
   { href: "/admin/events", label: "活動現場照", icon: Camera },
   { href: "/admin/account", label: "帳號管理", icon: Users },
+  { href: "/admin/audit", label: "操作紀錄", icon: History },
 ];
 
 export default function AdminShell({

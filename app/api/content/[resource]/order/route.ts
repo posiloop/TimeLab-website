@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { z } from "zod";
 import { verifyApiKey } from "@/app/server/api-key";
+import { API_ACTOR, recordAudit } from "@/app/server/audit";
 import { prisma } from "@/app/server/db";
 import { reorder } from "@/app/server/content/reorder";
 import { revalidateContent } from "@/app/server/content/revalidate";
@@ -82,7 +83,14 @@ export async function PUT(
     return NextResponse.json({ error: problem }, { status: 422 });
   }
 
-  await reorder(definition.reorderAs, ids);
+  const previous = await reorder(definition.reorderAs, ids);
+  await recordAudit({
+    actor: API_ACTOR,
+    action: "reorder",
+    resource,
+    before: { ids: previous },
+    after: { ids },
+  });
   revalidateContent(definition.section);
 
   return NextResponse.json({ resource, order: ids });
