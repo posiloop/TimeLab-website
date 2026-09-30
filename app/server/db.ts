@@ -14,6 +14,17 @@ const globalForPrisma = globalThis as unknown as {
   prisma?: PrismaClient;
 };
 
+// 但改了 schema 並重新 generate 之後，PrismaClient 已是另一個類別，舊實例
+// 上沒有新加的 model（prisma.xxx 會是 undefined），得換成新的，否則要重開
+// dev server 才讀得到。舊實例順手斷線，連線池才不會累積
+// （型別上它永遠是 PrismaClient，instanceof 不成立的分支會被收窄成 never，
+// 故先放寬成 unknown 再判斷）
+const cached: unknown = globalForPrisma.prisma;
+if (cached && !(cached instanceof PrismaClient)) {
+  void (cached as PrismaClient).$disconnect();
+  globalForPrisma.prisma = undefined;
+}
+
 export const prisma =
   globalForPrisma.prisma ??
   new PrismaClient({ adapter: new PrismaPg({ connectionString }) });
