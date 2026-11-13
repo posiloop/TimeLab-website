@@ -186,7 +186,7 @@ export default function HeroEditor({
   return (
     <div className="flex flex-col gap-6">
       <div>
-        <h1 className="text-h2 text-brand-ink">首頁主視覺</h1>
+        <h2 className="text-sm font-bold text-brand-ink">右側傾斜相框</h2>
         <p className="mt-1 text-sm text-brand-ink/70">
           網站最上方傾斜的三排相框。三排共用同一組圖片，但各自有不同的排列順序，
           這樣三排才不會整齊劃一地一起移動。

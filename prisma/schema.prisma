@@ -139,6 +139,7 @@ model MediaAsset {
   createdAt DateTime @default(now())
 
   heroSlides     HeroSlide[]
+  heroIntros     HeroIntro[]      @relation("HeroIntroAsset")
   eventPhotos    EventPhoto[]
   caseItems      CaseItem[]
   caseCategories CaseCategory[]
@@ -195,6 +196,33 @@ model HeroSlide {
   @@unique([track, position])
   @@index([track, isVisible, position])
   @@map("hero_slide")
+}
+
+// ---------------------------------------------------------------------------
+// 1b. 首頁主視覺「左側介紹區」—— 可切換成整塊圖片
+// ---------------------------------------------------------------------------
+// 紅框那塊預設是寫死的 logo＋「時光研究室」文字。開啟 imageMode 後，整塊改以
+// 一張上傳的圖片呈現，方便做節日裝飾（例如 logo 加聖誕帽）。全站只有一列
+// （singleton），由後台以固定 id upsert 維護；關閉或沒圖時一律回到預設外觀。
+
+model HeroIntro {
+  id String @id @default(cuid())
+
+  /// 開啟後首頁左側改用上傳的圖片呈現；關閉則回到預設的 logo＋文字
+  imageMode Boolean @default(false)
+
+  /// 可為空：還沒上傳圖、或把圖移除後即為 null，此時無論開關如何都退回預設。
+  /// 圖片被軟刪除時由讀取層擋掉，硬刪除則 SetNull，不會讓首頁 500
+  assetId String?
+  asset   MediaAsset? @relation("HeroIntroAsset", fields: [assetId], references: [id], onDelete: SetNull)
+
+  /// 圖片替代文字，無障礙朗讀用；留空時讀取層以品牌名代入
+  alt String?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@map("hero_intro")
 }
 
 // ---------------------------------------------------------------------------

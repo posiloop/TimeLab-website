@@ -1,27 +1,51 @@
 import { prisma } from "@/app/server/db";
 import { mediaUrl } from "@/app/server/s3";
 import HeroEditor from "./HeroEditor";
+import HeroIntroEditor from "./HeroIntroEditor";
 
 export default async function HeroAdminPage() {
-  const slides = await prisma.heroSlide.findMany({
-    orderBy: [{ track: "asc" }, { position: "asc" }],
-    select: {
-      id: true,
-      track: true,
-      isVisible: true,
-      displayWidth: true,
-      displayHeight: true,
-      asset: {
-        select: {
-          id: true,
-          key: true,
-          originalName: true,
-          intrinsicWidth: true,
-          intrinsicHeight: true,
+  const [slides, intro] = await Promise.all([
+    prisma.heroSlide.findMany({
+      orderBy: [{ track: "asc" }, { position: "asc" }],
+      select: {
+        id: true,
+        track: true,
+        isVisible: true,
+        displayWidth: true,
+        displayHeight: true,
+        asset: {
+          select: {
+            id: true,
+            key: true,
+            originalName: true,
+            intrinsicWidth: true,
+            intrinsicHeight: true,
+          },
         },
       },
-    },
-  });
+    }),
+    // 左側介紹區的 singleton。只讀目前這張圖與開關狀態
+    prisma.heroIntro.findFirst({
+      select: {
+        imageMode: true,
+        asset: {
+          select: { id: true, key: true, originalName: true, deletedAt: true },
+        },
+      },
+    }),
+  ]);
+
+  const introView = {
+    imageMode: intro?.imageMode ?? false,
+    image:
+      intro?.asset && intro.asset.deletedAt === null
+        ? {
+            id: intro.asset.id,
+            url: mediaUrl(intro.asset.key),
+            name: intro.asset.originalName ?? "主視覺圖",
+          }
+        : null,
+  };
 
   // 三軌共用同一組相框，圖庫取其去重後的集合
   const library = new Map<
@@ -47,14 +71,26 @@ export default async function HeroAdminPage() {
   };
 
   return (
-    <HeroEditor
-      library={[...library.values()]}
-      tracks={{
-        TRACK_1: tracks.TRACK_1.map(toView),
-        TRACK_2: tracks.TRACK_2.map(toView),
-        TRACK_3: tracks.TRACK_3.map(toView),
-      }}
-    />
+    <div className="flex flex-col gap-6">
+      <div>
+        <h1 className="text-h2 text-brand-ink">首頁主視覺</h1>
+        <p className="mt-1 text-sm text-brand-ink/70">
+          網站最上方的主視覺：左側的介紹區（可切換成圖片做節日裝飾），
+          以及右側傾斜的三排相框。
+        </p>
+      </div>
+
+      <HeroIntroEditor intro={introView} />
+
+      <HeroEditor
+        library={[...library.values()]}
+        tracks={{
+          TRACK_1: tracks.TRACK_1.map(toView),
+          TRACK_2: tracks.TRACK_2.map(toView),
+          TRACK_3: tracks.TRACK_3.map(toView),
+        }}
+      />
+    </div>
   );
 }
 

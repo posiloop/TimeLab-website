@@ -1,29 +1,46 @@
 import Image from "next/image";
 import Marquee from "../components/Marquee";
-import { getHeroTracks } from "../server/content/hero";
+import { getHeroIntro, getHeroTracks } from "../server/content/hero";
 
 export default async function About() {
-  const tracks = await getHeroTracks();
+  // 兩者互不相依，一起取省一趟往返
+  const [tracks, intro] = await Promise.all([getHeroTracks(), getHeroIntro()]);
 
   return (
     <section id="about" className="flex items-end max-lg:flex-col-reverse">
       <div className="flex h-[540px] flex-1 flex-col items-center justify-center gap-8 py-[120px] pl-[122px] pr-16 max-xl:pl-16 max-lg:h-[196px] max-lg:w-full max-lg:flex-none max-lg:flex-row max-lg:justify-center max-lg:gap-10 max-lg:px-6 max-lg:py-0 max-md:h-auto max-md:flex-col max-md:justify-center max-md:gap-8 max-md:px-6 max-md:py-14">
-        <Image
-          src="/images/brand/logo.png"
-          alt="時光研究室 TiMELAB"
-          width={320}
-          height={214}
-          priority
-          className="h-[214px] w-[320px] object-contain max-xl:h-[154px] max-xl:w-[230px] max-md:h-[131px] max-md:w-[196px]"
-        />
-        <div className="flex w-full flex-col items-center justify-center gap-6 text-center max-md:gap-4">
-          <h1 className="text-h1 text-black">時光研究室</h1>
-          {/* 設計稿在 Mobile 斷成兩行，窄螢幕才讓瀏覽器自行折行 */}
-          <p className="text-h2 text-black/55">
-            全台指標韓式拍貼品牌
-            <span className="max-md:block">【千場實績，定義拍貼新標準】</span>
-          </p>
-        </div>
+        {intro.image ? (
+          // 圖片模式：整塊換成後台上傳的圖（節日裝飾版）。以 contain 置中並
+          // 限制高度，讓不同比例的圖都能完整落在這塊版面內、不撐破版型
+          <Image
+            src={intro.image.src}
+            alt={intro.image.alt}
+            width={intro.image.width}
+            height={intro.image.height}
+            priority
+            unoptimized
+            className="h-auto max-h-[380px] w-auto max-w-full object-contain max-xl:max-h-[300px] max-lg:max-h-[160px] max-md:max-h-[240px]"
+          />
+        ) : (
+          <>
+            <Image
+              src="/images/brand/logo.png"
+              alt="時光研究室 TiMELAB"
+              width={320}
+              height={214}
+              priority
+              className="h-[214px] w-[320px] object-contain max-xl:h-[154px] max-xl:w-[230px] max-md:h-[131px] max-md:w-[196px]"
+            />
+            <div className="flex w-full flex-col items-center justify-center gap-6 text-center max-md:gap-4">
+              <h1 className="text-h1 text-black">時光研究室</h1>
+              {/* 設計稿在 Mobile 斷成兩行，窄螢幕才讓瀏覽器自行折行 */}
+              <p className="text-h2 text-black/55">
+                全台指標韓式拍貼品牌
+                <span className="max-md:block">【千場實績，定義拍貼新標準】</span>
+              </p>
+            </div>
+          </>
+        )}
       </div>
 
       {/* 三排相框以 −6° 傾斜交錯捲動，overflow 裁掉溢出的部分 */}

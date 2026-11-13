@@ -282,6 +282,70 @@ export async function removeHeroSlide(id: string): Promise<ActionResult> {
   return ok();
 }
 
+// ---------------------------------------------------------------------------
+// 首頁主視覺左側介紹區（圖片模式）
+// ---------------------------------------------------------------------------
+// 全站一列的 singleton，沒有新增 UI，故一律以固定 id upsert：第一次操作時
+// 建立、之後更新。開關與圖片分開存，讓使用者可以先上傳好節日圖、確認無誤
+// 再打開開關讓它上線。
+
+const HERO_INTRO_ID = "hero-intro";
+
+export async function setHeroIntroImageMode(
+  enabled: boolean,
+): Promise<ActionResult> {
+  const session = await requireSession();
+  const before = await prisma.heroIntro.findUnique({
+    where: { id: HERO_INTRO_ID },
+  });
+  const after = await prisma.heroIntro.upsert({
+    where: { id: HERO_INTRO_ID },
+    create: { id: HERO_INTRO_ID, imageMode: enabled },
+    update: { imageMode: enabled },
+  });
+  await audit(session, {
+    action: "update",
+    resource: "hero",
+    targetId: HERO_INTRO_ID,
+    before,
+    after,
+  });
+  revalidateContent("hero");
+  return ok();
+}
+
+export async function setHeroIntroImage(
+  assetId: string | null,
+): Promise<ActionResult> {
+  const session = await requireSession();
+  // 設圖時先確認 assetId 指向真實且未軟刪的檔案 —— 否則首頁會因找不到圖
+  // 而退回預設，使用者卻以為設定成功了
+  if (assetId) {
+    const asset = await prisma.mediaAsset.findFirst({
+      where: { id: assetId, deletedAt: null },
+      select: { id: true },
+    });
+    if (!asset) return fail("找不到這張圖片，請重新上傳一次");
+  }
+  const before = await prisma.heroIntro.findUnique({
+    where: { id: HERO_INTRO_ID },
+  });
+  const after = await prisma.heroIntro.upsert({
+    where: { id: HERO_INTRO_ID },
+    create: { id: HERO_INTRO_ID, assetId },
+    update: { assetId },
+  });
+  await audit(session, {
+    action: assetId ? "replace-media" : "update",
+    resource: "hero",
+    targetId: HERO_INTRO_ID,
+    before,
+    after,
+  });
+  revalidateContent("hero");
+  return ok();
+}
+
 const addEventSchema = z.object({
   assetId: z.string().min(1),
   track: z.enum(["TRACK_1", "TRACK_2", "TRACK_3"]),

@@ -51,3 +51,58 @@ export const getHeroTracks = unstable_cache(
   // 用時間輪詢只會讓絕大多數請求白跑資料庫
   { tags: [TAGS.hero], revalidate: false },
 );
+
+/**
+ * 首頁左側介紹區（紅框那塊）。預設關閉時 image 為 null，About 會退回
+ * 寫死的 logo＋文字。只有在 imageMode 開啟、且有一張未被軟刪除的圖時，
+ * 才回傳 image 讓畫面整塊換成那張圖。
+ *
+ * width／height 取自檔案真實像素供 next/image 算比例；跨 RSC 邊界只帶純量。
+ */
+export type HeroIntroView = {
+  imageMode: boolean;
+  image: { src: string; alt: string; width: number; height: number } | null;
+};
+
+async function loadHeroIntro(): Promise<HeroIntroView> {
+  // singleton：正常只有一列，用 findFirst 不綁定 id，連還沒建立時也安全
+  const intro = await prisma.heroIntro.findFirst({
+    select: {
+      imageMode: true,
+      alt: true,
+      asset: {
+        select: {
+          key: true,
+          intrinsicWidth: true,
+          intrinsicHeight: true,
+          deletedAt: true,
+        },
+      },
+    },
+  });
+
+  const usable =
+    intro?.imageMode && intro.asset && intro.asset.deletedAt === null
+      ? intro.asset
+      : null;
+
+  return {
+    imageMode: Boolean(intro?.imageMode),
+    image: usable
+      ? {
+          src: mediaUrl(usable.key),
+          alt: intro?.alt?.trim() || "時光研究室 TiMELAB",
+          width: usable.intrinsicWidth,
+          height: usable.intrinsicHeight,
+        }
+      : null,
+  };
+}
+
+export const getHeroIntro = unstable_cache(
+  loadHeroIntro,
+  ["content", "hero", "intro", "v1"],
+  // 與三軌共用 content:hero 標籤：左側介紹區與三排相框同屬首頁主視覺，
+  // 一起失效不會多 render 任何東西，也少一個「改了卻忘記失效」的出錯面
+  { tags: [TAGS.hero], revalidate: false },
+);
