@@ -98,9 +98,14 @@ export default function CaseItemsEditor({
       }
 
       // 併進 list 與 baseline 兩份 —— 只加 list 會讓新項目被當成
-      // 「未儲存的變更」，SaveBar 跳出數字要使用者再按一次儲存
-      setList((prev) => [...prev, ...created]);
-      setBaseline((prev) => [...prev, ...created]);
+      // 「未儲存的變更」，SaveBar 跳出數字要使用者再按一次儲存。
+      // 新案例排在最前面（addCaseItem 給的 position 小於既有項目）：這裡
+      // 擺到清單開頭才會與重新整理後的順序一致。一次上傳多張時，後端是
+      // 逐張往前插，故最後處理的那張 position 最小、排最前 —— reverse 後
+      // 再接上，順序才與前台／重整後相符
+      const atFront = [...created].reverse();
+      setList((prev) => [...atFront, ...prev]);
+      setBaseline((prev) => [...atFront, ...prev]);
 
       const unnamed = assets.filter((asset) => !asset.name).length;
       toast(

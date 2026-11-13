@@ -386,9 +386,13 @@ export async function addCaseItem(
     return fail(parsed.error.issues[0]?.message ?? "資料不正確");
   }
 
-  const last = await prisma.caseItem.findFirst({
+  // 新上傳的案例要排在同分類「最前面」（智森 2026-11-13 交辦）。取現有
+  // 最小的 position 再減一個 STEP，讓新圖的 position 小於所有既有項目，
+  // 前台與後台都依 position 由小到大排，它就會落在最前。空分類時給 STEP
+  // 讓第一筆維持正值（與整軌重排後的 1000 起跳一致）
+  const first = await prisma.caseItem.findFirst({
     where: { categoryId: parsed.data.categoryId },
-    orderBy: { position: "desc" },
+    orderBy: { position: "asc" },
     select: { position: true },
   });
 
@@ -397,7 +401,7 @@ export async function addCaseItem(
       categoryId: parsed.data.categoryId,
       assetId: parsed.data.assetId,
       name: parsed.data.name,
-      position: (last?.position ?? 0) + STEP,
+      position: first ? first.position - STEP : STEP,
     },
     select: {
       id: true,
